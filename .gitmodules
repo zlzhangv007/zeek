@@ -40,3 +40,6 @@
 [submodule "aux/highwayhash"]
 	path = aux/highwayhash
 	url = https://github.com/zeek/highwayhash
+[submodule "aux/prio_queue"]
+	path = aux/prio_queue
+	url = https://github.com/rollbear/prio_queue.git
