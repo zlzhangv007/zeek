@@ -41,10 +41,9 @@ void Analyzer::Initialize()
 
 	for ( const auto& mve : *mapping_tbl )
 		{
-		zeek::detail::HashKey* k = mve.GetHashKey();
+		auto k = mve.GetHashKey();
 		auto* v = mve.GetValue<TableEntryVal*>();
 		auto key = mapping_val->RecreateIndex(*k);
-		delete k;
 
 		auto identifier = key->Idx(0)->AsCount();
 		auto config_entry_val = v->GetVal()->AsRecordVal();
