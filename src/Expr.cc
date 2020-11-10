@@ -1815,7 +1815,7 @@ ValPtr EqExpr::Fold(Val* v1, Val* v2) const
 	{
 	if ( op1->GetType()->Tag() == TYPE_PATTERN )
 		{
-		RE_Matcher* re = v1->AsPattern();
+		auto re = dynamic_cast<PatternVal*>(v1);
 		const String* s = v2->AsString();
 		if ( tag == EXPR_EQ )
 			return val_mgr->Bool(re->MatchExactly(s));
@@ -4074,7 +4074,7 @@ ValPtr InExpr::Fold(Val* v1, Val* v2) const
 	{
 	if ( v1->GetType()->Tag() == TYPE_PATTERN )
 		{
-		RE_Matcher* re = v1->AsPattern();
+		auto re = dynamic_cast<PatternVal*>(v1);
 		const String* s = v2->AsString();
 		return val_mgr->Bool(re->MatchAnywhere(s) != 0);
 		}
@@ -4333,7 +4333,7 @@ LambdaExpr::LambdaExpr(std::unique_ptr<function_ingredients> arg_ing,
 	// Update lamb's name
 	dummy_func->SetName(my_name.c_str());
 
-	auto v = make_intrusive<Val>(std::move(dummy_func));
+	auto v = make_intrusive<FuncVal>(std::move(dummy_func));
 	id->SetVal(std::move(v));
 	id->SetType(ingredients->id->GetType());
 	id->SetConst();
@@ -4359,7 +4359,7 @@ ValPtr LambdaExpr::Eval(Frame* f) const
 	// Allows for lookups by the receiver.
 	lamb->SetName(my_name.c_str());
 
-	return make_intrusive<Val>(std::move(lamb));
+	return make_intrusive<FuncVal>(std::move(lamb));
 	}
 
 void LambdaExpr::ExprDescribe(ODesc* d) const
