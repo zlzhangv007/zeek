@@ -909,7 +909,7 @@ public:
 	 * given address was found in the table. Otherwise returns false.
 	 * @param addr  The address to look for.
 	 * @return  Boolean value to indicate if addr is in the table or set. If
-	 * self is not a table[subnet]/set[subnet] an internal error will be 
+	 * self is not a table[subnet]/set[subnet] an internal error will be
 	 * generated and false will be returned.
 	 */
 	bool Contains(const IPAddr& addr) const;
@@ -1101,7 +1101,7 @@ protected:
 	detail::ExprPtr expire_time;
 	detail::ExprPtr expire_func;
 	TableValTimer* timer;
-	std::shared_ptr<RobustDictIterator> expire_iterator;
+	RobustDictIterator* expire_iterator;
 	detail::PrefixTable* subnets;
 	ValPtr def_val;
 	detail::ExprPtr change_func;
