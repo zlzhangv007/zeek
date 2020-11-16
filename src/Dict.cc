@@ -1561,6 +1561,8 @@ RobustDictIterator::RobustDictIterator(Dictionary* d) : curr(nullptr), dict(d)
 
 RobustDictIterator::RobustDictIterator(const RobustDictIterator& other) : curr(nullptr)
 	{
+	dict = nullptr;
+
 	if ( other.dict )
 		{
 		next = other.next;
@@ -1583,6 +1585,8 @@ RobustDictIterator::RobustDictIterator(const RobustDictIterator& other) : curr(n
 
 RobustDictIterator::RobustDictIterator(RobustDictIterator&& other) : curr(nullptr)
 	{
+	dict = nullptr;
+
 	if ( other.dict )
 		{
 		next = other.next;
@@ -1596,10 +1600,6 @@ RobustDictIterator::RobustDictIterator(RobustDictIterator&& other) : curr(nullpt
 		other.dict = nullptr;
 
 		curr = std::move(other.curr);
-		}
-	else
-		{
-		dict = nullptr;
 		}
 	}
 
