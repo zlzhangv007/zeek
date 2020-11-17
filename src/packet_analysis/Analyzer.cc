@@ -42,11 +42,10 @@ void Analyzer::Initialize()
 	for ( const auto& mve : *mapping_tbl )
 		{
 		auto k = mve.GetHashKey();
-		auto* v = mve.GetValue<TableEntryVal*>();
 		auto key = mapping_val->RecreateIndex(*k);
 
 		auto identifier = key->Idx(0)->AsCount();
-		auto config_entry_val = v->GetVal()->AsRecordVal();
+		auto config_entry_val = mve.value->GetVal()->AsRecordVal();
 
 		auto mapped_tag = config_entry_val->GetField("analyzer")->AsEnumVal();
 		auto mapped_analyzer = packet_mgr->GetAnalyzer(mapped_tag);
