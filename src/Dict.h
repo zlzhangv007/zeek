@@ -409,11 +409,11 @@ private:
 	void Init();
 
 	// Iteration
-	[[deprecated("Remove in v5.1. Use the begin() and standard-library-compatible version of iteration.")]]
+	[[deprecated("Remove in v5.1. Use begin() and the standard-library-compatible version of iteration.")]]
 	IterCookie* InitForIterationNonConst();
-	[[deprecated("Remove in v5.1. Use the begin() and standard-library-compatible version of iteration.")]]
+	[[deprecated("Remove in v5.1. Use begin() and the standard-library-compatible version of iteration.")]]
 	void* NextEntryNonConst(detail::HashKey*& h, IterCookie*& cookie, bool return_hash);
-	[[deprecated("Remove in v5.1. Use the begin() and standard-library-compatible version of iteration.")]]
+	[[deprecated("Remove in v5.1. Use begin() and the standard-library-compatible version of iteration.")]]
 	void StopIterationNonConst(IterCookie* cookie);
 
 	//Lookup
