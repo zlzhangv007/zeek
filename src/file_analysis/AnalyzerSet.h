@@ -94,7 +94,12 @@ public:
 	 */
 	[[deprecated("Remove in v5.1. Use standard-library compatible iteration.")]]
 	IterCookie* InitForIteration() const
-		{ return analyzer_map.InitForIteration(); }
+		{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+		return analyzer_map.InitForIteration();
+#pragma GCC diagnostic pop
+		}
 
 	/**
 	 * Get next entry in the analyzer set.
@@ -105,7 +110,12 @@ public:
 	 */
 	[[deprecated("Remove in v5.1. Use standard-library compatible iteration.")]]
 	file_analysis::Analyzer* NextEntry(IterCookie* c)
-		{ return analyzer_map.NextEntry(c); }
+		{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+		return analyzer_map.NextEntry(c);
+#pragma GCC diagnostic pop
+		}
 
 	// Iterator support
 	using iterator = zeek::DictIterator;
