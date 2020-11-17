@@ -158,7 +158,7 @@ protected:
 	 * the weird. If this is passed, the analyzer's name will be prepended to
 	 * it before output.
 	 */
-	void Weird(const char* name, Packet* packet=nullptr, const char* addl="");
+	void Weird(const char* name, Packet* packet=nullptr, const char* addl="") const;
 
 private:
 	Tag tag;

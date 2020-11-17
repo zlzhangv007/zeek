@@ -72,7 +72,7 @@ AnalyzerPtr Analyzer::Lookup(uint32_t identifier) const
 	}
 
 bool Analyzer::ForwardPacket(size_t len, const uint8_t* data, Packet* packet,
-		uint32_t identifier) const
+                             uint32_t identifier) const
 	{
 	auto inner_analyzer = Lookup(identifier);
 	if ( ! inner_analyzer )
@@ -98,7 +98,8 @@ bool Analyzer::ForwardPacket(size_t len, const uint8_t* data, Packet* packet) co
 
 	DBG_LOG(DBG_PACKET_ANALYSIS, "Analysis in %s stopped, no default analyzer available.",
 			GetAnalyzerName());
-	packet->Weird("no_suitable_analyzer_found");
+
+	Weird("no_suitable_analyzer_found", packet);
 	return true;
 	}
 
@@ -118,17 +119,9 @@ void Analyzer::RegisterProtocol(uint32_t identifier, AnalyzerPtr child)
 	dispatcher.Register(identifier, std::move(child));
 	}
 
-void Analyzer::Weird(const char* name, Packet* packet, const char* addl)
+void Analyzer::Weird(const char* name, Packet* packet, const char* addl) const
 	{
-	std::string addl_str = GetAnalyzerName();
-
-	if ( strlen(addl) > 0 )
-		{
-		addl_str.append(",");
-		addl_str.append(addl);
-		}
-
-	sessions->Weird(name, packet, addl_str.c_str());
-}
+	sessions->Weird(name, packet, addl, GetAnalyzerName());
+	}
 
 } // namespace zeek::packet_analysis

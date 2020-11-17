@@ -5,9 +5,9 @@
 #unset_field	-
 #path	weird
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
-#types	time	string	addr	port	addr	port	string	string	bool	string
-XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	2001:4f8:4:7:2e0:81ff:fe52:ffff	128	2001:4f8:4:7:2e0:81ff:fe52:9a6b	129	bad_ICMP_checksum	-	F	zeek
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer	source
+#types	time	string	addr	port	addr	port	string	string	bool	string	string
+XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	2001:4f8:4:7:2e0:81ff:fe52:ffff	128	2001:4f8:4:7:2e0:81ff:fe52:9a6b	129	bad_ICMP_checksum	-	F	zeek	ICMP
 #close XXXX-XX-XX-XX-XX-XX
 #separator \x09
 #set_separator	,
@@ -15,9 +15,9 @@ XXXXXXXXXX.XXXXXX	CHhAvVGS1DHFjwGM9	2001:4f8:4:7:2e0:81ff:fe52:ffff	128	2001:4f8
 #unset_field	-
 #path	weird
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
-#types	time	string	addr	port	addr	port	string	string	bool	string
-XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::2	0	routing0_hdr	-	F	zeek
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer	source
+#types	time	string	addr	port	addr	port	string	string	bool	string	string
+XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::2	0	routing0_hdr	-	F	zeek	-
 #close XXXX-XX-XX-XX-XX-XX
 #separator \x09
 #set_separator	,
@@ -25,9 +25,9 @@ XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::2	0	routing0
 #unset_field	-
 #path	weird
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
-#types	time	string	addr	port	addr	port	string	string	bool	string
-XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::2	0	routing0_hdr	-	F	zeek
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer	source
+#types	time	string	addr	port	addr	port	string	string	bool	string	string
+XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::2	0	routing0_hdr	-	F	zeek	-
 #close XXXX-XX-XX-XX-XX-XX
 #separator \x09
 #set_separator	,
@@ -35,9 +35,9 @@ XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::2	0	routing0
 #unset_field	-
 #path	weird
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
-#types	time	string	addr	port	addr	port	string	string	bool	string
-XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0_hdr	-	F	zeek
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer	source
+#types	time	string	addr	port	addr	port	string	string	bool	string	string
+XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0_hdr	-	F	zeek	-
 #close XXXX-XX-XX-XX-XX-XX
 #separator \x09
 #set_separator	,
@@ -45,9 +45,9 @@ XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0
 #unset_field	-
 #path	weird
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
-#types	time	string	addr	port	addr	port	string	string	bool	string
-XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0_hdr	-	F	zeek
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer	source
+#types	time	string	addr	port	addr	port	string	string	bool	string	string
+XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0_hdr	-	F	zeek	-
 #close XXXX-XX-XX-XX-XX-XX
 #separator \x09
 #set_separator	,
@@ -55,9 +55,9 @@ XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0
 #unset_field	-
 #path	weird
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
-#types	time	string	addr	port	addr	port	string	string	bool	string
-XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0_hdr	-	F	zeek
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer	source
+#types	time	string	addr	port	addr	port	string	string	bool	string	string
+XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0_hdr	-	F	zeek	-
 #close XXXX-XX-XX-XX-XX-XX
 #separator \x09
 #set_separator	,
@@ -65,7 +65,7 @@ XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0
 #unset_field	-
 #path	weird
 #open XXXX-XX-XX-XX-XX-XX
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
-#types	time	string	addr	port	addr	port	string	string	bool	string
-XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0_hdr	-	F	zeek
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer	source
+#types	time	string	addr	port	addr	port	string	string	bool	string	string
+XXXXXXXXXX.XXXXXX	-	2001:4f8:4:7:2e0:81ff:fe52:ffff	0	2001:78:1:32::1	0	routing0_hdr	-	F	zeek	-
 #close XXXX-XX-XX-XX-XX-XX
