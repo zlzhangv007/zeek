@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "zeek-config.h"
+
 #include <sys/types.h> // for u_char
 #include <memory>
 
@@ -11,12 +13,15 @@ ZEEK_FORWARD_DECLARE_NAMESPACED(IP_Hdr, zeek);
 ZEEK_FORWARD_DECLARE_NAMESPACED(Func, zeek);
 ZEEK_FORWARD_DECLARE_NAMESPACED(Val, zeek);
 
-namespace zeek {
+namespace zeek
+	{
 using FuncPtr = IntrusivePtr<Func>;
 
-namespace detail {
+namespace detail
+	{
 
-class Discarder {
+class Discarder
+	{
 public:
 	Discarder();
 	~Discarder();
@@ -35,7 +40,7 @@ protected:
 
 	// Maximum amount of application data passed to filtering functions.
 	int discarder_maxlen;
-};
+	};
 
-} // namespace detail
-} // namespace zeek
+	} // namespace detail
+	} // namespace zeek

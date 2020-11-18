@@ -1,12 +1,13 @@
 // Implementation of watches
 
-#include "zeek-config.h"
 #include "zeek/DbgWatch.h"
+#include "zeek-config.h"
 
 #include "zeek/Debug.h"
 #include "zeek/Reporter.h"
 
-namespace zeek::detail {
+namespace zeek::detail
+	{
 
 // Support classes
 DbgWatch::DbgWatch(zeek::Obj* var_to_watch)
@@ -19,4 +20,4 @@ DbgWatch::DbgWatch(Expr* expr_to_watch)
 	reporter->InternalError("DbgWatch unimplemented");
 	}
 
-} // namespace zeek::detail
+	} // namespace zeek::detail

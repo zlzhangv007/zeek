@@ -2,13 +2,14 @@
 
 #include "zeek/analyzer/protocol/tcp/TCP_Reassembler.h"
 
-#include "analyzer/protocol/socks/socks_pac.h"
 #include "analyzer/protocol/socks/events.bif.h"
+#include "analyzer/protocol/socks/socks_pac.h"
 
-namespace zeek::analyzer::socks {
+namespace zeek::analyzer::socks
+	{
 
 SOCKS_Analyzer::SOCKS_Analyzer(Connection* conn)
-: analyzer::tcp::TCP_ApplicationAnalyzer("SOCKS", conn)
+	: analyzer::tcp::TCP_ApplicationAnalyzer("SOCKS", conn)
 	{
 	interp = new binpac::SOCKS::SOCKS_Conn(this);
 	orig_done = resp_done = false;
@@ -92,4 +93,4 @@ void SOCKS_Analyzer::Undelivered(uint64_t seq, int len, bool orig)
 	interp->NewGap(orig, len);
 	}
 
-} // namespace zeek::analyzer::socks
+	} // namespace zeek::analyzer::socks

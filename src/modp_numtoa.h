@@ -24,7 +24,9 @@
 #pragma once
 
 #ifdef __cplusplus
-#define BEGIN_C extern "C" {
+#define BEGIN_C                                                                                    \
+	extern "C"                                                                                     \
+		{
 #define END_C }
 #else
 #define BEGIN_C

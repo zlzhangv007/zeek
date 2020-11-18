@@ -4,14 +4,16 @@
 
 ZEEK_FORWARD_DECLARE_NAMESPACED(Expr, zeek::detail);
 
-namespace zeek::detail {
+namespace zeek::detail
+	{
 
 // Automatic displays: display these at each stoppage.
-class DbgDisplay {
+class DbgDisplay
+	{
 public:
 	DbgDisplay(Expr* expr_to_display);
 
-	bool IsEnabled()	{ return enabled; }
+	bool IsEnabled() { return enabled; }
 	bool SetEnable(bool do_enable)
 		{
 		bool old_value = enabled;
@@ -19,13 +21,14 @@ public:
 		return old_value;
 		}
 
-	const Expr* Expression() const	{ return expression; }
+	const Expr* Expression() const { return expression; }
 
 protected:
 	bool enabled;
 	Expr* expression;
 	};
 
-} // namespace zeek::detail
+	} // namespace zeek::detail
 
-using DbgDisplay [[deprecated("Remove in v4.1. Use zeek::detail::DbgDisplay.")]] = zeek::detail::DbgDisplay;
+using DbgDisplay [[deprecated("Remove in v4.1. Use zeek::detail::DbgDisplay.")]] =
+	zeek::detail::DbgDisplay;

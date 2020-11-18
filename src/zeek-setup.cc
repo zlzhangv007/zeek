@@ -1,87 +1,87 @@
 // See the file "COPYING" in the main distribution directory for copyright.
 
-#include "zeek-config.h"
 #include "zeek/zeek-setup.h"
+#include "zeek-config.h"
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
 #include <string.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <list>
 #include <optional>
 
 #ifdef USE_IDMEF
-extern "C" {
+extern "C"
+	{
 #include <libidmef/idmefxml.h>
-}
+	}
 #endif
 
-#include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/ssl.h>
 
 #include "zeek/3rdparty/sqlite3.h"
 
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "zeek/3rdparty/doctest.h"
-
-#include "zeek/Options.h"
-#include "zeek/input.h"
-#include "zeek/DNS_Mgr.h"
-#include "zeek/Frame.h"
-#include "zeek/Scope.h"
-#include "zeek/Event.h"
-#include "zeek/File.h"
-#include "zeek/Reporter.h"
-#include "zeek/RunState.h"
-#include "zeek/NetVar.h"
-#include "zeek/Var.h"
-#include "zeek/Timer.h"
-#include "zeek/Stmt.h"
-#include "zeek/Desc.h"
-#include "zeek/Debug.h"
-#include "zeek/DFA.h"
-#include "zeek/RuleMatcher.h"
 #include "zeek/Anon.h"
+#include "zeek/DFA.h"
+#include "zeek/DNS_Mgr.h"
+#include "zeek/Debug.h"
+#include "zeek/Desc.h"
+#include "zeek/Event.h"
 #include "zeek/EventRegistry.h"
-#include "zeek/Stats.h"
+#include "zeek/File.h"
+#include "zeek/Frag.h"
+#include "zeek/Frame.h"
+#include "zeek/Func.h"
+#include "zeek/Hash.h"
+#include "zeek/NetVar.h"
+#include "zeek/Options.h"
+#include "zeek/Reporter.h"
+#include "zeek/RuleMatcher.h"
+#include "zeek/RunState.h"
+#include "zeek/ScannedFile.h"
+#include "zeek/Scope.h"
 #include "zeek/ScriptCoverageManager.h"
+#include "zeek/Stats.h"
+#include "zeek/Stmt.h"
+#include "zeek/Timer.h"
 #include "zeek/Traverse.h"
 #include "zeek/Trigger.h"
-#include "zeek/Hash.h"
-#include "zeek/Func.h"
-#include "zeek/ScannedFile.h"
-#include "zeek/Frag.h"
-
-#include "zeek/supervisor/Supervisor.h"
-#include "zeek/threading/Manager.h"
-#include "zeek/input/Manager.h"
-#include "zeek/logging/Manager.h"
-#include "zeek/input/readers/raw/Raw.h"
+#include "zeek/Var.h"
 #include "zeek/analyzer/Manager.h"
 #include "zeek/analyzer/Tag.h"
+#include "zeek/binpac_zeek.h"
+#include "zeek/broker/Manager.h"
+#include "zeek/file_analysis/Manager.h"
+#include "zeek/input.h"
+#include "zeek/input/Manager.h"
+#include "zeek/input/readers/raw/Raw.h"
+#include "zeek/iosource/Manager.h"
+#include "zeek/logging/Manager.h"
+#include "zeek/module_util.h"
 #include "zeek/packet_analysis/Manager.h"
 #include "zeek/plugin/Manager.h"
-#include "zeek/file_analysis/Manager.h"
+#include "zeek/supervisor/Supervisor.h"
+#include "zeek/threading/Manager.h"
 #include "zeek/zeekygen/Manager.h"
-#include "zeek/iosource/Manager.h"
-#include "zeek/broker/Manager.h"
 
-#include "zeek/binpac_zeek.h"
-#include "zeek/module_util.h"
-
-extern "C" {
+extern "C"
+	{
 #include "zeek/setsignal.h"
-};
+	};
 
 zeek::detail::ScriptCoverageManager zeek::detail::script_coverage_mgr;
 zeek::detail::ScriptCoverageManager& brofiler = zeek::detail::script_coverage_mgr;
 
 #ifndef HAVE_STRSEP
-extern "C" {
-char* strsep(char**, const char*);
-};
+extern "C"
+	{
+	char* strsep(char**, const char*);
+	};
 #endif
 
 #ifdef USE_PERFTOOLS_DEBUG
@@ -166,7 +166,8 @@ int& bro_argc = zeek::detail::zeek_argc;
 char** zeek::detail::zeek_argv;
 char**& bro_argv = zeek::detail::zeek_argv;
 
-namespace zeek {
+namespace zeek
+	{
 
 const char* zeek_version()
 	{
@@ -186,7 +187,8 @@ const char* zeek_version()
 #endif
 	}
 
-namespace detail {
+namespace detail
+	{
 
 static std::vector<const char*> to_cargs(const std::vector<std::string>& args)
 	{
@@ -216,10 +218,11 @@ static bool show_plugins(int level)
 
 	int count = 0;
 
-	for ( plugin::Manager::plugin_list::const_iterator i = plugins.begin(); i != plugins.end(); i++ )
+	for ( plugin::Manager::plugin_list::const_iterator i = plugins.begin(); i != plugins.end();
+	      i++ )
 		{
-		if ( requested_plugins.size()
-		     && requested_plugins.find((*i)->Name()) == requested_plugins.end() )
+		if ( requested_plugins.size() &&
+		     requested_plugins.find((*i)->Name()) == requested_plugins.end() )
 			continue;
 
 		(*i)->Describe(&d);
@@ -238,7 +241,8 @@ static bool show_plugins(int level)
 		{
 		printf("\nInactive dynamic plugins:\n");
 
-		for ( plugin::Manager::inactive_plugin_list::const_iterator i = inactives.begin(); i != inactives.end(); i++ )
+		for ( plugin::Manager::inactive_plugin_list::const_iterator i = inactives.begin();
+		      i != inactives.end(); i++ )
 			{
 			string name = (*i).first;
 			string path = (*i).second;
@@ -254,15 +258,13 @@ static void done_with_network()
 	util::detail::set_processing_status("TERMINATING", "done_with_network");
 
 	// Cancel any pending alarms (watchdog, in particular).
-	(void) alarm(0);
+	(void)alarm(0);
 
 	if ( net_done )
 		{
 		event_mgr.Drain();
 		// Don't propagate this event to remote clients.
-		event_mgr.Dispatch(
-			new Event(net_done, {make_intrusive<TimeVal>(timer_mgr->Time())}),
-			true);
+		event_mgr.Dispatch(new Event(net_done, {make_intrusive<TimeVal>(timer_mgr->Time())}), true);
 		}
 
 	if ( profiling_logger )
@@ -312,7 +314,7 @@ static void terminate_bro()
 	script_coverage_mgr.WriteStats();
 
 	if ( zeek_done )
-		event_mgr.Enqueue(zeek_done, Args{});
+		event_mgr.Enqueue(zeek_done, Args {});
 
 	timer_mgr->Expire();
 	event_mgr.Drain();
@@ -394,7 +396,7 @@ static std::vector<std::string> get_script_signature_files()
 		if ( *s )
 			rval.emplace_back(s);
 
-	delete [] script_signature_files;
+	delete[] script_signature_files;
 	return rval;
 	}
 
@@ -412,7 +414,7 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 		}
 
 	zeek_argc = argc;
-	zeek_argv = new char* [argc];
+	zeek_argv = new char*[argc];
 
 	for ( int i = 0; i < argc; i++ )
 		zeek_argv[i] = util::copy_string(argv[i]);
@@ -518,9 +520,10 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 	if ( options.random_seed_input_file )
 		seed_load_file = options.random_seed_input_file->data();
 
-	util::detail::init_random_seed((seed_load_file && *seed_load_file ? seed_load_file : nullptr),
-	                               options.random_seed_output_file ? options.random_seed_output_file->data() : nullptr,
-	                               options.deterministic_mode);
+	util::detail::init_random_seed(
+		(seed_load_file && *seed_load_file ? seed_load_file : nullptr),
+		options.random_seed_output_file ? options.random_seed_output_file->data() : nullptr,
+		options.deterministic_mode);
 	// DEBUG_MSG("HMAC key: %s\n", md5_digest_print(shared_hmac_md5_key));
 	init_hash_function();
 
@@ -542,8 +545,8 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 	char* libidmef_dtd_path_cstr = new char[options.libidmef_dtd_file.size() + 1];
 	safe_strncpy(libidmef_dtd_path_cstr, options.libidmef_dtd_file.data(),
 	             options.libidmef_dtd_file.size());
-	globalsInit(libidmef_dtd_path_cstr);	// Init LIBIDMEF globals
-	createCurrentDoc("1.0");		// Set a global XML document
+	globalsInit(libidmef_dtd_path_cstr); // Init LIBIDMEF globals
+	createCurrentDoc("1.0"); // Set a global XML document
 #endif
 
 	timer_mgr = new PQ_TimerMgr();
@@ -560,10 +563,8 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 	plugin_mgr->SearchDynamicPlugins(util::zeek_plugin_path());
 
 	if ( options.plugins_to_load.empty() && options.scripts_to_load.empty() &&
-	     options.script_options_to_set.empty() &&
-		 ! options.pcap_file && ! options.interface &&
-	     ! options.identifier_to_print &&
-	     ! command_line_policy && ! options.print_plugins &&
+	     options.script_options_to_set.empty() && ! options.pcap_file && ! options.interface &&
+	     ! options.identifier_to_print && ! command_line_policy && ! options.print_plugins &&
 	     ! options.supervisor_mode && ! Supervisor::ThisNode() )
 		add_input_file("-");
 
@@ -606,8 +607,8 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 
 	bool missing_plugin = false;
 
-	for ( set<string>::const_iterator i = requested_plugins.begin();
-	      i != requested_plugins.end(); i++ )
+	for ( set<string>::const_iterator i = requested_plugins.begin(); i != requested_plugins.end();
+	      i++ )
 		{
 		if ( ! plugin_mgr->ActivateDynamicPlugin(*i) )
 			missing_plugin = true;
@@ -638,90 +639,89 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 	// we suppress some messages here.
 
 #ifdef USE_PERFTOOLS_DEBUG
-	{
-	HeapLeakChecker::Disabler disabler;
+		{
+		HeapLeakChecker::Disabler disabler;
 #endif
 
-	auto ipbid = install_ID("__init_primary_bifs", GLOBAL_MODULE_NAME,
-	                        true, true);
-	auto ipbft = make_intrusive<FuncType>(make_intrusive<RecordType>(nullptr),
-	                                      base_type(TYPE_BOOL),
-	                                      FUNC_FLAVOR_FUNCTION);
-	ipbid->SetType(std::move(ipbft));
-	auto init_bifs = [](Frame* frame, const Args* args) -> BifReturnVal
+		auto ipbid = install_ID("__init_primary_bifs", GLOBAL_MODULE_NAME, true, true);
+		auto ipbft = make_intrusive<FuncType>(make_intrusive<RecordType>(nullptr),
+		                                      base_type(TYPE_BOOL), FUNC_FLAVOR_FUNCTION);
+		ipbid->SetType(std::move(ipbft));
+		auto init_bifs = [](Frame* frame, const Args* args) -> BifReturnVal
 		{
-		init_primary_bifs();
-		return val_mgr->True();
+			init_primary_bifs();
+			return val_mgr->True();
 		};
-	auto ipbb = make_intrusive<BuiltinFunc>(init_bifs, ipbid->Name(), false);
+		auto ipbb = make_intrusive<BuiltinFunc>(init_bifs, ipbid->Name(), false);
 
-	run_state::is_parsing = true;
-	yyparse();
-	run_state::is_parsing = false;
+		run_state::is_parsing = true;
+		yyparse();
+		run_state::is_parsing = false;
 
-	RecordVal::DoneParsing();
-	TableVal::DoneParsing();
+		RecordVal::DoneParsing();
+		TableVal::DoneParsing();
 
-	init_general_global_var();
-	init_net_var();
-	run_bif_initializers();
+		init_general_global_var();
+		init_net_var();
+		run_bif_initializers();
 
-	// Assign the script_args for command line processing in Zeek scripts.
-	if ( ! options.script_args.empty() )
-		{
-		auto script_args_val = id::find_val<VectorVal>("zeek_script_args");
-		for ( const string& script_arg : options.script_args )
+		// Assign the script_args for command line processing in Zeek scripts.
+		if ( ! options.script_args.empty() )
 			{
-			script_args_val->Assign(script_args_val->Size(), make_intrusive<StringVal>(script_arg));
+			auto script_args_val = id::find_val<VectorVal>("zeek_script_args");
+			for ( const string& script_arg : options.script_args )
+				{
+				script_args_val->Assign(script_args_val->Size(),
+				                        make_intrusive<StringVal>(script_arg));
+				}
 			}
-		}
 
-	// Must come after plugin activation (and also after hash
-	// initialization).
-	binpac::FlowBuffer::Policy flowbuffer_policy;
-	flowbuffer_policy.max_capacity = global_scope()->Find(
-		"BinPAC::flowbuffer_capacity_max")->GetVal()->AsCount();
-	flowbuffer_policy.min_capacity = global_scope()->Find(
-		"BinPAC::flowbuffer_capacity_min")->GetVal()->AsCount();
-	flowbuffer_policy.contract_threshold = global_scope()->Find(
-		"BinPAC::flowbuffer_contract_threshold")->GetVal()->AsCount();
-	binpac::init(&flowbuffer_policy);
+		// Must come after plugin activation (and also after hash
+		// initialization).
+		binpac::FlowBuffer::Policy flowbuffer_policy;
+		flowbuffer_policy.max_capacity =
+			global_scope()->Find("BinPAC::flowbuffer_capacity_max")->GetVal()->AsCount();
+		flowbuffer_policy.min_capacity =
+			global_scope()->Find("BinPAC::flowbuffer_capacity_min")->GetVal()->AsCount();
+		flowbuffer_policy.contract_threshold =
+			global_scope()->Find("BinPAC::flowbuffer_contract_threshold")->GetVal()->AsCount();
+		binpac::init(&flowbuffer_policy);
 
-	plugin_mgr->InitBifs();
+		plugin_mgr->InitBifs();
 
-	if ( reporter->Errors() > 0 )
-		exit(1);
+		if ( reporter->Errors() > 0 )
+			exit(1);
 
-	iosource_mgr->InitPostScript();
-	log_mgr->InitPostScript();
-	plugin_mgr->InitPostScript();
-	zeekygen_mgr->InitPostScript();
-	broker_mgr->InitPostScript();
-	timer_mgr->InitPostScript();
-	event_mgr.InitPostScript();
+		iosource_mgr->InitPostScript();
+		log_mgr->InitPostScript();
+		plugin_mgr->InitPostScript();
+		zeekygen_mgr->InitPostScript();
+		broker_mgr->InitPostScript();
+		timer_mgr->InitPostScript();
+		event_mgr.InitPostScript();
 
-	if ( supervisor_mgr )
-		supervisor_mgr->InitPostScript();
+		if ( supervisor_mgr )
+			supervisor_mgr->InitPostScript();
 
-	if ( options.print_plugins )
-		{
-		bool success = show_plugins(options.print_plugins);
-		exit(success ? 0 : 1);
-		}
+		if ( options.print_plugins )
+			{
+			bool success = show_plugins(options.print_plugins);
+			exit(success ? 0 : 1);
+			}
 
-	analyzer_mgr->InitPostScript();
-	packet_mgr->InitPostScript();
-	file_mgr->InitPostScript();
-	dns_mgr->InitPostScript();
+		analyzer_mgr->InitPostScript();
+		packet_mgr->InitPostScript();
+		file_mgr->InitPostScript();
+		dns_mgr->InitPostScript();
 
-	if ( options.parse_only )
-		{
-		int rc = (reporter->Errors() > 0 ? 1 : 0);
-		exit(rc);
-		}
+		if ( options.parse_only )
+			{
+			int rc = (reporter->Errors() > 0 ? 1 : 0);
+			exit(rc);
+			}
 
 #ifdef USE_PERFTOOLS_DEBUG
-	}
+		}
 #endif
 
 	if ( reporter->Errors() > 0 )
@@ -778,29 +778,29 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 		const auto& interfaces_val = id::find_val("interfaces");
 		if ( interfaces_val )
 			{
-			char* interfaces_str =
-				interfaces_val->AsString()->Render();
+			char* interfaces_str = interfaces_val->AsString()->Render();
 
 			if ( interfaces_str[0] != '\0' )
 				options.interface = interfaces_str;
 
-			delete [] interfaces_str;
+			delete[] interfaces_str;
 			}
 		}
 
 	if ( dns_type != DNS_PRIME )
-		run_state::detail::init_run(options.interface, options.pcap_file, options.pcap_output_file, options.use_watchdog);
+		run_state::detail::init_run(options.interface, options.pcap_file, options.pcap_output_file,
+		                            options.use_watchdog);
 
 	if ( ! g_policy_debug )
 		{
-		(void) setsignal(SIGTERM, sig_handler);
-		(void) setsignal(SIGINT, sig_handler);
-		(void) setsignal(SIGPIPE, SIG_IGN);
+		(void)setsignal(SIGTERM, sig_handler);
+		(void)setsignal(SIGINT, sig_handler);
+		(void)setsignal(SIGPIPE, SIG_IGN);
 		}
 
 	// Cooperate with nohup(1).
 	if ( (oldhandler = setsignal(SIGHUP, sig_handler)) != SIG_DFL )
-		(void) setsignal(SIGHUP, oldhandler);
+		(void)setsignal(SIGHUP, oldhandler);
 
 	if ( dns_type == DNS_PRIME )
 		{
@@ -834,8 +834,7 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 	if ( profiling_interval > 0 )
 		{
 		const auto& profiling_file = id::find_val("profiling_file");
-		profiling_logger = new ProfileLogger(profiling_file->AsFile(),
-		                                                   profiling_interval);
+		profiling_logger = new ProfileLogger(profiling_file->AsFile(), profiling_interval);
 
 		if ( segment_profiling )
 			segment_logger = profiling_logger;
@@ -847,10 +846,9 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 		run_state::detail::update_network_time(util::current_time());
 
 	if ( zeek_init )
-		event_mgr.Enqueue(zeek_init, Args{});
+		event_mgr.Enqueue(zeek_init, Args {});
 
-	EventRegistry::string_list dead_handlers =
-		event_registry->UnusedHandlers();
+	EventRegistry::string_list dead_handlers = event_registry->UnusedHandlers();
 
 	if ( ! dead_handlers.empty() && check_for_unused_event_handlers )
 		{
@@ -894,8 +892,7 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 			if ( file.skipped )
 				continue;
 
-			event_mgr.Enqueue(zeek_script_loaded,
-			                  make_intrusive<StringVal>(file.name.c_str()),
+			event_mgr.Enqueue(zeek_script_loaded, make_intrusive<StringVal>(file.name.c_str()),
 			                  val_mgr->Count(file.include_level));
 			}
 		}
@@ -940,9 +937,10 @@ int cleanup(bool did_net_run)
 	return 0;
 	}
 
-} // namespace detail
+	} // namespace detail
 
-namespace run_state::detail {
+namespace run_state::detail
+	{
 
 void zeek_terminate_loop(const char* reason)
 	{
@@ -964,5 +962,5 @@ void zeek_terminate_loop(const char* reason)
 	exit(0);
 	}
 
-} // namespace run_state::detail
-} // namespace zeek
+	} // namespace run_state::detail
+	} // namespace zeek

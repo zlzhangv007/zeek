@@ -2,7 +2,7 @@
  * See the file "COPYING" in the main distribution directory for copyright.
  */
 
-#include "zeek-config.h"			/* must appear before first ifdef */
+#include "zeek-config.h" /* must appear before first ifdef */
 
 #include <sys/types.h>
 
@@ -27,9 +27,8 @@
  *
  * Did I mention that signals suck?
  */
-RETSIGTYPE
-(*setsignal (int sig, RETSIGTYPE (*func)(int)))(int)
-{
+RETSIGTYPE (*setsignal(int sig, RETSIGTYPE (*func)(int)))(int)
+	{
 #ifdef HAVE_SIGACTION
 	struct sigaction old, new;
 
@@ -38,7 +37,7 @@ RETSIGTYPE
 #ifdef SA_RESTART
 	new.sa_flags |= SA_RESTART;
 #endif
-	if (sigaction(sig, &new, &old) < 0)
+	if ( sigaction(sig, &new, &old) < 0 )
 		return (SIG_ERR);
 	return (old.sa_handler);
 
@@ -49,4 +48,4 @@ RETSIGTYPE
 	return (signal(sig, func));
 #endif
 #endif
-}
+	}

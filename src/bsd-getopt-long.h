@@ -59,69 +59,69 @@
 /*
  * GNU-like getopt_long() and 4.4BSD getsubopt()/optreset extensions
  */
-# ifndef no_argument
-#  define no_argument        0
-# endif
-# ifndef required_argument
-#  define required_argument  1
-# endif
-# ifndef optional_argument
-#  define optional_argument  2
-# endif
-
-struct pure_option {
-    /* name of long option */
-    const char *name;
-    /*
-     * one of no_argument, required_argument, and optional_argument:
-     * whether option takes an argument
-     */
-    int has_arg;
-    /* if not NULL, set *flag to val when option found */
-    int *flag;
-    /* if flag not NULL, value to set *flag to; else return value */
-    int val;
-};
-
-#ifdef __cplusplus
-extern "C" {
+#ifndef no_argument
+#define no_argument 0
+#endif
+#ifndef required_argument
+#define required_argument 1
+#endif
+#ifndef optional_argument
+#define optional_argument 2
 #endif
 
-int pure_getopt_long(int nargc, char * const *nargv, const char *options,
-                     const struct pure_option *long_options, int *idx);
-
-int pure_getopt_long_only(int nargc, char * const *nargv,
-                          const char *options,
-                          const struct pure_option *long_options,
-                          int *idx);
-
-int pure_getopt(int nargc, char * const *nargv, const char *options);
+struct pure_option
+	{
+	/* name of long option */
+	const char* name;
+	/*
+	 * one of no_argument, required_argument, and optional_argument:
+	 * whether option takes an argument
+	 */
+	int has_arg;
+	/* if not NULL, set *flag to val when option found */
+	int* flag;
+	/* if flag not NULL, value to set *flag to; else return value */
+	int val;
+	};
 
 #ifdef __cplusplus
-}
+extern "C"
+	{
+#endif
+
+	int pure_getopt_long(int nargc, char* const* nargv, const char* options,
+	                     const struct pure_option* long_options, int* idx);
+
+	int pure_getopt_long_only(int nargc, char* const* nargv, const char* options,
+	                          const struct pure_option* long_options, int* idx);
+
+	int pure_getopt(int nargc, char* const* nargv, const char* options);
+
+#ifdef __cplusplus
+	}
 #endif
 
 /* prefix+macros just to avoid clashes with existing getopt() implementations */
 
-# ifndef IN_GETOPT_LONG_C
-#  undef option
-#  define option pure_option
-#  undef getopt_long
-#  define getopt_long(A, B, C, D, E) pure_getopt_long(A, B, C, D, E)
-#  undef getopt_long_only
-#  define getopt_long_only(A, B, C, D, E) pure_getopt_long_only(A, B, C, D, E)
-#  undef getopt
-#  define getopt(A, B, C) pure_getopt(A, B, C)
-#  undef optarg
-#  define optarg pure_optarg
-#  undef opterr
-#  define opterr pure_opterr
-#  undef optind
-#  define optind pure_optind
-#  undef optopt
-#  define optopt pure_optopt
-#  undef optreset
-#  define optreset pure_optreset
-# endif
+#ifndef IN_GETOPT_LONG_C
+#undef option
+#define option pure_option
+#undef getopt_long
+#define getopt_long(A, B, C, D, E) pure_getopt_long(A, B, C, D, E)
+#undef getopt_long_only
+#define getopt_long_only(A, B, C, D, E) pure_getopt_long_only(A, B, C, D, E)
+#undef getopt
+#define getopt(A, B, C) pure_getopt(A, B, C)
+#undef optarg
+#define optarg pure_optarg
+#undef opterr
+#define opterr pure_opterr
+#undef optind
+#define optind pure_optind
+#undef optopt
+#define optopt pure_optopt
+#undef optreset
+#define optreset pure_optreset
+#endif
 
 #endif

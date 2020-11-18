@@ -2,19 +2,23 @@
 
 #pragma once
 
-#include "zeek/ZeekList.h"
 #include "zeek/Dict.h"
 #include "zeek/ID.h"
 #include "zeek/Obj.h"
 #include "zeek/StmtEnums.h"
 #include "zeek/TraverseTypes.h"
+#include "zeek/ZeekList.h"
 
 ZEEK_FORWARD_DECLARE_NAMESPACED(CompositeHash, zeek::detail);
 ZEEK_FORWARD_DECLARE_NAMESPACED(Frame, zeek::detail);
 
-namespace zeek::run_state { extern double network_time; }
+namespace zeek::run_state
+	{
+extern double network_time;
+	}
 
-namespace zeek::detail {
+namespace zeek::detail
+	{
 
 class StmtList;
 class ForStmt;
@@ -27,18 +31,22 @@ using ListExprPtr = IntrusivePtr<ListExpr>;
 class Stmt;
 using StmtPtr = IntrusivePtr<Stmt>;
 
-class Stmt : public Obj {
+class Stmt : public Obj
+	{
 public:
-	StmtTag Tag() const	{ return tag; }
+	StmtTag Tag() const { return tag; }
 
 	~Stmt() override;
 
 	virtual ValPtr Exec(Frame* f, StmtFlowType& flow) const = 0;
 
-	Stmt* Ref()			{ zeek::Ref(this); return this; }
+	Stmt* Ref()
+		{
+		zeek::Ref(this);
+		return this;
+		}
 
-	bool SetLocationInfo(const Location* loc) override
-		{ return Stmt::SetLocationInfo(loc, loc); }
+	bool SetLocationInfo(const Location* loc) override { return Stmt::SetLocationInfo(loc, loc); }
 	bool SetLocationInfo(const Location* start, const Location* end) override;
 
 	// True if the statement has no side effects, false otherwise.
@@ -49,16 +57,20 @@ public:
 
 	ForStmt* AsForStmt();
 
-	void RegisterAccess() const	{ last_access = run_state::network_time; access_count++; }
+	void RegisterAccess() const
+		{
+		last_access = run_state::network_time;
+		access_count++;
+		}
 	void AccessStats(ODesc* d) const;
 	uint32_t GetAccessCount() const { return access_count; }
 
 	void Describe(ODesc* d) const override;
 
-	virtual void IncrBPCount()	{ ++breakpoint_count; }
+	virtual void IncrBPCount() { ++breakpoint_count; }
 	virtual void DecrBPCount();
 
-	virtual unsigned int BPCount() const	{ return breakpoint_count; }
+	virtual unsigned int BPCount() const { return breakpoint_count; }
 
 	virtual TraversalCode Traverse(TraversalCallback* cb) const = 0;
 
@@ -69,16 +81,17 @@ protected:
 	void DescribeDone(ODesc* d) const;
 
 	StmtTag tag;
-	int breakpoint_count;	// how many breakpoints on this statement
+	int breakpoint_count; // how many breakpoints on this statement
 
 	// FIXME: Learn the exact semantics of mutable.
-	mutable double last_access;	// time of last execution
-	mutable uint32_t access_count;	// number of executions
-};
+	mutable double last_access; // time of last execution
+	mutable uint32_t access_count; // number of executions
+	};
 
-class ExprListStmt : public Stmt {
+class ExprListStmt : public Stmt
+	{
 public:
-	const ListExpr* ExprList() const	{ return l.get(); }
+	const ListExpr* ExprList() const { return l.get(); }
 
 	TraversalCode Traverse(TraversalCallback* cb) const override;
 
@@ -88,32 +101,33 @@ protected:
 	~ExprListStmt() override;
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
-	virtual ValPtr DoExec(std::vector<ValPtr> vals,
-	                      StmtFlowType& flow) const = 0;
+	virtual ValPtr DoExec(std::vector<ValPtr> vals, StmtFlowType& flow) const = 0;
 
 	void Describe(ODesc* d) const override;
 
 	ListExprPtr l;
-};
+	};
 
-class PrintStmt final : public ExprListStmt {
+class PrintStmt final : public ExprListStmt
+	{
 public:
-	template<typename L>
-	explicit PrintStmt(L&& l) : ExprListStmt(STMT_PRINT, std::forward<L>(l)) { }
+	template <typename L> explicit PrintStmt(L&& l) : ExprListStmt(STMT_PRINT, std::forward<L>(l))
+		{
+		}
 
 protected:
-	ValPtr DoExec(std::vector<ValPtr> vals,
-	              StmtFlowType& flow) const override;
-};
+	ValPtr DoExec(std::vector<ValPtr> vals, StmtFlowType& flow) const override;
+	};
 
-class ExprStmt : public Stmt {
+class ExprStmt : public Stmt
+	{
 public:
 	explicit ExprStmt(ExprPtr e);
 	~ExprStmt() override;
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 
-	const Expr* StmtExpr() const	{ return e.get(); }
+	const Expr* StmtExpr() const { return e.get(); }
 
 	void Describe(ODesc* d) const override;
 
@@ -127,15 +141,16 @@ protected:
 	bool IsPure() const override;
 
 	ExprPtr e;
-};
+	};
 
-class IfStmt final : public ExprStmt {
+class IfStmt final : public ExprStmt
+	{
 public:
 	IfStmt(ExprPtr test, StmtPtr s1, StmtPtr s2);
 	~IfStmt() override;
 
-	const Stmt* TrueBranch() const	{ return s1.get(); }
-	const Stmt* FalseBranch() const	{ return s2.get(); }
+	const Stmt* TrueBranch() const { return s1.get(); }
+	const Stmt* FalseBranch() const { return s2.get(); }
 
 	void Describe(ODesc* d) const override;
 
@@ -147,21 +162,22 @@ protected:
 
 	StmtPtr s1;
 	StmtPtr s2;
-};
+	};
 
-class Case final : public Obj {
+class Case final : public Obj
+	{
 public:
 	Case(ListExprPtr c, IDPList* types, StmtPtr arg_s);
 	~Case() override;
 
-	const ListExpr* ExprCases() const	{ return expr_cases.get(); }
-	ListExpr* ExprCases()		{ return expr_cases.get(); }
+	const ListExpr* ExprCases() const { return expr_cases.get(); }
+	ListExpr* ExprCases() { return expr_cases.get(); }
 
-	const IDPList* TypeCases() const	{ return type_cases; }
-	IDPList* TypeCases()		{ return type_cases; }
+	const IDPList* TypeCases() const { return type_cases; }
+	IDPList* TypeCases() { return type_cases; }
 
-	const Stmt* Body() const	{ return s.get(); }
-	Stmt* Body()			{ return s.get(); }
+	const Stmt* Body() const { return s.get(); }
+	Stmt* Body() { return s.get(); }
 
 	void Describe(ODesc* d) const override;
 
@@ -171,16 +187,17 @@ protected:
 	ListExprPtr expr_cases;
 	IDPList* type_cases;
 	StmtPtr s;
-};
+	};
 
 using case_list = PList<Case>;
 
-class SwitchStmt final : public ExprStmt {
+class SwitchStmt final : public ExprStmt
+	{
 public:
 	SwitchStmt(ExprPtr index, case_list* cases);
 	~SwitchStmt() override;
 
-	const case_list* Cases() const	{ return cases; }
+	const case_list* Cases() const { return cases; }
 
 	void Describe(ODesc* d) const override;
 
@@ -214,9 +231,10 @@ protected:
 	CompositeHash* comp_hash;
 	PDict<int> case_label_value_map;
 	std::vector<std::pair<ID*, int>> case_label_type_list;
-};
+	};
 
-class AddStmt final : public ExprStmt {
+class AddStmt final : public ExprStmt
+	{
 public:
 	explicit AddStmt(ExprPtr e);
 
@@ -224,9 +242,10 @@ public:
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 
 	TraversalCode Traverse(TraversalCallback* cb) const override;
-};
+	};
 
-class DelStmt final : public ExprStmt {
+class DelStmt final : public ExprStmt
+	{
 public:
 	explicit DelStmt(ExprPtr e);
 
@@ -234,9 +253,10 @@ public:
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 
 	TraversalCode Traverse(TraversalCallback* cb) const override;
-};
+	};
 
-class EventStmt final : public ExprStmt {
+class EventStmt final : public ExprStmt
+	{
 public:
 	explicit EventStmt(EventExprPtr e);
 
@@ -246,11 +266,11 @@ public:
 
 protected:
 	EventExprPtr event_expr;
-};
+	};
 
-class WhileStmt final : public Stmt {
+class WhileStmt final : public Stmt
+	{
 public:
-
 	WhileStmt(ExprPtr loop_condition, StmtPtr body);
 	~WhileStmt() override;
 
@@ -265,20 +285,21 @@ protected:
 
 	ExprPtr loop_condition;
 	StmtPtr body;
-};
+	};
 
-class ForStmt final : public ExprStmt {
+class ForStmt final : public ExprStmt
+	{
 public:
 	ForStmt(IDPList* loop_vars, ExprPtr loop_expr);
 	// Special constructor for key value for loop.
 	ForStmt(IDPList* loop_vars, ExprPtr loop_expr, IDPtr val_var);
 	~ForStmt() override;
 
-	void AddBody(StmtPtr arg_body)	{ body = std::move(arg_body); }
+	void AddBody(StmtPtr arg_body) { body = std::move(arg_body); }
 
-	const IDPList* LoopVar() const	{ return loop_vars; }
-	const Expr* LoopExpr() const	{ return e.get(); }
-	const Stmt* LoopBody() const	{ return body.get(); }
+	const IDPList* LoopVar() const { return loop_vars; }
+	const Expr* LoopExpr() const { return e.get(); }
+	const Stmt* LoopBody() const { return body.get(); }
 
 	bool IsPure() const override;
 
@@ -294,11 +315,12 @@ protected:
 	// Stores the value variable being used for a key value for loop.
 	// Always set to nullptr unless special constructor is called.
 	IDPtr value_var;
-};
+	};
 
-class NextStmt final : public Stmt {
+class NextStmt final : public Stmt
+	{
 public:
-	NextStmt() : Stmt(STMT_NEXT)	{ }
+	NextStmt() : Stmt(STMT_NEXT) { }
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 	bool IsPure() const override;
@@ -308,11 +330,12 @@ public:
 	TraversalCode Traverse(TraversalCallback* cb) const override;
 
 protected:
-};
+	};
 
-class BreakStmt final : public Stmt {
+class BreakStmt final : public Stmt
+	{
 public:
-	BreakStmt() : Stmt(STMT_BREAK)	{ }
+	BreakStmt() : Stmt(STMT_BREAK) { }
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 	bool IsPure() const override;
@@ -322,11 +345,12 @@ public:
 	TraversalCode Traverse(TraversalCallback* cb) const override;
 
 protected:
-};
+	};
 
-class FallthroughStmt final : public Stmt {
+class FallthroughStmt final : public Stmt
+	{
 public:
-	FallthroughStmt() : Stmt(STMT_FALLTHROUGH)	{ }
+	FallthroughStmt() : Stmt(STMT_FALLTHROUGH) { }
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 	bool IsPure() const override;
@@ -336,26 +360,28 @@ public:
 	TraversalCode Traverse(TraversalCallback* cb) const override;
 
 protected:
-};
+	};
 
-class ReturnStmt final : public ExprStmt {
+class ReturnStmt final : public ExprStmt
+	{
 public:
 	explicit ReturnStmt(ExprPtr e);
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 
 	void Describe(ODesc* d) const override;
-};
+	};
 
-class StmtList : public Stmt {
+class StmtList : public Stmt
+	{
 public:
 	StmtList();
 	~StmtList() override;
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 
-	const StmtPList& Stmts() const	{ return stmts; }
-	StmtPList& Stmts()		{ return stmts; }
+	const StmtPList& Stmts() const { return stmts; }
+	StmtPList& Stmts() { return stmts; }
 
 	void Describe(ODesc* d) const override;
 
@@ -365,12 +391,16 @@ protected:
 	bool IsPure() const override;
 
 	StmtPList stmts;
-};
+	};
 
-class EventBodyList final : public StmtList {
+class EventBodyList final : public StmtList
+	{
 public:
 	EventBodyList() : StmtList()
-		{ topmost = false; tag = STMT_EVENT_BODY_LIST; }
+		{
+		topmost = false;
+		tag = STMT_EVENT_BODY_LIST;
+		}
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 
@@ -382,16 +412,16 @@ public:
 
 protected:
 	bool topmost;
-};
+	};
 
-class InitStmt final : public Stmt {
+class InitStmt final : public Stmt
+	{
 public:
 	explicit InitStmt(std::vector<IDPtr> arg_inits);
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 
-	const std::vector<IDPtr>& Inits() const
-		{ return inits; }
+	const std::vector<IDPtr>& Inits() const { return inits; }
 
 	void Describe(ODesc* d) const override;
 
@@ -399,11 +429,12 @@ public:
 
 protected:
 	std::vector<IDPtr> inits;
-};
+	};
 
-class NullStmt final : public Stmt {
+class NullStmt final : public Stmt
+	{
 public:
-	NullStmt() : Stmt(STMT_NULL)	{ }
+	NullStmt() : Stmt(STMT_NULL) { }
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 	bool IsPure() const override;
@@ -411,23 +442,22 @@ public:
 	void Describe(ODesc* d) const override;
 
 	TraversalCode Traverse(TraversalCallback* cb) const override;
-};
+	};
 
-class WhenStmt final : public Stmt {
+class WhenStmt final : public Stmt
+	{
 public:
 	// s2 is null if no timeout block given.
-	WhenStmt(ExprPtr cond,
-	         StmtPtr s1, StmtPtr s2,
-	         ExprPtr timeout, bool is_return);
+	WhenStmt(ExprPtr cond, StmtPtr s1, StmtPtr s2, ExprPtr timeout, bool is_return);
 	~WhenStmt() override;
 
 	ValPtr Exec(Frame* f, StmtFlowType& flow) const override;
 	bool IsPure() const override;
 
-	const Expr* Cond() const	{ return cond.get(); }
-	const Stmt* Body() const	{ return s1.get(); }
-	const Expr* TimeoutExpr() const	{ return timeout.get(); }
-	const Stmt* TimeoutBody() const	{ return s2.get(); }
+	const Expr* Cond() const { return cond.get(); }
+	const Stmt* Body() const { return s1.get(); }
+	const Expr* TimeoutExpr() const { return timeout.get(); }
+	const Stmt* TimeoutBody() const { return s2.get(); }
 
 	void Describe(ODesc* d) const override;
 
@@ -439,28 +469,47 @@ protected:
 	StmtPtr s2;
 	ExprPtr timeout;
 	bool is_return;
-};
+	};
 
-} // namespace zeek::detail
+	} // namespace zeek::detail
 
 using Stmt [[deprecated("Remove in v4.1. Use zeek::detail::Stmt instead.")]] = zeek::detail::Stmt;
-using ExprListStmt [[deprecated("Remove in v4.1. Use zeek::detail::ExprListStmt instead.")]] = zeek::detail::ExprListStmt;
-using PrintStmt [[deprecated("Remove in v4.1. Use zeek::detail::PrintStmt instead.")]] = zeek::detail::PrintStmt;
-using ExprStmt [[deprecated("Remove in v4.1. Use zeek::detail::ExprStmt instead.")]] = zeek::detail::ExprStmt;
-using IfStmt [[deprecated("Remove in v4.1. Use zeek::detail::IfStmt instead.")]] = zeek::detail::IfStmt;
+using ExprListStmt [[deprecated("Remove in v4.1. Use zeek::detail::ExprListStmt instead.")]] =
+	zeek::detail::ExprListStmt;
+using PrintStmt [[deprecated("Remove in v4.1. Use zeek::detail::PrintStmt instead.")]] =
+	zeek::detail::PrintStmt;
+using ExprStmt [[deprecated("Remove in v4.1. Use zeek::detail::ExprStmt instead.")]] =
+	zeek::detail::ExprStmt;
+using IfStmt [[deprecated("Remove in v4.1. Use zeek::detail::IfStmt instead.")]] =
+	zeek::detail::IfStmt;
 using Case [[deprecated("Remove in v4.1. Use zeek::detail::Case instead.")]] = zeek::detail::Case;
-using SwitchStmt [[deprecated("Remove in v4.1. Use zeek::detail::SwitchStmt instead.")]] = zeek::detail::SwitchStmt;
-using AddStmt [[deprecated("Remove in v4.1. Use zeek::detail::AddStmt instead.")]] = zeek::detail::AddStmt;
-using DelStmt [[deprecated("Remove in v4.1. Use zeek::detail::DelStmt instead.")]] = zeek::detail::DelStmt;
-using EventStmt [[deprecated("Remove in v4.1. Use zeek::detail::EventStmt instead.")]] = zeek::detail::EventStmt;
-using WhileStmt [[deprecated("Remove in v4.1. Use zeek::detail::WhileStmt instead.")]] = zeek::detail::WhileStmt;
-using ForStmt [[deprecated("Remove in v4.1. Use zeek::detail::ForStmt instead.")]] = zeek::detail::ForStmt;
-using NextStmt [[deprecated("Remove in v4.1. Use zeek::detail::NextStmt instead.")]] = zeek::detail::NextStmt;
-using BreakStmt [[deprecated("Remove in v4.1. Use zeek::detail::BreakStmt instead.")]] = zeek::detail::BreakStmt;
-using FallthroughStmt [[deprecated("Remove in v4.1. Use zeek::detail::FallthroughStmt instead.")]] = zeek::detail::FallthroughStmt;
-using ReturnStmt [[deprecated("Remove in v4.1. Use zeek::detail::ReturnStmt instead.")]] = zeek::detail::ReturnStmt;
-using StmtList [[deprecated("Remove in v4.1. Use zeek::detail::StmtList instead.")]] = zeek::detail::StmtList;
-using EventBodyList [[deprecated("Remove in v4.1. Use zeek::detail::EventBodyList instead.")]] = zeek::detail::EventBodyList;
-using InitStmt [[deprecated("Remove in v4.1. Use zeek::detail::InitStmt instead.")]] = zeek::detail::InitStmt;
-using NullStmt [[deprecated("Remove in v4.1. Use zeek::detail::NullStmt instead.")]] = zeek::detail::NullStmt;
-using WhenStmt [[deprecated("Remove in v4.1. Use zeek::detail::WhenStmt instead.")]] = zeek::detail::WhenStmt;
+using SwitchStmt [[deprecated("Remove in v4.1. Use zeek::detail::SwitchStmt instead.")]] =
+	zeek::detail::SwitchStmt;
+using AddStmt [[deprecated("Remove in v4.1. Use zeek::detail::AddStmt instead.")]] =
+	zeek::detail::AddStmt;
+using DelStmt [[deprecated("Remove in v4.1. Use zeek::detail::DelStmt instead.")]] =
+	zeek::detail::DelStmt;
+using EventStmt [[deprecated("Remove in v4.1. Use zeek::detail::EventStmt instead.")]] =
+	zeek::detail::EventStmt;
+using WhileStmt [[deprecated("Remove in v4.1. Use zeek::detail::WhileStmt instead.")]] =
+	zeek::detail::WhileStmt;
+using ForStmt [[deprecated("Remove in v4.1. Use zeek::detail::ForStmt instead.")]] =
+	zeek::detail::ForStmt;
+using NextStmt [[deprecated("Remove in v4.1. Use zeek::detail::NextStmt instead.")]] =
+	zeek::detail::NextStmt;
+using BreakStmt [[deprecated("Remove in v4.1. Use zeek::detail::BreakStmt instead.")]] =
+	zeek::detail::BreakStmt;
+using FallthroughStmt [[deprecated("Remove in v4.1. Use zeek::detail::FallthroughStmt instead.")]] =
+	zeek::detail::FallthroughStmt;
+using ReturnStmt [[deprecated("Remove in v4.1. Use zeek::detail::ReturnStmt instead.")]] =
+	zeek::detail::ReturnStmt;
+using StmtList [[deprecated("Remove in v4.1. Use zeek::detail::StmtList instead.")]] =
+	zeek::detail::StmtList;
+using EventBodyList [[deprecated("Remove in v4.1. Use zeek::detail::EventBodyList instead.")]] =
+	zeek::detail::EventBodyList;
+using InitStmt [[deprecated("Remove in v4.1. Use zeek::detail::InitStmt instead.")]] =
+	zeek::detail::InitStmt;
+using NullStmt [[deprecated("Remove in v4.1. Use zeek::detail::NullStmt instead.")]] =
+	zeek::detail::NullStmt;
+using WhenStmt [[deprecated("Remove in v4.1. Use zeek::detail::WhenStmt instead.")]] =
+	zeek::detail::WhenStmt;
