@@ -84,14 +84,14 @@ bool AnonymizeIPAddr::PreserveNet(ipaddr32_t input)
 	{
 	switch ( addr_to_class(ntohl(input)) )
 		{
-			case 'A':
-			return PreservePrefix(input, 8);
-			case 'B':
-			return PreservePrefix(input, 16);
-			case 'C':
-			return PreservePrefix(input, 24);
-			default:
-			return false;
+		case 'A':
+		return PreservePrefix(input, 8);
+		case 'B':
+		return PreservePrefix(input, 16);
+		case 'C':
+		return PreservePrefix(input, 24);
+		default:
+		return false;
 		}
 	}
 
@@ -392,20 +392,20 @@ ipaddr32_t anonymize_ip(ipaddr32_t ip, enum ip_addr_anonymization_class_t cl)
 
 	switch ( cl )
 		{
-			case ORIG_ADDR: // client address
-			preserve_addr = anon_preserve_orig_addr.get();
-			method = orig_addr_anonymization;
-			break;
+		case ORIG_ADDR: // client address
+		preserve_addr = anon_preserve_orig_addr.get();
+		method = orig_addr_anonymization;
+		break;
 
-			case RESP_ADDR: // server address
-			preserve_addr = anon_preserve_resp_addr.get();
-			method = resp_addr_anonymization;
-			break;
+		case RESP_ADDR: // server address
+		preserve_addr = anon_preserve_resp_addr.get();
+		method = resp_addr_anonymization;
+		break;
 
-			default:
-			preserve_addr = anon_preserve_other_addr.get();
-			method = other_addr_anonymization;
-			break;
+		default:
+		preserve_addr = anon_preserve_other_addr.get();
+		method = other_addr_anonymization;
+		break;
 		}
 
 	ipaddr32_t new_ip = 0;

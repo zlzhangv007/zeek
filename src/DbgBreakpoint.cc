@@ -204,17 +204,17 @@ bool DbgBreakpoint::Reset()
 
 	switch ( kind )
 		{
-			case BP_TIME:
-			debug_msg("Time-based breakpoints not yet supported.\n");
-			break;
+		case BP_TIME:
+		debug_msg("Time-based breakpoints not yet supported.\n");
+		break;
 
-			case BP_FUNC:
-			case BP_STMT:
-			case BP_LINE:
-			plr.type = PLR_FUNCTION;
-			//### How to deal with wildcards?
-			//### perhaps save user choices?--tough...
-			break;
+		case BP_FUNC:
+		case BP_STMT:
+		case BP_LINE:
+		plr.type = PLR_FUNCTION;
+		//### How to deal with wildcards?
+		//### perhaps save user choices?--tough...
+		break;
 		}
 
 	reporter->InternalError("DbgBreakpoint::Reset function incomplete.");
@@ -295,22 +295,22 @@ BreakCode DbgBreakpoint::ShouldBreak(Stmt* s)
 
 	switch ( kind )
 		{
-			case BP_STMT:
-			case BP_FUNC:
-			if ( at_stmt != s )
-				return BC_NO_HIT;
-			break;
+		case BP_STMT:
+		case BP_FUNC:
+		if ( at_stmt != s )
+			return BC_NO_HIT;
+		break;
 
-			case BP_LINE:
-			assert(s->GetLocationInfo()->first_line <= source_line &&
-			       s->GetLocationInfo()->last_line >= source_line);
-			break;
+		case BP_LINE:
+		assert(s->GetLocationInfo()->first_line <= source_line &&
+		       s->GetLocationInfo()->last_line >= source_line);
+		break;
 
-			case BP_TIME:
-			assert(false);
+		case BP_TIME:
+		assert(false);
 
-			default:
-			reporter->InternalError("Invalid breakpoint type in DbgBreakpoint::ShouldBreak");
+		default:
+		reporter->InternalError("Invalid breakpoint type in DbgBreakpoint::ShouldBreak");
 		}
 
 	// If we got here, that means that the breakpoint could hit,
@@ -345,29 +345,29 @@ void DbgBreakpoint::PrintHitMsg()
 	{
 	switch ( kind )
 		{
-			case BP_STMT:
-			case BP_FUNC:
-			case BP_LINE:
-				{
-				ODesc d;
-				Frame* f = g_frame_stack.back();
-				const ScriptFunc* func = f->GetFunction();
+		case BP_STMT:
+		case BP_FUNC:
+		case BP_LINE:
+			{
+			ODesc d;
+			Frame* f = g_frame_stack.back();
+			const ScriptFunc* func = f->GetFunction();
 
-				if ( func )
-					func->DescribeDebug(&d, f->GetFuncArgs());
+			if ( func )
+				func->DescribeDebug(&d, f->GetFuncArgs());
 
-				const Location* loc = at_stmt->GetLocationInfo();
+			const Location* loc = at_stmt->GetLocationInfo();
 
-				debug_msg("Breakpoint %d, %s at %s:%d\n", GetID(), d.Description(), loc->filename,
-				          loc->first_line);
-				}
-			return;
+			debug_msg("Breakpoint %d, %s at %s:%d\n", GetID(), d.Description(), loc->filename,
+			          loc->first_line);
+			}
+		return;
 
-			case BP_TIME:
-			assert(false);
+		case BP_TIME:
+		assert(false);
 
-			default:
-			reporter->InternalError("Missed a case in DbgBreakpoint::PrintHitMsg\n");
+		default:
+		reporter->InternalError("Missed a case in DbgBreakpoint::PrintHitMsg\n");
 		}
 	}
 

@@ -127,26 +127,26 @@ bool RuleConditionPayloadSize::DoMatch(Rule* rule, RuleEndpointState* state, con
 
 	switch ( comp )
 		{
-			case RULE_EQ:
-			return payload_size == val;
+		case RULE_EQ:
+		return payload_size == val;
 
-			case RULE_NE:
-			return payload_size != val;
+		case RULE_NE:
+		return payload_size != val;
 
-			case RULE_LT:
-			return payload_size < val;
+		case RULE_LT:
+		return payload_size < val;
 
-			case RULE_GT:
-			return payload_size > val;
+		case RULE_GT:
+		return payload_size > val;
 
-			case RULE_LE:
-			return payload_size <= val;
+		case RULE_LE:
+		return payload_size <= val;
 
-			case RULE_GE:
-			return payload_size >= val;
+		case RULE_GE:
+		return payload_size >= val;
 
-			default:
-			reporter->InternalError("unknown comparison type");
+		default:
+		reporter->InternalError("unknown comparison type");
 		}
 
 	// Should not be reached

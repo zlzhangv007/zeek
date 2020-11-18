@@ -132,110 +132,110 @@ Value* SQLite::EntryToVal(sqlite3_stmt* st, const threading::Field* field, int p
 
 	switch ( field->type )
 		{
-			case TYPE_ENUM:
-			case TYPE_STRING:
+		case TYPE_ENUM:
+		case TYPE_STRING:
+			{
+			const char* text = (const char*)sqlite3_column_text(st, pos);
+			int length = sqlite3_column_bytes(st, pos);
+
+			char* out = new char[length];
+			memcpy(out, text, length);
+
+			val->val.string_val.length = length;
+			val->val.string_val.data = out;
+			break;
+			}
+
+		case TYPE_BOOL:
+			{
+			if ( sqlite3_column_type(st, pos) != SQLITE_INTEGER )
 				{
-				const char* text = (const char*)sqlite3_column_text(st, pos);
-				int length = sqlite3_column_bytes(st, pos);
-
-				char* out = new char[length];
-				memcpy(out, text, length);
-
-				val->val.string_val.length = length;
-				val->val.string_val.data = out;
-				break;
+				Error("Invalid data type for boolean - expected Integer");
+				delete val;
+				return nullptr;
 				}
 
-			case TYPE_BOOL:
+			int res = sqlite3_column_int(st, pos);
+
+			if ( res == 0 || res == 1 )
+				val->val.int_val = res;
+			else
 				{
-				if ( sqlite3_column_type(st, pos) != SQLITE_INTEGER )
-					{
-					Error("Invalid data type for boolean - expected Integer");
-					delete val;
-					return nullptr;
-					}
+				Error(Fmt("Invalid value for boolean: %d", res));
+				delete val;
+				return nullptr;
+				}
+			break;
+			}
 
-				int res = sqlite3_column_int(st, pos);
+		case TYPE_INT:
+		val->val.int_val = sqlite3_column_int64(st, pos);
+		break;
 
-				if ( res == 0 || res == 1 )
-					val->val.int_val = res;
+		case TYPE_DOUBLE:
+		case TYPE_TIME:
+		case TYPE_INTERVAL:
+		val->val.double_val = sqlite3_column_double(st, pos);
+		break;
+
+		case TYPE_COUNT:
+		val->val.uint_val = sqlite3_column_int64(st, pos);
+		break;
+
+		case TYPE_PORT:
+			{
+			val->val.port_val.port = sqlite3_column_int(st, pos);
+			val->val.port_val.proto = TRANSPORT_UNKNOWN;
+			if ( subpos != -1 )
+				{
+				const char* text = (const char*)sqlite3_column_text(st, subpos);
+
+				if ( text == 0 )
+					Error("Port protocol definition did not contain text");
 				else
 					{
-					Error(Fmt("Invalid value for boolean: %d", res));
-					delete val;
-					return nullptr;
+					std::string s(text, sqlite3_column_bytes(st, subpos));
+					val->val.port_val.proto = io->ParseProto(s);
 					}
-				break;
 				}
-
-			case TYPE_INT:
-			val->val.int_val = sqlite3_column_int64(st, pos);
 			break;
+			}
 
-			case TYPE_DOUBLE:
-			case TYPE_TIME:
-			case TYPE_INTERVAL:
-			val->val.double_val = sqlite3_column_double(st, pos);
+		case TYPE_SUBNET:
+			{
+			const char* text = (const char*)sqlite3_column_text(st, pos);
+			std::string s(text, sqlite3_column_bytes(st, pos));
+			int pos = s.find('/');
+			int width = atoi(s.substr(pos + 1).c_str());
+			std::string addr = s.substr(0, pos);
+
+			val->val.subnet_val.prefix = io->ParseAddr(addr);
+			val->val.subnet_val.length = width;
 			break;
+			}
 
-			case TYPE_COUNT:
-			val->val.uint_val = sqlite3_column_int64(st, pos);
+		case TYPE_ADDR:
+			{
+			const char* text = (const char*)sqlite3_column_text(st, pos);
+			std::string s(text, sqlite3_column_bytes(st, pos));
+			val->val.addr_val = io->ParseAddr(s);
 			break;
+			}
 
-			case TYPE_PORT:
-				{
-				val->val.port_val.port = sqlite3_column_int(st, pos);
-				val->val.port_val.proto = TRANSPORT_UNKNOWN;
-				if ( subpos != -1 )
-					{
-					const char* text = (const char*)sqlite3_column_text(st, subpos);
-
-					if ( text == 0 )
-						Error("Port protocol definition did not contain text");
-					else
-						{
-						std::string s(text, sqlite3_column_bytes(st, subpos));
-						val->val.port_val.proto = io->ParseProto(s);
-						}
-					}
-				break;
-				}
-
-			case TYPE_SUBNET:
-				{
-				const char* text = (const char*)sqlite3_column_text(st, pos);
-				std::string s(text, sqlite3_column_bytes(st, pos));
-				int pos = s.find('/');
-				int width = atoi(s.substr(pos + 1).c_str());
-				std::string addr = s.substr(0, pos);
-
-				val->val.subnet_val.prefix = io->ParseAddr(addr);
-				val->val.subnet_val.length = width;
-				break;
-				}
-
-			case TYPE_ADDR:
-				{
-				const char* text = (const char*)sqlite3_column_text(st, pos);
-				std::string s(text, sqlite3_column_bytes(st, pos));
-				val->val.addr_val = io->ParseAddr(s);
-				break;
-				}
-
-			case TYPE_TABLE:
-			case TYPE_VECTOR:
-				{
-				const char* text = (const char*)sqlite3_column_text(st, pos);
-				std::string s(text, sqlite3_column_bytes(st, pos));
-				delete val;
-				val = io->ParseValue(s, "", field->type, field->subtype);
-				break;
-				}
-
-			default:
-			Error(Fmt("unsupported field format %d", field->type));
+		case TYPE_TABLE:
+		case TYPE_VECTOR:
+			{
+			const char* text = (const char*)sqlite3_column_text(st, pos);
+			std::string s(text, sqlite3_column_bytes(st, pos));
 			delete val;
-			return nullptr;
+			val = io->ParseValue(s, "", field->type, field->subtype);
+			break;
+			}
+
+		default:
+		Error(Fmt("unsupported field format %d", field->type));
+		delete val;
+		return nullptr;
 		}
 
 	return val;

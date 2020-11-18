@@ -371,26 +371,26 @@ void X509::ParseSAN(X509_EXTENSION* ext)
 
 			switch ( gen->type )
 				{
-					case GEN_DNS:
-					if ( names == nullptr )
-						names = make_intrusive<VectorVal>(id::string_vec);
+				case GEN_DNS:
+				if ( names == nullptr )
+					names = make_intrusive<VectorVal>(id::string_vec);
 
-					names->Assign(names->Size(), std::move(bs));
-					break;
+				names->Assign(names->Size(), std::move(bs));
+				break;
 
-					case GEN_URI:
-					if ( uris == nullptr )
-						uris = make_intrusive<VectorVal>(id::string_vec);
+				case GEN_URI:
+				if ( uris == nullptr )
+					uris = make_intrusive<VectorVal>(id::string_vec);
 
-					uris->Assign(uris->Size(), std::move(bs));
-					break;
+				uris->Assign(uris->Size(), std::move(bs));
+				break;
 
-					case GEN_EMAIL:
-					if ( emails == nullptr )
-						emails = make_intrusive<VectorVal>(id::string_vec);
+				case GEN_EMAIL:
+				if ( emails == nullptr )
+					emails = make_intrusive<VectorVal>(id::string_vec);
 
-					emails->Assign(emails->Size(), std::move(bs));
-					break;
+				emails->Assign(emails->Size(), std::move(bs));
+				break;
 				}
 			}
 
@@ -483,47 +483,47 @@ unsigned int X509::KeyLength(EVP_PKEY* key)
 
 	switch ( EVP_PKEY_base_id(key) )
 		{
-			case EVP_PKEY_RSA:
-			const BIGNUM* n;
-			RSA_get0_key(EVP_PKEY_get0_RSA(key), &n, NULL, NULL);
-			return BN_num_bits(n);
+		case EVP_PKEY_RSA:
+		const BIGNUM* n;
+		RSA_get0_key(EVP_PKEY_get0_RSA(key), &n, NULL, NULL);
+		return BN_num_bits(n);
 
-			case EVP_PKEY_DSA:
-			const BIGNUM* p;
-			DSA_get0_pqg(EVP_PKEY_get0_DSA(key), &p, NULL, NULL);
-			return BN_num_bits(p);
+		case EVP_PKEY_DSA:
+		const BIGNUM* p;
+		DSA_get0_pqg(EVP_PKEY_get0_DSA(key), &p, NULL, NULL);
+		return BN_num_bits(p);
 
 #ifndef OPENSSL_NO_EC
-			case EVP_PKEY_EC:
+		case EVP_PKEY_EC:
+			{
+			BIGNUM* ec_order = BN_new();
+			if ( ! ec_order )
+				// could not malloc bignum?
+				return 0;
+
+			const EC_GROUP* group = EC_KEY_get0_group(EVP_PKEY_get0_EC_KEY(key));
+
+			if ( ! group )
 				{
-				BIGNUM* ec_order = BN_new();
-				if ( ! ec_order )
-					// could not malloc bignum?
-					return 0;
-
-				const EC_GROUP* group = EC_KEY_get0_group(EVP_PKEY_get0_EC_KEY(key));
-
-				if ( ! group )
-					{
-					// unknown ex-group
-					BN_free(ec_order);
-					return 0;
-					}
-
-				if ( ! EC_GROUP_get_order(group, ec_order, NULL) )
-					{
-					// could not get ec-group-order
-					BN_free(ec_order);
-					return 0;
-					}
-
-				unsigned int length = BN_num_bits(ec_order);
+				// unknown ex-group
 				BN_free(ec_order);
-				return length;
+				return 0;
 				}
+
+			if ( ! EC_GROUP_get_order(group, ec_order, NULL) )
+				{
+				// could not get ec-group-order
+				BN_free(ec_order);
+				return 0;
+				}
+
+			unsigned int length = BN_num_bits(ec_order);
+			BN_free(ec_order);
+			return length;
+			}
 #endif
-			default:
-			return 0; // unknown public key type
+		default:
+		return 0; // unknown public key type
 		}
 
 	reporter->InternalError("cannot be reached");

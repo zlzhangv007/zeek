@@ -203,29 +203,29 @@ bool PcapSource::ExtractNextPacket(Packet* pkt)
 
 	switch ( res )
 		{
-			case PCAP_ERROR_BREAK: // -2
-			// Exhausted pcap file, no more packets to read.
-			assert(! props.is_live);
-			Close();
-			return false;
-			case PCAP_ERROR: // -1
-			// Error occurred while reading the packet.
-			if ( props.is_live )
-				reporter->Error("failed to read a packet from %s: %s", props.path.data(),
-				                pcap_geterr(pd));
-			else
-				reporter->FatalError("failed to read a packet from %s: %s", props.path.data(),
-				                     pcap_geterr(pd));
-			return false;
-			case 0:
-			// Read from live interface timed out (ok).
-			return false;
-			case 1:
-			// Read a packet without problem.
-			break;
-			default:
-			reporter->InternalError("unhandled pcap_next_ex return value: %d", res);
-			return false;
+		case PCAP_ERROR_BREAK: // -2
+		// Exhausted pcap file, no more packets to read.
+		assert(! props.is_live);
+		Close();
+		return false;
+		case PCAP_ERROR: // -1
+		// Error occurred while reading the packet.
+		if ( props.is_live )
+			reporter->Error("failed to read a packet from %s: %s", props.path.data(),
+			                pcap_geterr(pd));
+		else
+			reporter->FatalError("failed to read a packet from %s: %s", props.path.data(),
+			                     pcap_geterr(pd));
+		return false;
+		case 0:
+		// Read from live interface timed out (ok).
+		return false;
+		case 1:
+		// Read a packet without problem.
+		break;
+		default:
+		reporter->InternalError("unhandled pcap_next_ex return value: %d", res);
+		return false;
 		}
 
 	pkt->Init(props.link_type, &header->ts, header->caplen, header->len, data);

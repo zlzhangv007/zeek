@@ -63,13 +63,13 @@ std::unique_ptr<BloomFilter> BloomFilter::Unserialize(const broker::data& data)
 
 	switch ( *type )
 		{
-			case Basic:
-			bf = std::unique_ptr<BloomFilter>(new BasicBloomFilter());
-			break;
+		case Basic:
+		bf = std::unique_ptr<BloomFilter>(new BasicBloomFilter());
+		break;
 
-			case Counting:
-			bf = std::unique_ptr<BloomFilter>(new CountingBloomFilter());
-			break;
+		case Counting:
+		bf = std::unique_ptr<BloomFilter>(new CountingBloomFilter());
+		break;
 		}
 
 	if ( ! bf->DoUnserialize((*v)[2]) )

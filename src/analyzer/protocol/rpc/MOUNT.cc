@@ -29,35 +29,35 @@ bool MOUNT_Interp::RPC_BuildCall(RPC_CallInfo* c, const u_char*& buf, int& n)
 
 	switch ( proc )
 		{
-			case BifEnum::MOUNT3::PROC_NULL:
-			break;
+		case BifEnum::MOUNT3::PROC_NULL:
+		break;
 
-			case BifEnum::MOUNT3::PROC_MNT:
-			callarg = mount3_dirmntargs(buf, n);
-			break;
+		case BifEnum::MOUNT3::PROC_MNT:
+		callarg = mount3_dirmntargs(buf, n);
+		break;
 
-			case BifEnum::MOUNT3::PROC_UMNT:
-			callarg = mount3_dirmntargs(buf, n);
-			break;
+		case BifEnum::MOUNT3::PROC_UMNT:
+		callarg = mount3_dirmntargs(buf, n);
+		break;
 
-			case BifEnum::MOUNT3::PROC_UMNT_ALL:
-			callarg = mount3_dirmntargs(buf, n);
-			break;
+		case BifEnum::MOUNT3::PROC_UMNT_ALL:
+		callarg = mount3_dirmntargs(buf, n);
+		break;
 
-			default:
-			if ( proc < BifEnum::MOUNT3::PROC_END_OF_PROCS )
-				{
-				// We know the procedure but haven't implemented it.
-				// Otherwise DeliverRPC would complain about
-				// excess_RPC.
-				n = 0;
-				}
-			else
-				Weird("unknown_MOUNT_request", util::fmt("%u", proc));
+		default:
+		if ( proc < BifEnum::MOUNT3::PROC_END_OF_PROCS )
+			{
+			// We know the procedure but haven't implemented it.
+			// Otherwise DeliverRPC would complain about
+			// excess_RPC.
+			n = 0;
+			}
+		else
+			Weird("unknown_MOUNT_request", util::fmt("%u", proc));
 
-			// Return 1 so that replies to unprocessed calls will still
-			// be processed, and the return status extracted.
-			return true;
+		// Return 1 so that replies to unprocessed calls will still
+		// be processed, and the return status extracted.
+		return true;
 		}
 
 	if ( ! buf )
@@ -103,39 +103,39 @@ bool MOUNT_Interp::RPC_BuildReply(RPC_CallInfo* c, BifEnum::rpc_status rpc_statu
 
 	switch ( c->Proc() )
 		{
-			case BifEnum::MOUNT3::PROC_NULL:
-			event = mount_proc_null;
-			break;
+		case BifEnum::MOUNT3::PROC_NULL:
+		event = mount_proc_null;
+		break;
 
-			case BifEnum::MOUNT3::PROC_MNT:
-			reply = mount3_mnt_reply(buf, n, mount_status);
-			event = mount_proc_mnt;
-			break;
+		case BifEnum::MOUNT3::PROC_MNT:
+		reply = mount3_mnt_reply(buf, n, mount_status);
+		event = mount_proc_mnt;
+		break;
 
-			case BifEnum::MOUNT3::PROC_UMNT:
+		case BifEnum::MOUNT3::PROC_UMNT:
+		n = 0;
+		mount_status = BifEnum::MOUNT3::MNT3_OK;
+		event = mount_proc_umnt;
+		break;
+
+		case BifEnum::MOUNT3::PROC_UMNT_ALL:
+		n = 0;
+		mount_status = BifEnum::MOUNT3::MNT3_OK;
+		event = mount_proc_umnt;
+		break;
+
+		default:
+		if ( c->Proc() < BifEnum::MOUNT3::PROC_END_OF_PROCS )
+			{
+			// We know the procedure but haven't implemented it.
+			// Otherwise DeliverRPC would complain about
+			// excess_RPC.
 			n = 0;
-			mount_status = BifEnum::MOUNT3::MNT3_OK;
-			event = mount_proc_umnt;
-			break;
-
-			case BifEnum::MOUNT3::PROC_UMNT_ALL:
-			n = 0;
-			mount_status = BifEnum::MOUNT3::MNT3_OK;
-			event = mount_proc_umnt;
-			break;
-
-			default:
-			if ( c->Proc() < BifEnum::MOUNT3::PROC_END_OF_PROCS )
-				{
-				// We know the procedure but haven't implemented it.
-				// Otherwise DeliverRPC would complain about
-				// excess_RPC.
-				n = 0;
-				reply = BifType::Enum::MOUNT3::proc_t->GetEnumVal(c->Proc());
-				event = mount_proc_not_implemented;
-				}
-			else
-				return false;
+			reply = BifType::Enum::MOUNT3::proc_t->GetEnumVal(c->Proc());
+			event = mount_proc_not_implemented;
+			}
+		else
+			return false;
 		}
 
 	if ( rpc_success && ! buf )

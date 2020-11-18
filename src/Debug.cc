@@ -649,83 +649,83 @@ static int dbg_dispatch_cmd(DebugCmd cmd_code, const vector<string>& args)
 	{
 	switch ( cmd_code )
 		{
-			case dcHelp:
-			dbg_cmd_help(cmd_code, args);
-			break;
+		case dcHelp:
+		dbg_cmd_help(cmd_code, args);
+		break;
 
-			case dcQuit:
-			debug_msg("Program Terminating\n");
-			exit(0);
+		case dcQuit:
+		debug_msg("Program Terminating\n");
+		exit(0);
 
-			case dcNext:
-			g_frame_stack.back()->BreakBeforeNextStmt(true);
-			step_or_next_pending = true;
-			last_frame = g_frame_stack.back();
-			break;
+		case dcNext:
+		g_frame_stack.back()->BreakBeforeNextStmt(true);
+		step_or_next_pending = true;
+		last_frame = g_frame_stack.back();
+		break;
 
-			case dcStep:
-			g_debugger_state.BreakBeforeNextStmt(true);
-			step_or_next_pending = true;
-			last_frame = g_frame_stack.back();
-			break;
+		case dcStep:
+		g_debugger_state.BreakBeforeNextStmt(true);
+		step_or_next_pending = true;
+		last_frame = g_frame_stack.back();
+		break;
 
-			case dcContinue:
-			g_debugger_state.BreakBeforeNextStmt(false);
-			debug_msg("Continuing.\n");
-			break;
+		case dcContinue:
+		g_debugger_state.BreakBeforeNextStmt(false);
+		debug_msg("Continuing.\n");
+		break;
 
-			case dcFinish:
-			g_frame_stack.back()->BreakOnReturn(true);
-			g_debugger_state.BreakBeforeNextStmt(false);
-			break;
+		case dcFinish:
+		g_frame_stack.back()->BreakOnReturn(true);
+		g_debugger_state.BreakBeforeNextStmt(false);
+		break;
 
-			case dcBreak:
-			dbg_cmd_break(cmd_code, args);
-			break;
+		case dcBreak:
+		dbg_cmd_break(cmd_code, args);
+		break;
 
-			case dcBreakCondition:
-			dbg_cmd_break_condition(cmd_code, args);
-			break;
+		case dcBreakCondition:
+		dbg_cmd_break_condition(cmd_code, args);
+		break;
 
-			case dcDeleteBreak:
-			case dcClearBreak:
-			case dcDisableBreak:
-			case dcEnableBreak:
-			case dcIgnoreBreak:
-			dbg_cmd_break_set_state(cmd_code, args);
-			break;
+		case dcDeleteBreak:
+		case dcClearBreak:
+		case dcDisableBreak:
+		case dcEnableBreak:
+		case dcIgnoreBreak:
+		dbg_cmd_break_set_state(cmd_code, args);
+		break;
 
-			case dcPrint:
-			dbg_cmd_print(cmd_code, args);
-			break;
+		case dcPrint:
+		dbg_cmd_print(cmd_code, args);
+		break;
 
-			case dcBacktrace:
-			return dbg_cmd_backtrace(cmd_code, args);
+		case dcBacktrace:
+		return dbg_cmd_backtrace(cmd_code, args);
 
-			case dcFrame:
-			case dcUp:
-			case dcDown:
-			return dbg_cmd_frame(cmd_code, args);
+		case dcFrame:
+		case dcUp:
+		case dcDown:
+		return dbg_cmd_frame(cmd_code, args);
 
-			case dcInfo:
-			return dbg_cmd_info(cmd_code, args);
+		case dcInfo:
+		return dbg_cmd_info(cmd_code, args);
 
-			case dcList:
-			return dbg_cmd_list(cmd_code, args);
+		case dcList:
+		return dbg_cmd_list(cmd_code, args);
 
-			case dcDisplay:
-			case dcUndisplay:
-			debug_msg("Command not yet implemented.\n");
-			break;
+		case dcDisplay:
+		case dcUndisplay:
+		debug_msg("Command not yet implemented.\n");
+		break;
 
-			case dcTrace:
-			return dbg_cmd_trace(cmd_code, args);
+		case dcTrace:
+		return dbg_cmd_trace(cmd_code, args);
 
-			default:
-			debug_msg("INTERNAL ERROR: "
-			          "Got an unknown debugger command in DbgDispatchCmd: %d\n",
-			          cmd_code);
-			return 0;
+		default:
+		debug_msg("INTERNAL ERROR: "
+		          "Got an unknown debugger command in DbgDispatchCmd: %d\n",
+		          cmd_code);
+		return 0;
 		}
 
 	return 0;

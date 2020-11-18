@@ -55,44 +55,44 @@ string SQLite::GetTableType(int arg_type, int arg_subtype)
 
 	switch ( arg_type )
 		{
-			case TYPE_BOOL:
-			type = "boolean";
-			break;
+		case TYPE_BOOL:
+		type = "boolean";
+		break;
 
-			case TYPE_INT:
-			case TYPE_COUNT:
-			case TYPE_PORT: // note that we do not save the protocol at the moment. Just like in the
-		                // case of the ascii-writer
-			type = "integer";
-			break;
+		case TYPE_INT:
+		case TYPE_COUNT:
+		case TYPE_PORT: // note that we do not save the protocol at the moment. Just like in the
+	                // case of the ascii-writer
+		type = "integer";
+		break;
 
-			case TYPE_SUBNET:
-			case TYPE_ADDR:
-			type = "text"; // sqlite3 does not have a type for internet addresses
-			break;
+		case TYPE_SUBNET:
+		case TYPE_ADDR:
+		type = "text"; // sqlite3 does not have a type for internet addresses
+		break;
 
-			case TYPE_TIME:
-			case TYPE_INTERVAL:
-			case TYPE_DOUBLE:
-			type = "double precision";
-			break;
+		case TYPE_TIME:
+		case TYPE_INTERVAL:
+		case TYPE_DOUBLE:
+		type = "double precision";
+		break;
 
-			case TYPE_ENUM:
-			case TYPE_STRING:
-			case TYPE_FILE:
-			case TYPE_FUNC:
-			type = "text";
-			break;
+		case TYPE_ENUM:
+		case TYPE_STRING:
+		case TYPE_FILE:
+		case TYPE_FUNC:
+		type = "text";
+		break;
 
-			case TYPE_TABLE:
-			case TYPE_VECTOR:
-			type = "text"; // dirty - but sqlite does not directly support arrays. so - we just roll
-			               // it into a ","-separated string.
-			break;
+		case TYPE_TABLE:
+		case TYPE_VECTOR:
+		type = "text"; // dirty - but sqlite does not directly support arrays. so - we just roll
+		               // it into a ","-separated string.
+		break;
 
-			default:
-			Error(Fmt("unsupported field format %d ", arg_type));
-			return ""; // not the cleanest way to abort. But sqlite will complain on create table...
+		default:
+		Error(Fmt("unsupported field format %d ", arg_type));
+		return ""; // not the cleanest way to abort. But sqlite will complain on create table...
 		}
 
 	return type;
@@ -238,96 +238,96 @@ int SQLite::AddParams(Value* val, int pos)
 
 	switch ( val->type )
 		{
-			case TYPE_BOOL:
-			return sqlite3_bind_int(st, pos, val->val.int_val != 0 ? 1 : 0);
+		case TYPE_BOOL:
+		return sqlite3_bind_int(st, pos, val->val.int_val != 0 ? 1 : 0);
 
-			case TYPE_INT:
-			return sqlite3_bind_int(st, pos, val->val.int_val);
+		case TYPE_INT:
+		return sqlite3_bind_int(st, pos, val->val.int_val);
 
-			case TYPE_COUNT:
-			return sqlite3_bind_int(st, pos, val->val.uint_val);
+		case TYPE_COUNT:
+		return sqlite3_bind_int(st, pos, val->val.uint_val);
 
-			case TYPE_PORT:
-			return sqlite3_bind_int(st, pos, val->val.port_val.port);
+		case TYPE_PORT:
+		return sqlite3_bind_int(st, pos, val->val.port_val.port);
 
-			case TYPE_SUBNET:
-				{
-				string out = io->Render(val->val.subnet_val);
-				return sqlite3_bind_text(st, pos, out.data(), out.size(), SQLITE_TRANSIENT);
-				}
+		case TYPE_SUBNET:
+			{
+			string out = io->Render(val->val.subnet_val);
+			return sqlite3_bind_text(st, pos, out.data(), out.size(), SQLITE_TRANSIENT);
+			}
 
-			case TYPE_ADDR:
-				{
-				string out = io->Render(val->val.addr_val);
-				return sqlite3_bind_text(st, pos, out.data(), out.size(), SQLITE_TRANSIENT);
-				}
+		case TYPE_ADDR:
+			{
+			string out = io->Render(val->val.addr_val);
+			return sqlite3_bind_text(st, pos, out.data(), out.size(), SQLITE_TRANSIENT);
+			}
 
-			case TYPE_TIME:
-			case TYPE_INTERVAL:
-			case TYPE_DOUBLE:
-			return sqlite3_bind_double(st, pos, val->val.double_val);
+		case TYPE_TIME:
+		case TYPE_INTERVAL:
+		case TYPE_DOUBLE:
+		return sqlite3_bind_double(st, pos, val->val.double_val);
 
-			case TYPE_ENUM:
-			case TYPE_STRING:
-			case TYPE_FILE:
-			case TYPE_FUNC:
-				{
-				if ( ! val->val.string_val.length || val->val.string_val.length == 0 )
-					return sqlite3_bind_null(st, pos);
+		case TYPE_ENUM:
+		case TYPE_STRING:
+		case TYPE_FILE:
+		case TYPE_FUNC:
+			{
+			if ( ! val->val.string_val.length || val->val.string_val.length == 0 )
+				return sqlite3_bind_null(st, pos);
 
-				return sqlite3_bind_text(st, pos, val->val.string_val.data,
-				                         val->val.string_val.length, SQLITE_TRANSIENT);
-				}
+			return sqlite3_bind_text(st, pos, val->val.string_val.data, val->val.string_val.length,
+			                         SQLITE_TRANSIENT);
+			}
 
-			case TYPE_TABLE:
-				{
-				ODesc desc;
-				desc.Clear();
-				desc.EnableEscaping();
-				desc.AddEscapeSequence(set_separator);
+		case TYPE_TABLE:
+			{
+			ODesc desc;
+			desc.Clear();
+			desc.EnableEscaping();
+			desc.AddEscapeSequence(set_separator);
 
-				if ( ! val->val.set_val.size )
-					desc.Add(empty_field);
-				else
-					for ( bro_int_t j = 0; j < val->val.set_val.size; j++ )
-						{
-						if ( j > 0 )
-							desc.AddRaw(set_separator);
+			if ( ! val->val.set_val.size )
+				desc.Add(empty_field);
+			else
+				for ( bro_int_t j = 0; j < val->val.set_val.size; j++ )
+					{
+					if ( j > 0 )
+						desc.AddRaw(set_separator);
 
-						io->Describe(&desc, val->val.set_val.vals[j], fields[pos - 1]->name);
-						}
+					io->Describe(&desc, val->val.set_val.vals[j], fields[pos - 1]->name);
+					}
 
-				desc.RemoveEscapeSequence(set_separator);
-				return sqlite3_bind_text(st, pos, (const char*)desc.Bytes(), desc.Len(),
-				                         SQLITE_TRANSIENT);
-				}
+			desc.RemoveEscapeSequence(set_separator);
+			return sqlite3_bind_text(st, pos, (const char*)desc.Bytes(), desc.Len(),
+			                         SQLITE_TRANSIENT);
+			}
 
-			case TYPE_VECTOR:
-				{
-				ODesc desc;
-				desc.Clear();
-				desc.EnableEscaping();
-				desc.AddEscapeSequence(set_separator);
+		case TYPE_VECTOR:
+			{
+			ODesc desc;
+			desc.Clear();
+			desc.EnableEscaping();
+			desc.AddEscapeSequence(set_separator);
 
-				if ( ! val->val.vector_val.size )
-					desc.Add(empty_field);
-				else
-					for ( bro_int_t j = 0; j < val->val.vector_val.size; j++ )
-						{
-						if ( j > 0 )
-							desc.AddRaw(set_separator);
+			if ( ! val->val.vector_val.size )
+				desc.Add(empty_field);
+			else
+				for ( bro_int_t j = 0; j < val->val.vector_val.size; j++ )
+					{
+					if ( j > 0 )
+						desc.AddRaw(set_separator);
 
-						io->Describe(&desc, val->val.vector_val.vals[j], fields[pos - 1]->name);
-						}
+					io->Describe(&desc, val->val.vector_val.vals[j], fields[pos - 1]->name);
+					}
 
-				desc.RemoveEscapeSequence(set_separator);
-				return sqlite3_bind_text(st, pos, (const char*)desc.Bytes(), desc.Len(),
-				                         SQLITE_TRANSIENT);
-				}
+			desc.RemoveEscapeSequence(set_separator);
+			return sqlite3_bind_text(st, pos, (const char*)desc.Bytes(), desc.Len(),
+			                         SQLITE_TRANSIENT);
+			}
 
-			default:
-			Error(Fmt("unsupported field format %d", val->type));
-			return 0;
+		default:
+		Error(Fmt("unsupported field format %d", val->type));
+		return 0;
 		}
 	}
 

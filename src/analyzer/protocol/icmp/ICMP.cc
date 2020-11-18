@@ -56,18 +56,18 @@ void ICMP_Analyzer::DeliverPacket(int len, const u_char* data, bool is_orig, uin
 
 		switch ( ip->NextProto() )
 			{
-				case IPPROTO_ICMP:
-				chksum = icmp_checksum(icmpp, len);
-				break;
+			case IPPROTO_ICMP:
+			chksum = icmp_checksum(icmpp, len);
+			break;
 
-				case IPPROTO_ICMPV6:
-				chksum = icmp6_checksum(icmpp, ip, len);
-				break;
+			case IPPROTO_ICMPV6:
+			chksum = icmp6_checksum(icmpp, ip, len);
+			break;
 
-				default:
-				reporter->AnalyzerError(this, "unexpected IP proto in ICMP analyzer: %d",
-				                        ip->NextProto());
-				return;
+			default:
+			reporter->AnalyzerError(this, "unexpected IP proto in ICMP analyzer: %d",
+			                        ip->NextProto());
+			return;
 			}
 
 		if ( chksum != 0xffff )
@@ -122,19 +122,19 @@ void ICMP_Analyzer::NextICMP4(double t, const struct icmp* icmpp, int len, int c
 	{
 	switch ( icmpp->icmp_type )
 		{
-			case ICMP_ECHO:
-			case ICMP_ECHOREPLY:
-			Echo(t, icmpp, len, caplen, data, ip_hdr);
-			break;
+		case ICMP_ECHO:
+		case ICMP_ECHOREPLY:
+		Echo(t, icmpp, len, caplen, data, ip_hdr);
+		break;
 
-			case ICMP_UNREACH:
-			case ICMP_TIMXCEED:
-			Context4(t, icmpp, len, caplen, data, ip_hdr);
-			break;
+		case ICMP_UNREACH:
+		case ICMP_TIMXCEED:
+		Context4(t, icmpp, len, caplen, data, ip_hdr);
+		break;
 
-			default:
-			ICMP_Sent(icmpp, len, caplen, 0, data, ip_hdr);
-			break;
+		default:
+		ICMP_Sent(icmpp, len, caplen, 0, data, ip_hdr);
+		break;
 		}
 	}
 
@@ -143,40 +143,40 @@ void ICMP_Analyzer::NextICMP6(double t, const struct icmp* icmpp, int len, int c
 	{
 	switch ( icmpp->icmp_type )
 		{
-			// Echo types.
-			case ICMP6_ECHO_REQUEST:
-			case ICMP6_ECHO_REPLY:
-			Echo(t, icmpp, len, caplen, data, ip_hdr);
-			break;
+	// Echo types.
+		case ICMP6_ECHO_REQUEST:
+		case ICMP6_ECHO_REPLY:
+		Echo(t, icmpp, len, caplen, data, ip_hdr);
+		break;
 
-			// Error messages all have the same structure for their context,
-			// and are handled by the same function.
-			case ICMP6_PARAM_PROB:
-			case ICMP6_TIME_EXCEEDED:
-			case ICMP6_PACKET_TOO_BIG:
-			case ICMP6_DST_UNREACH:
-			Context6(t, icmpp, len, caplen, data, ip_hdr);
-			break;
+	// Error messages all have the same structure for their context,
+	// and are handled by the same function.
+		case ICMP6_PARAM_PROB:
+		case ICMP6_TIME_EXCEEDED:
+		case ICMP6_PACKET_TOO_BIG:
+		case ICMP6_DST_UNREACH:
+		Context6(t, icmpp, len, caplen, data, ip_hdr);
+		break;
 
-			// Router related messages.
-			case ND_REDIRECT:
-			Redirect(t, icmpp, len, caplen, data, ip_hdr);
-			break;
-			case ND_ROUTER_ADVERT:
-			RouterAdvert(t, icmpp, len, caplen, data, ip_hdr);
-			break;
-			case ND_NEIGHBOR_ADVERT:
-			NeighborAdvert(t, icmpp, len, caplen, data, ip_hdr);
-			break;
-			case ND_NEIGHBOR_SOLICIT:
-			NeighborSolicit(t, icmpp, len, caplen, data, ip_hdr);
-			break;
-			case ND_ROUTER_SOLICIT:
-			RouterSolicit(t, icmpp, len, caplen, data, ip_hdr);
-			break;
-			case ICMP6_ROUTER_RENUMBERING:
-			ICMP_Sent(icmpp, len, caplen, 1, data, ip_hdr);
-			break;
+	// Router related messages.
+		case ND_REDIRECT:
+		Redirect(t, icmpp, len, caplen, data, ip_hdr);
+		break;
+		case ND_ROUTER_ADVERT:
+		RouterAdvert(t, icmpp, len, caplen, data, ip_hdr);
+		break;
+		case ND_NEIGHBOR_ADVERT:
+		NeighborAdvert(t, icmpp, len, caplen, data, ip_hdr);
+		break;
+		case ND_NEIGHBOR_SOLICIT:
+		NeighborSolicit(t, icmpp, len, caplen, data, ip_hdr);
+		break;
+		case ND_ROUTER_SOLICIT:
+		RouterSolicit(t, icmpp, len, caplen, data, ip_hdr);
+		break;
+		case ICMP6_ROUTER_RENUMBERING:
+		ICMP_Sent(icmpp, len, caplen, 1, data, ip_hdr);
+		break;
 
 #if 0
 		// Currently not specifically implemented.
@@ -184,15 +184,15 @@ void ICMP_Analyzer::NextICMP6(double t, const struct icmp* icmpp, int len, int c
 		case MLD_LISTENER_REPORT:
 		case MLD_LISTENER_REDUCTION:
 #endif
-			default:
-			// Error messages (i.e., ICMPv6 type < 128) all have
-			// the same structure for their context, and are
-			// handled by the same function.
-			if ( icmpp->icmp_type < 128 )
-				Context6(t, icmpp, len, caplen, data, ip_hdr);
-			else
-				ICMP_Sent(icmpp, len, caplen, 1, data, ip_hdr);
-			break;
+		default:
+		// Error messages (i.e., ICMPv6 type < 128) all have
+		// the same structure for their context, and are
+		// handled by the same function.
+		if ( icmpp->icmp_type < 128 )
+			Context6(t, icmpp, len, caplen, data, ip_hdr);
+		else
+			ICMP_Sent(icmpp, len, caplen, 1, data, ip_hdr);
+		break;
 		}
 	}
 
@@ -261,60 +261,60 @@ TransportProto ICMP_Analyzer::GetContextProtocol(const IP_Hdr* ip_hdr, uint32_t*
 
 	switch ( ip_hdr->NextProto() )
 		{
-			case 1:
-			proto = TRANSPORT_ICMP;
-			break;
-			case 6:
-			proto = TRANSPORT_TCP;
-			break;
-			case 17:
-			proto = TRANSPORT_UDP;
-			break;
-			case 58:
-			proto = TRANSPORT_ICMP;
-			break;
-			default:
-			proto = TRANSPORT_UNKNOWN;
-			break;
+		case 1:
+		proto = TRANSPORT_ICMP;
+		break;
+		case 6:
+		proto = TRANSPORT_TCP;
+		break;
+		case 17:
+		proto = TRANSPORT_UDP;
+		break;
+		case 58:
+		proto = TRANSPORT_ICMP;
+		break;
+		default:
+		proto = TRANSPORT_UNKNOWN;
+		break;
 		}
 
 	switch ( proto )
 		{
-			case TRANSPORT_ICMP:
-				{
-				const struct icmp* icmpp = (const struct icmp*)transport_hdr;
-				bool is_one_way; // dummy
-				*src_port = ntohs(icmpp->icmp_type);
+		case TRANSPORT_ICMP:
+			{
+			const struct icmp* icmpp = (const struct icmp*)transport_hdr;
+			bool is_one_way; // dummy
+			*src_port = ntohs(icmpp->icmp_type);
 
-				if ( ip4 )
-					*dst_port =
-						ntohs(ICMP4_counterpart(icmpp->icmp_type, icmpp->icmp_code, is_one_way));
-				else
-					*dst_port =
-						ntohs(ICMP6_counterpart(icmpp->icmp_type, icmpp->icmp_code, is_one_way));
+			if ( ip4 )
+				*dst_port =
+					ntohs(ICMP4_counterpart(icmpp->icmp_type, icmpp->icmp_code, is_one_way));
+			else
+				*dst_port =
+					ntohs(ICMP6_counterpart(icmpp->icmp_type, icmpp->icmp_code, is_one_way));
 
-				break;
-				}
-
-			case TRANSPORT_TCP:
-				{
-				const struct tcphdr* tp = (const struct tcphdr*)transport_hdr;
-				*src_port = ntohs(tp->th_sport);
-				*dst_port = ntohs(tp->th_dport);
-				break;
-				}
-
-			case TRANSPORT_UDP:
-				{
-				const struct udphdr* up = (const struct udphdr*)transport_hdr;
-				*src_port = ntohs(up->uh_sport);
-				*dst_port = ntohs(up->uh_dport);
-				break;
-				}
-
-			default:
-			*src_port = *dst_port = ntohs(0);
 			break;
+			}
+
+		case TRANSPORT_TCP:
+			{
+			const struct tcphdr* tp = (const struct tcphdr*)transport_hdr;
+			*src_port = ntohs(tp->th_sport);
+			*dst_port = ntohs(tp->th_dport);
+			break;
+			}
+
+		case TRANSPORT_UDP:
+			{
+			const struct udphdr* up = (const struct udphdr*)transport_hdr;
+			*src_port = ntohs(up->uh_sport);
+			*dst_port = ntohs(up->uh_dport);
+			break;
+			}
+
+		default:
+		*src_port = *dst_port = ntohs(0);
+		break;
 		}
 
 	return proto;
@@ -657,13 +657,13 @@ void ICMP_Analyzer::Context4(double t, const struct icmp* icmpp, int len, int ca
 
 	switch ( icmpp->icmp_type )
 		{
-			case ICMP_UNREACH:
-			f = icmp_unreachable;
-			break;
+		case ICMP_UNREACH:
+		f = icmp_unreachable;
+		break;
 
-			case ICMP_TIMXCEED:
-			f = icmp_time_exceeded;
-			break;
+		case ICMP_TIMXCEED:
+		f = icmp_time_exceeded;
+		break;
 		}
 
 	if ( f )
@@ -679,25 +679,25 @@ void ICMP_Analyzer::Context6(double t, const struct icmp* icmpp, int len, int ca
 
 	switch ( icmpp->icmp_type )
 		{
-			case ICMP6_DST_UNREACH:
-			f = icmp_unreachable;
-			break;
+		case ICMP6_DST_UNREACH:
+		f = icmp_unreachable;
+		break;
 
-			case ICMP6_PARAM_PROB:
-			f = icmp_parameter_problem;
-			break;
+		case ICMP6_PARAM_PROB:
+		f = icmp_parameter_problem;
+		break;
 
-			case ICMP6_TIME_EXCEEDED:
-			f = icmp_time_exceeded;
-			break;
+		case ICMP6_TIME_EXCEEDED:
+		f = icmp_time_exceeded;
+		break;
 
-			case ICMP6_PACKET_TOO_BIG:
-			f = icmp_packet_too_big;
-			break;
+		case ICMP6_PACKET_TOO_BIG:
+		f = icmp_packet_too_big;
+		break;
 
-			default:
-			f = icmp_error_message;
-			break;
+		default:
+		f = icmp_error_message;
+		break;
 		}
 
 	if ( f )
@@ -746,80 +746,80 @@ VectorValPtr ICMP_Analyzer::BuildNDOptionsVal(int caplen, const u_char* data)
 		// Only parse out known options that are there in full.
 		switch ( type )
 			{
-				case 1:
-				case 2:
-				// Source/Target Link-layer Address option
+			case 1:
+			case 2:
+			// Source/Target Link-layer Address option
+				{
+				if ( caplen >= length )
 					{
-					if ( caplen >= length )
-						{
-						String* link_addr = new String(data, length, false);
-						rv->Assign(2, make_intrusive<StringVal>(link_addr));
-						}
-					else
-						set_payload_field = true;
-
-					break;
+					String* link_addr = new String(data, length, false);
+					rv->Assign(2, make_intrusive<StringVal>(link_addr));
 					}
-
-				case 3:
-				// Prefix Information option
-					{
-					if ( caplen >= 30 )
-						{
-						auto info = make_intrusive<RecordVal>(icmp6_nd_prefix_info_type);
-						uint8_t prefix_len = *((const uint8_t*)(data));
-						bool L_flag = (*((const uint8_t*)(data + 1)) & 0x80) != 0;
-						bool A_flag = (*((const uint8_t*)(data + 1)) & 0x40) != 0;
-						uint32_t valid_life = *((const uint32_t*)(data + 2));
-						uint32_t prefer_life = *((const uint32_t*)(data + 6));
-						in6_addr prefix = *((const in6_addr*)(data + 14));
-						info->Assign(0, val_mgr->Count(prefix_len));
-						info->Assign(1, val_mgr->Bool(L_flag));
-						info->Assign(2, val_mgr->Bool(A_flag));
-						info->Assign(
-							3, make_intrusive<IntervalVal>((double)ntohl(valid_life), Seconds));
-						info->Assign(
-							4, make_intrusive<IntervalVal>((double)ntohl(prefer_life), Seconds));
-						info->Assign(5, make_intrusive<AddrVal>(IPAddr(prefix)));
-						rv->Assign(3, std::move(info));
-						}
-
-					else
-						set_payload_field = true;
-					break;
-					}
-
-				case 4:
-				// Redirected Header option
-					{
-					if ( caplen >= length )
-						{
-						const u_char* hdr = data + 6;
-						rv->Assign(4, ExtractICMP6Context(length - 6, hdr));
-						}
-
-					else
-						set_payload_field = true;
-
-					break;
-					}
-
-				case 5:
-				// MTU option
-					{
-					if ( caplen >= 6 )
-						rv->Assign(5, val_mgr->Count(ntohl(*((const uint32_t*)(data + 2)))));
-					else
-						set_payload_field = true;
-
-					break;
-					}
-
-				default:
-					{
+				else
 					set_payload_field = true;
-					break;
+
+				break;
+				}
+
+			case 3:
+			// Prefix Information option
+				{
+				if ( caplen >= 30 )
+					{
+					auto info = make_intrusive<RecordVal>(icmp6_nd_prefix_info_type);
+					uint8_t prefix_len = *((const uint8_t*)(data));
+					bool L_flag = (*((const uint8_t*)(data + 1)) & 0x80) != 0;
+					bool A_flag = (*((const uint8_t*)(data + 1)) & 0x40) != 0;
+					uint32_t valid_life = *((const uint32_t*)(data + 2));
+					uint32_t prefer_life = *((const uint32_t*)(data + 6));
+					in6_addr prefix = *((const in6_addr*)(data + 14));
+					info->Assign(0, val_mgr->Count(prefix_len));
+					info->Assign(1, val_mgr->Bool(L_flag));
+					info->Assign(2, val_mgr->Bool(A_flag));
+					info->Assign(3,
+					             make_intrusive<IntervalVal>((double)ntohl(valid_life), Seconds));
+					info->Assign(4,
+					             make_intrusive<IntervalVal>((double)ntohl(prefer_life), Seconds));
+					info->Assign(5, make_intrusive<AddrVal>(IPAddr(prefix)));
+					rv->Assign(3, std::move(info));
 					}
+
+				else
+					set_payload_field = true;
+				break;
+				}
+
+			case 4:
+			// Redirected Header option
+				{
+				if ( caplen >= length )
+					{
+					const u_char* hdr = data + 6;
+					rv->Assign(4, ExtractICMP6Context(length - 6, hdr));
+					}
+
+				else
+					set_payload_field = true;
+
+				break;
+				}
+
+			case 5:
+			// MTU option
+				{
+				if ( caplen >= 6 )
+					rv->Assign(5, val_mgr->Count(ntohl(*((const uint32_t*)(data + 2)))));
+				else
+					set_payload_field = true;
+
+				break;
+				}
+
+			default:
+				{
+				set_payload_field = true;
+				break;
+				}
 			}
 
 		if ( set_payload_field )
@@ -847,34 +847,34 @@ int ICMP4_counterpart(int icmp_type, int icmp_code, bool& is_one_way)
 	// always 0 (RFC 792).
 	switch ( icmp_type )
 		{
-			case ICMP_ECHO:
-			return ICMP_ECHOREPLY;
-			case ICMP_ECHOREPLY:
-			return ICMP_ECHO;
+		case ICMP_ECHO:
+		return ICMP_ECHOREPLY;
+		case ICMP_ECHOREPLY:
+		return ICMP_ECHO;
 
-			case ICMP_TSTAMP:
-			return ICMP_TSTAMPREPLY;
-			case ICMP_TSTAMPREPLY:
-			return ICMP_TSTAMP;
+		case ICMP_TSTAMP:
+		return ICMP_TSTAMPREPLY;
+		case ICMP_TSTAMPREPLY:
+		return ICMP_TSTAMP;
 
-			case ICMP_IREQ:
-			return ICMP_IREQREPLY;
-			case ICMP_IREQREPLY:
-			return ICMP_IREQ;
+		case ICMP_IREQ:
+		return ICMP_IREQREPLY;
+		case ICMP_IREQREPLY:
+		return ICMP_IREQ;
 
-			case ICMP_ROUTERSOLICIT:
-			return ICMP_ROUTERADVERT;
-			case ICMP_ROUTERADVERT:
-			return ICMP_ROUTERSOLICIT;
+		case ICMP_ROUTERSOLICIT:
+		return ICMP_ROUTERADVERT;
+		case ICMP_ROUTERADVERT:
+		return ICMP_ROUTERSOLICIT;
 
-			case ICMP_MASKREQ:
-			return ICMP_MASKREPLY;
-			case ICMP_MASKREPLY:
-			return ICMP_MASKREQ;
+		case ICMP_MASKREQ:
+		return ICMP_MASKREPLY;
+		case ICMP_MASKREPLY:
+		return ICMP_MASKREQ;
 
-			default:
-			is_one_way = true;
-			return icmp_code;
+		default:
+		is_one_way = true;
+		return icmp_code;
 		}
 	}
 
@@ -884,44 +884,44 @@ int ICMP6_counterpart(int icmp_type, int icmp_code, bool& is_one_way)
 
 	switch ( icmp_type )
 		{
-			case ICMP6_ECHO_REQUEST:
-			return ICMP6_ECHO_REPLY;
-			case ICMP6_ECHO_REPLY:
-			return ICMP6_ECHO_REQUEST;
+		case ICMP6_ECHO_REQUEST:
+		return ICMP6_ECHO_REPLY;
+		case ICMP6_ECHO_REPLY:
+		return ICMP6_ECHO_REQUEST;
 
-			case ND_ROUTER_SOLICIT:
-			return ND_ROUTER_ADVERT;
-			case ND_ROUTER_ADVERT:
-			return ND_ROUTER_SOLICIT;
+		case ND_ROUTER_SOLICIT:
+		return ND_ROUTER_ADVERT;
+		case ND_ROUTER_ADVERT:
+		return ND_ROUTER_SOLICIT;
 
-			case ND_NEIGHBOR_SOLICIT:
-			return ND_NEIGHBOR_ADVERT;
-			case ND_NEIGHBOR_ADVERT:
-			return ND_NEIGHBOR_SOLICIT;
+		case ND_NEIGHBOR_SOLICIT:
+		return ND_NEIGHBOR_ADVERT;
+		case ND_NEIGHBOR_ADVERT:
+		return ND_NEIGHBOR_SOLICIT;
 
-			case MLD_LISTENER_QUERY:
-			return MLD_LISTENER_REPORT;
-			case MLD_LISTENER_REPORT:
-			return MLD_LISTENER_QUERY;
+		case MLD_LISTENER_QUERY:
+		return MLD_LISTENER_REPORT;
+		case MLD_LISTENER_REPORT:
+		return MLD_LISTENER_QUERY;
 
-			// ICMP node information query and response respectively (not defined in
-			// icmp6.h)
-			case 139:
-			return 140;
-			case 140:
-			return 139;
+	// ICMP node information query and response respectively (not defined in
+	// icmp6.h)
+		case 139:
+		return 140;
+		case 140:
+		return 139;
 
-			// Home Agent Address Discovery Request Message and reply
-			case 144:
-			return 145;
-			case 145:
-			return 144;
+	// Home Agent Address Discovery Request Message and reply
+		case 144:
+		return 145;
+		case 145:
+		return 144;
 
-			// TODO: Add further counterparts.
+		// TODO: Add further counterparts.
 
-			default:
-			is_one_way = true;
-			return icmp_code;
+		default:
+		is_one_way = true;
+		return icmp_code;
 		}
 	}
 

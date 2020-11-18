@@ -240,122 +240,122 @@ bool DNS_Interpreter::ParseAnswer(detail::DNS_MsgInfo* msg, const u_char*& data,
 	bool status;
 	switch ( msg->atype )
 		{
-			case detail::TYPE_A:
-			status = ParseRR_A(msg, data, len, rdlength);
-			break;
+		case detail::TYPE_A:
+		status = ParseRR_A(msg, data, len, rdlength);
+		break;
 
-			case detail::TYPE_A6:
-			case detail::TYPE_AAAA:
-			status = ParseRR_AAAA(msg, data, len, rdlength);
-			break;
+		case detail::TYPE_A6:
+		case detail::TYPE_AAAA:
+		status = ParseRR_AAAA(msg, data, len, rdlength);
+		break;
 
-			case detail::TYPE_NS:
-			case detail::TYPE_CNAME:
-			case detail::TYPE_PTR:
-			status = ParseRR_Name(msg, data, len, rdlength, msg_start);
-			break;
+		case detail::TYPE_NS:
+		case detail::TYPE_CNAME:
+		case detail::TYPE_PTR:
+		status = ParseRR_Name(msg, data, len, rdlength, msg_start);
+		break;
 
-			case detail::TYPE_SOA:
-			status = ParseRR_SOA(msg, data, len, rdlength, msg_start);
-			break;
+		case detail::TYPE_SOA:
+		status = ParseRR_SOA(msg, data, len, rdlength, msg_start);
+		break;
 
-			case detail::TYPE_WKS:
-			status = ParseRR_WKS(msg, data, len, rdlength);
-			break;
+		case detail::TYPE_WKS:
+		status = ParseRR_WKS(msg, data, len, rdlength);
+		break;
 
-			case detail::TYPE_HINFO:
-			status = ParseRR_HINFO(msg, data, len, rdlength);
-			break;
+		case detail::TYPE_HINFO:
+		status = ParseRR_HINFO(msg, data, len, rdlength);
+		break;
 
-			case detail::TYPE_MX:
-			status = ParseRR_MX(msg, data, len, rdlength, msg_start);
-			break;
+		case detail::TYPE_MX:
+		status = ParseRR_MX(msg, data, len, rdlength, msg_start);
+		break;
 
-			case detail::TYPE_TXT:
-			status = ParseRR_TXT(msg, data, len, rdlength, msg_start);
-			break;
+		case detail::TYPE_TXT:
+		status = ParseRR_TXT(msg, data, len, rdlength, msg_start);
+		break;
 
-			case detail::TYPE_SPF:
-			status = ParseRR_SPF(msg, data, len, rdlength, msg_start);
-			break;
+		case detail::TYPE_SPF:
+		status = ParseRR_SPF(msg, data, len, rdlength, msg_start);
+		break;
 
-			case detail::TYPE_CAA:
-			status = ParseRR_CAA(msg, data, len, rdlength, msg_start);
-			break;
+		case detail::TYPE_CAA:
+		status = ParseRR_CAA(msg, data, len, rdlength, msg_start);
+		break;
 
-			case detail::TYPE_NBS:
-			status = ParseRR_NBS(msg, data, len, rdlength, msg_start);
-			break;
+		case detail::TYPE_NBS:
+		status = ParseRR_NBS(msg, data, len, rdlength, msg_start);
+		break;
 
-			case detail::TYPE_SRV:
-			if ( ntohs(analyzer->Conn()->RespPort()) == 137 )
-				{
-				// This is an NBSTAT (NetBIOS NODE STATUS) record.
-				// The SRV RFC reused the value that was already being
-				// used for this.
-				// We aren't parsing this yet.
-				status = true;
-				}
-			else
-				status = ParseRR_SRV(msg, data, len, rdlength, msg_start);
-
-			break;
-
-			case detail::TYPE_EDNS:
-			status = ParseRR_EDNS(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_TSIG:
-			status = ParseRR_TSIG(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_RRSIG:
-			status = ParseRR_RRSIG(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_DNSKEY:
-			status = ParseRR_DNSKEY(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_NSEC:
-			status = ParseRR_NSEC(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_NSEC3:
-			status = ParseRR_NSEC3(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_NSEC3PARAM:
-			status = ParseRR_NSEC3PARAM(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_DS:
-			status = ParseRR_DS(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_BINDS:
-			status = ParseRR_BINDS(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_SSHFP:
-			status = ParseRR_SSHFP(msg, data, len, rdlength, msg_start);
-			break;
-
-			case detail::TYPE_LOC:
-			status = ParseRR_LOC(msg, data, len, rdlength, msg_start);
-			break;
-
-			default:
-
-			if ( dns_unknown_reply && ! msg->skip_event )
-				analyzer->EnqueueConnEvent(dns_unknown_reply, analyzer->ConnVal(),
-				                           msg->BuildHdrVal(), msg->BuildAnswerVal());
-
-			analyzer->Weird("DNS_RR_unknown_type", util::fmt("%d", msg->atype));
-			data += rdlength;
-			len -= rdlength;
+		case detail::TYPE_SRV:
+		if ( ntohs(analyzer->Conn()->RespPort()) == 137 )
+			{
+			// This is an NBSTAT (NetBIOS NODE STATUS) record.
+			// The SRV RFC reused the value that was already being
+			// used for this.
+			// We aren't parsing this yet.
 			status = true;
-			break;
+			}
+		else
+			status = ParseRR_SRV(msg, data, len, rdlength, msg_start);
+
+		break;
+
+		case detail::TYPE_EDNS:
+		status = ParseRR_EDNS(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_TSIG:
+		status = ParseRR_TSIG(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_RRSIG:
+		status = ParseRR_RRSIG(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_DNSKEY:
+		status = ParseRR_DNSKEY(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_NSEC:
+		status = ParseRR_NSEC(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_NSEC3:
+		status = ParseRR_NSEC3(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_NSEC3PARAM:
+		status = ParseRR_NSEC3PARAM(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_DS:
+		status = ParseRR_DS(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_BINDS:
+		status = ParseRR_BINDS(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_SSHFP:
+		status = ParseRR_SSHFP(msg, data, len, rdlength, msg_start);
+		break;
+
+		case detail::TYPE_LOC:
+		status = ParseRR_LOC(msg, data, len, rdlength, msg_start);
+		break;
+
+		default:
+
+		if ( dns_unknown_reply && ! msg->skip_event )
+			analyzer->EnqueueConnEvent(dns_unknown_reply, analyzer->ConnVal(), msg->BuildHdrVal(),
+			                           msg->BuildAnswerVal());
+
+		analyzer->Weird("DNS_RR_unknown_type", util::fmt("%d", msg->atype));
+		data += rdlength;
+		len -= rdlength;
+		status = true;
+		break;
 		}
 
 	return status;
@@ -536,23 +536,23 @@ bool DNS_Interpreter::ParseRR_Name(detail::DNS_MsgInfo* msg, const u_char*& data
 	EventHandlerPtr reply_event;
 	switch ( msg->atype )
 		{
-			case detail::TYPE_NS:
-			reply_event = dns_NS_reply;
-			break;
+		case detail::TYPE_NS:
+		reply_event = dns_NS_reply;
+		break;
 
-			case detail::TYPE_CNAME:
-			case detail::TYPE_AAAA:
-			case detail::TYPE_A6:
-			reply_event = dns_CNAME_reply;
-			break;
+		case detail::TYPE_CNAME:
+		case detail::TYPE_AAAA:
+		case detail::TYPE_A6:
+		reply_event = dns_CNAME_reply;
+		break;
 
-			case detail::TYPE_PTR:
-			reply_event = dns_PTR_reply;
-			break;
+		case detail::TYPE_PTR:
+		reply_event = dns_PTR_reply;
+		break;
 
-			default:
-			analyzer->Conn()->Internal("DNS_RR_bad_name");
-			reply_event = nullptr;
+		default:
+		analyzer->Conn()->Internal("DNS_RR_bad_name");
+		reply_event = nullptr;
 		}
 
 	if ( reply_event && ! msg->skip_event )
@@ -697,142 +697,140 @@ bool DNS_Interpreter::ParseRR_EDNS(detail::DNS_MsgInfo* msg, const u_char*& data
 		// TODO: Implement additional option codes
 		switch ( option_code )
 			{
-				case detail::TYPE_ECS:
+			case detail::TYPE_ECS:
+				{
+				// must be 4 bytes + variable number of octets for address
+				if ( option_len <= 4 )
 					{
-					// must be 4 bytes + variable number of octets for address
-					if ( option_len <= 4 )
-						{
-						break;
-						}
-
-					detail::EDNS_ECS opt {};
-					uint16_t ecs_family = ExtractShort(data, option_len);
-					uint16_t source_scope = ExtractShort(data, option_len);
-					opt.ecs_src_pfx_len = (source_scope >> 8) & 0xff;
-					opt.ecs_scp_pfx_len = source_scope & 0xff;
-
-					// ADDRESS, variable number of octets, contains either an IPv4 or
-					// IPv6 address, depending on FAMILY, which MUST be truncated to the
-					// number of bits indicated by the SOURCE PREFIX-LENGTH field,
-					// padding with 0 bits to pad to the end of the last octet needed.
-					if ( ecs_family == L3_IPV4 )
-						{
-						opt.ecs_family = make_intrusive<StringVal>("v4");
-						uint32_t addr = 0;
-						for ( uint16_t shift_factor = 3; option_len > 0; option_len-- )
-							{
-							addr |= data[0] << (shift_factor * 8);
-							data++;
-							shift_factor--;
-							}
-						addr = htonl(addr);
-						opt.ecs_addr = make_intrusive<AddrVal>(addr);
-						}
-					else if ( ecs_family == L3_IPV6 )
-						{
-						opt.ecs_family = make_intrusive<StringVal>("v6");
-						uint32_t addr[4] = {0};
-						for ( uint16_t i = 0, shift_factor = 15; option_len > 0; option_len-- )
-							{
-							addr[i / 4] |= data[0] << ((shift_factor % 4) * 8);
-							data++;
-							i++;
-							shift_factor--;
-							}
-
-						for ( uint8_t i = 0; i < 4; i++ )
-							{
-							addr[i] = htonl(addr[i]);
-							}
-						opt.ecs_addr = make_intrusive<AddrVal>(addr);
-						}
-					else
-						{
-						// non ipv4/ipv6 family address
-						data += option_len;
-						break;
-						}
-
-					analyzer->EnqueueConnEvent(dns_EDNS_ecs, analyzer->ConnVal(),
-					                           msg->BuildHdrVal(), msg->BuildEDNS_ECS_Val(&opt));
 					break;
-					} // END EDNS ECS
+					}
 
-				case TYPE_TCP_KA:
+				detail::EDNS_ECS opt {};
+				uint16_t ecs_family = ExtractShort(data, option_len);
+				uint16_t source_scope = ExtractShort(data, option_len);
+				opt.ecs_src_pfx_len = (source_scope >> 8) & 0xff;
+				opt.ecs_scp_pfx_len = source_scope & 0xff;
+
+				// ADDRESS, variable number of octets, contains either an IPv4 or
+				// IPv6 address, depending on FAMILY, which MUST be truncated to the
+				// number of bits indicated by the SOURCE PREFIX-LENGTH field,
+				// padding with 0 bits to pad to the end of the last octet needed.
+				if ( ecs_family == L3_IPV4 )
 					{
-					EDNS_TCP_KEEPALIVE edns_tcp_keepalive {.keepalive_timeout_omitted = true,
-					                                       .keepalive_timeout = 0};
-					if ( option_len == 0 || option_len == 2 )
+					opt.ecs_family = make_intrusive<StringVal>("v4");
+					uint32_t addr = 0;
+					for ( uint16_t shift_factor = 3; option_len > 0; option_len-- )
 						{
-						// 0 bytes is permitted by RFC 7828, showing that the timeout value is
-						// omitted.
-						if ( option_len == 2 )
-							{
-							edns_tcp_keepalive.keepalive_timeout = ExtractShort(data, option_len);
-							edns_tcp_keepalive.keepalive_timeout_omitted = false;
-							}
-
-						if ( analyzer->Conn()->ConnTransport() == TRANSPORT_UDP )
-							{
-							/*
-							 * Based on RFC 7828 (3.2.1/3.2.2), clients and servers MUST NOT
-							 * negotiate TCP Keepalive timeout in DNS-over-UDP.
-							 */
-							analyzer->Weird("EDNS_TCP_Keepalive_In_UDP");
-							}
-
-						analyzer->EnqueueConnEvent(dns_EDNS_tcp_keepalive, analyzer->ConnVal(),
-						                           msg->BuildHdrVal(),
-						                           msg->BuildEDNS_TCP_KA_Val(&edns_tcp_keepalive));
+						addr |= data[0] << (shift_factor * 8);
+						data++;
+						shift_factor--;
 						}
-					else
-						{
-						// error. MUST BE 0 or 2 bytes. skip
-						data += option_len;
-						}
-					break;
-					} // END EDNS TCP KEEPALIVE
-
-				case TYPE_COOKIE:
+					addr = htonl(addr);
+					opt.ecs_addr = make_intrusive<AddrVal>(addr);
+					}
+				else if ( ecs_family == L3_IPV6 )
 					{
-					EDNS_COOKIE cookie {};
-					if ( option_len != 8 && ! (option_len >= 16 && option_len <= 40) )
+					opt.ecs_family = make_intrusive<StringVal>("v6");
+					uint32_t addr[4] = {0};
+					for ( uint16_t i = 0, shift_factor = 15; option_len > 0; option_len-- )
 						{
-						/*
-						 * option length for DNS Cookie must be 8 bytes (with client cookie only)
-						 * OR
-						 * between 16 bytes to 40 bytes (with an 8 bytes client and an 8 to 32 bytes
-						 * server cookie)
-						 */
-						data += option_len;
-						break;
+						addr[i / 4] |= data[0] << ((shift_factor % 4) * 8);
+						data++;
+						i++;
+						shift_factor--;
 						}
 
-					int client_cookie_len = 8;
-					int server_cookie_len = option_len - client_cookie_len;
-
-					cookie.client_cookie =
-						ExtractStream(data, client_cookie_len, client_cookie_len);
-					cookie.server_cookie = nullptr;
-
-					if ( server_cookie_len >= 8 )
+					for ( uint8_t i = 0; i < 4; i++ )
 						{
-						cookie.server_cookie =
-							ExtractStream(data, server_cookie_len, server_cookie_len);
+						addr[i] = htonl(addr[i]);
 						}
-
-					analyzer->EnqueueConnEvent(dns_EDNS_cookie, analyzer->ConnVal(),
-					                           msg->BuildHdrVal(),
-					                           msg->BuildEDNS_COOKIE_Val(&cookie));
-
-					break;
-					} // END EDNS COOKIE
-
-				default:
+					opt.ecs_addr = make_intrusive<AddrVal>(addr);
+					}
+				else
 					{
+					// non ipv4/ipv6 family address
 					data += option_len;
 					break;
 					}
+
+				analyzer->EnqueueConnEvent(dns_EDNS_ecs, analyzer->ConnVal(), msg->BuildHdrVal(),
+				                           msg->BuildEDNS_ECS_Val(&opt));
+				break;
+				} // END EDNS ECS
+
+			case TYPE_TCP_KA:
+				{
+				EDNS_TCP_KEEPALIVE edns_tcp_keepalive {.keepalive_timeout_omitted = true,
+				                                       .keepalive_timeout = 0};
+				if ( option_len == 0 || option_len == 2 )
+					{
+					// 0 bytes is permitted by RFC 7828, showing that the timeout value is
+					// omitted.
+					if ( option_len == 2 )
+						{
+						edns_tcp_keepalive.keepalive_timeout = ExtractShort(data, option_len);
+						edns_tcp_keepalive.keepalive_timeout_omitted = false;
+						}
+
+					if ( analyzer->Conn()->ConnTransport() == TRANSPORT_UDP )
+						{
+						/*
+						 * Based on RFC 7828 (3.2.1/3.2.2), clients and servers MUST NOT
+						 * negotiate TCP Keepalive timeout in DNS-over-UDP.
+						 */
+						analyzer->Weird("EDNS_TCP_Keepalive_In_UDP");
+						}
+
+					analyzer->EnqueueConnEvent(dns_EDNS_tcp_keepalive, analyzer->ConnVal(),
+					                           msg->BuildHdrVal(),
+					                           msg->BuildEDNS_TCP_KA_Val(&edns_tcp_keepalive));
+					}
+				else
+					{
+					// error. MUST BE 0 or 2 bytes. skip
+					data += option_len;
+					}
+				break;
+				} // END EDNS TCP KEEPALIVE
+
+			case TYPE_COOKIE:
+				{
+				EDNS_COOKIE cookie {};
+				if ( option_len != 8 && ! (option_len >= 16 && option_len <= 40) )
+					{
+					/*
+					 * option length for DNS Cookie must be 8 bytes (with client cookie only)
+					 * OR
+					 * between 16 bytes to 40 bytes (with an 8 bytes client and an 8 to 32 bytes
+					 * server cookie)
+					 */
+					data += option_len;
+					break;
+					}
+
+				int client_cookie_len = 8;
+				int server_cookie_len = option_len - client_cookie_len;
+
+				cookie.client_cookie = ExtractStream(data, client_cookie_len, client_cookie_len);
+				cookie.server_cookie = nullptr;
+
+				if ( server_cookie_len >= 8 )
+					{
+					cookie.server_cookie =
+						ExtractStream(data, server_cookie_len, server_cookie_len);
+					}
+
+				analyzer->EnqueueConnEvent(dns_EDNS_cookie, analyzer->ConnVal(), msg->BuildHdrVal(),
+				                           msg->BuildEDNS_COOKIE_Val(&cookie));
+
+				break;
+				} // END EDNS COOKIE
+
+			default:
+				{
+				data += option_len;
+				break;
+				}
 			}
 		}
 
@@ -940,43 +938,43 @@ bool DNS_Interpreter::ParseRR_RRSIG(detail::DNS_MsgInfo* msg, const u_char*& dat
 
 	switch ( dsa )
 		{
-			case detail::RSA_MD5:
-			analyzer->Weird("DNSSEC_RRSIG_NotRecommended_ZoneSignAlgo", util::fmt("%d", algo));
-			break;
-			case detail::Diffie_Hellman:
-			break;
-			case detail::DSA_SHA1:
-			break;
-			case detail::Elliptic_Curve:
-			break;
-			case detail::RSA_SHA1:
-			break;
-			case detail::DSA_NSEC3_SHA1:
-			break;
-			case detail::RSA_SHA1_NSEC3_SHA1:
-			break;
-			case detail::RSA_SHA256:
-			break;
-			case detail::RSA_SHA512:
-			break;
-			case detail::GOST_R_34_10_2001:
-			break;
-			case detail::ECDSA_curveP256withSHA256:
-			break;
-			case detail::ECDSA_curveP384withSHA384:
-			break;
-			case detail::Indirect:
-			analyzer->Weird("DNSSEC_RRSIG_Indirect_ZoneSignAlgo", util::fmt("%d", algo));
-			break;
-			case detail::PrivateDNS:
-			analyzer->Weird("DNSSEC_RRSIG_PrivateDNS_ZoneSignAlgo", util::fmt("%d", algo));
-			break;
-			case detail::PrivateOID:
-			analyzer->Weird("DNSSEC_RRSIG_PrivateOID_ZoneSignAlgo", util::fmt("%d", algo));
-			break;
-			default:
-			analyzer->Weird("DNSSEC_RRSIG_unknown_ZoneSignAlgo", util::fmt("%d", algo));
-			break;
+		case detail::RSA_MD5:
+		analyzer->Weird("DNSSEC_RRSIG_NotRecommended_ZoneSignAlgo", util::fmt("%d", algo));
+		break;
+		case detail::Diffie_Hellman:
+		break;
+		case detail::DSA_SHA1:
+		break;
+		case detail::Elliptic_Curve:
+		break;
+		case detail::RSA_SHA1:
+		break;
+		case detail::DSA_NSEC3_SHA1:
+		break;
+		case detail::RSA_SHA1_NSEC3_SHA1:
+		break;
+		case detail::RSA_SHA256:
+		break;
+		case detail::RSA_SHA512:
+		break;
+		case detail::GOST_R_34_10_2001:
+		break;
+		case detail::ECDSA_curveP256withSHA256:
+		break;
+		case detail::ECDSA_curveP384withSHA384:
+		break;
+		case detail::Indirect:
+		analyzer->Weird("DNSSEC_RRSIG_Indirect_ZoneSignAlgo", util::fmt("%d", algo));
+		break;
+		case detail::PrivateDNS:
+		analyzer->Weird("DNSSEC_RRSIG_PrivateDNS_ZoneSignAlgo", util::fmt("%d", algo));
+		break;
+		case detail::PrivateOID:
+		analyzer->Weird("DNSSEC_RRSIG_PrivateOID_ZoneSignAlgo", util::fmt("%d", algo));
+		break;
+		default:
+		analyzer->Weird("DNSSEC_RRSIG_unknown_ZoneSignAlgo", util::fmt("%d", algo));
+		break;
 		}
 
 	if ( dns_RRSIG )
@@ -1036,44 +1034,43 @@ bool DNS_Interpreter::ParseRR_DNSKEY(detail::DNS_MsgInfo* msg, const u_char*& da
 
 	switch ( dsa )
 		{
-			case detail::RSA_MD5:
-			analyzer->Weird("DNSSEC_DNSKEY_NotRecommended_ZoneSignAlgo",
-			                util::fmt("%d", dalgorithm));
-			break;
-			case detail::Diffie_Hellman:
-			break;
-			case detail::DSA_SHA1:
-			break;
-			case detail::Elliptic_Curve:
-			break;
-			case detail::RSA_SHA1:
-			break;
-			case detail::DSA_NSEC3_SHA1:
-			break;
-			case detail::RSA_SHA1_NSEC3_SHA1:
-			break;
-			case detail::RSA_SHA256:
-			break;
-			case detail::RSA_SHA512:
-			break;
-			case detail::GOST_R_34_10_2001:
-			break;
-			case detail::ECDSA_curveP256withSHA256:
-			break;
-			case detail::ECDSA_curveP384withSHA384:
-			break;
-			case detail::Indirect:
-			analyzer->Weird("DNSSEC_DNSKEY_Indirect_ZoneSignAlgo", util::fmt("%d", dalgorithm));
-			break;
-			case detail::PrivateDNS:
-			analyzer->Weird("DNSSEC_DNSKEY_PrivateDNS_ZoneSignAlgo", util::fmt("%d", dalgorithm));
-			break;
-			case detail::PrivateOID:
-			analyzer->Weird("DNSSEC_DNSKEY_PrivateOID_ZoneSignAlgo", util::fmt("%d", dalgorithm));
-			break;
-			default:
-			analyzer->Weird("DNSSEC_DNSKEY_unknown_ZoneSignAlgo", util::fmt("%d", dalgorithm));
-			break;
+		case detail::RSA_MD5:
+		analyzer->Weird("DNSSEC_DNSKEY_NotRecommended_ZoneSignAlgo", util::fmt("%d", dalgorithm));
+		break;
+		case detail::Diffie_Hellman:
+		break;
+		case detail::DSA_SHA1:
+		break;
+		case detail::Elliptic_Curve:
+		break;
+		case detail::RSA_SHA1:
+		break;
+		case detail::DSA_NSEC3_SHA1:
+		break;
+		case detail::RSA_SHA1_NSEC3_SHA1:
+		break;
+		case detail::RSA_SHA256:
+		break;
+		case detail::RSA_SHA512:
+		break;
+		case detail::GOST_R_34_10_2001:
+		break;
+		case detail::ECDSA_curveP256withSHA256:
+		break;
+		case detail::ECDSA_curveP384withSHA384:
+		break;
+		case detail::Indirect:
+		analyzer->Weird("DNSSEC_DNSKEY_Indirect_ZoneSignAlgo", util::fmt("%d", dalgorithm));
+		break;
+		case detail::PrivateDNS:
+		analyzer->Weird("DNSSEC_DNSKEY_PrivateDNS_ZoneSignAlgo", util::fmt("%d", dalgorithm));
+		break;
+		case detail::PrivateOID:
+		analyzer->Weird("DNSSEC_DNSKEY_PrivateOID_ZoneSignAlgo", util::fmt("%d", dalgorithm));
+		break;
+		default:
+		analyzer->Weird("DNSSEC_DNSKEY_unknown_ZoneSignAlgo", util::fmt("%d", dalgorithm));
+		break;
 		}
 
 	if ( dns_DNSKEY )
@@ -1288,20 +1285,20 @@ bool DNS_Interpreter::ParseRR_DS(detail::DNS_MsgInfo* msg, const u_char*& data, 
 
 	switch ( ds_digest_type )
 		{
-			case detail::SHA1:
-			break;
-			case detail::SHA256:
-			break;
-			case detail::GOST_R_34_11_94:
-			break;
-			case detail::SHA384:
-			break;
-			case detail::reserved:
-			analyzer->Weird("DNSSEC_DS_ResrevedDigestType", util::fmt("%d", ds_dtype));
-			break;
-			default:
-			analyzer->Weird("DNSSEC_DS_unknown_DigestType", util::fmt("%d", ds_dtype));
-			break;
+		case detail::SHA1:
+		break;
+		case detail::SHA256:
+		break;
+		case detail::GOST_R_34_11_94:
+		break;
+		case detail::SHA384:
+		break;
+		case detail::reserved:
+		analyzer->Weird("DNSSEC_DS_ResrevedDigestType", util::fmt("%d", ds_dtype));
+		break;
+		default:
+		analyzer->Weird("DNSSEC_DS_unknown_DigestType", util::fmt("%d", ds_dtype));
+		break;
 		}
 
 	if ( dns_DS )

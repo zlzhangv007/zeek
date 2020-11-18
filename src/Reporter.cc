@@ -417,14 +417,14 @@ void Reporter::Weird(file_analysis::File* f, const char* name, const char* addl)
 
 	switch ( CheckGlobalWeirdLists(name) )
 		{
-			case PermitWeird::Allow:
-			break;
-			case PermitWeird::Deny:
+		case PermitWeird::Allow:
+		break;
+		case PermitWeird::Deny:
+		return;
+		case PermitWeird::Unknown:
+		if ( ! f->PermitWeird(name, weird_sampling_threshold, weird_sampling_rate,
+		                      weird_sampling_duration) )
 			return;
-			case PermitWeird::Unknown:
-			if ( ! f->PermitWeird(name, weird_sampling_threshold, weird_sampling_rate,
-			                      weird_sampling_duration) )
-				return;
 		}
 
 	WeirdHelper(file_weird, {f->ToVal()->Ref(), new StringVal(addl)}, "%s", name);
@@ -436,14 +436,14 @@ void Reporter::Weird(Connection* conn, const char* name, const char* addl)
 
 	switch ( CheckGlobalWeirdLists(name) )
 		{
-			case PermitWeird::Allow:
-			break;
-			case PermitWeird::Deny:
+		case PermitWeird::Allow:
+		break;
+		case PermitWeird::Deny:
+		return;
+		case PermitWeird::Unknown:
+		if ( ! conn->PermitWeird(name, weird_sampling_threshold, weird_sampling_rate,
+		                         weird_sampling_duration) )
 			return;
-			case PermitWeird::Unknown:
-			if ( ! conn->PermitWeird(name, weird_sampling_threshold, weird_sampling_rate,
-			                         weird_sampling_duration) )
-				return;
 		}
 
 	WeirdHelper(conn_weird, {conn->ConnVal()->Ref(), new StringVal(addl)}, "%s", name);
@@ -455,13 +455,13 @@ void Reporter::Weird(RecordValPtr conn_id, StringValPtr uid, const char* name, c
 
 	switch ( CheckGlobalWeirdLists(name) )
 		{
-			case PermitWeird::Allow:
-			break;
-			case PermitWeird::Deny:
+		case PermitWeird::Allow:
+		break;
+		case PermitWeird::Deny:
+		return;
+		case PermitWeird::Unknown:
+		if ( ! PermitExpiredConnWeird(name, *conn_id) )
 			return;
-			case PermitWeird::Unknown:
-			if ( ! PermitExpiredConnWeird(name, *conn_id) )
-				return;
 		}
 
 	WeirdHelper(expired_conn_weird, {conn_id.release(), uid.release(), new StringVal(addl)}, "%s",
@@ -474,13 +474,13 @@ void Reporter::Weird(const IPAddr& orig, const IPAddr& resp, const char* name, c
 
 	switch ( CheckGlobalWeirdLists(name) )
 		{
-			case PermitWeird::Allow:
-			break;
-			case PermitWeird::Deny:
+		case PermitWeird::Allow:
+		break;
+		case PermitWeird::Deny:
+		return;
+		case PermitWeird::Unknown:
+		if ( ! PermitFlowWeird(name, orig, resp) )
 			return;
-			case PermitWeird::Unknown:
-			if ( ! PermitFlowWeird(name, orig, resp) )
-				return;
 		}
 
 	WeirdHelper(flow_weird, {new AddrVal(orig), new AddrVal(resp), new StringVal(addl)}, "%s",

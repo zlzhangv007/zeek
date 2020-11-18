@@ -180,17 +180,17 @@ bool ReaderErrorMessage::Process()
 	switch ( type )
 		{
 
-			case INFO:
-			input_mgr->Info(Object(), msg);
-			break;
+		case INFO:
+		input_mgr->Info(Object(), msg);
+		break;
 
-			case WARNING:
-			input_mgr->Warning(Object(), msg);
-			break;
+		case WARNING:
+		input_mgr->Warning(Object(), msg);
+		break;
 
-			case ERROR:
-			input_mgr->Error(Object(), msg);
-			break;
+		case ERROR:
+		input_mgr->Error(Object(), msg);
+		break;
 		}
 
 	return true;

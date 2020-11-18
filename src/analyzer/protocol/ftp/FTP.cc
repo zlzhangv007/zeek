@@ -257,61 +257,61 @@ void FTP_ADAT_Analyzer::DeliverStream(int len, const u_char* data, bool orig)
 
 		switch ( reply_code )
 			{
-				case 232:
-				case 234:
-				// Indicates security data exchange is complete, but nothing
-				// more to decode in replies.
-				done = true;
-				break;
+			case 232:
+			case 234:
+			// Indicates security data exchange is complete, but nothing
+			// more to decode in replies.
+			done = true;
+			break;
 
-				case 235:
-				// Security data exchange complete, but may have more to decode
-				// in the reply (same format at 334 and 335).
-				done = true;
+			case 235:
+			// Security data exchange complete, but may have more to decode
+			// in the reply (same format at 334 and 335).
+			done = true;
 
-				// Fall-through.
+			// Fall-through.
 
-				case 334:
-				case 335:
-				// Security data exchange still in progress, and there could be data
-				// to decode in the reply.
-				line += 3;
-				if ( len > 3 && line[0] == '-' )
-					line++;
+			case 334:
+			case 335:
+			// Security data exchange still in progress, and there could be data
+			// to decode in the reply.
+			line += 3;
+			if ( len > 3 && line[0] == '-' )
+				line++;
 
-				line = util::skip_whitespace(line, end_of_line);
+			line = util::skip_whitespace(line, end_of_line);
 
-				if ( end_of_line - line >= 5 && strncmp(line, "ADAT=", 5) == 0 )
-					{
-					line += 5;
-					StringVal encoded(end_of_line - line, line);
-					decoded_adat = zeek::detail::decode_base64(encoded.AsString(), nullptr, Conn());
-					}
+			if ( end_of_line - line >= 5 && strncmp(line, "ADAT=", 5) == 0 )
+				{
+				line += 5;
+				StringVal encoded(end_of_line - line, line);
+				decoded_adat = zeek::detail::decode_base64(encoded.AsString(), nullptr, Conn());
+				}
 
-				break;
+			break;
 
-				case 421:
-				case 431:
-				case 500:
-				case 501:
-				case 503:
-				case 535:
-				// Server isn't going to accept named security mechanism.
-				// Client has to restart back at the AUTH.
-				done = true;
-				break;
+			case 421:
+			case 431:
+			case 500:
+			case 501:
+			case 503:
+			case 535:
+			// Server isn't going to accept named security mechanism.
+			// Client has to restart back at the AUTH.
+			done = true;
+			break;
 
-				case 631:
-				case 632:
-				case 633:
-				// If the server is sending protected replies, the security
-				// data exchange must have already succeeded.  It does have
-				// encoded data in the reply, but 632 and 633 are also encrypted.
-				done = true;
-				break;
+			case 631:
+			case 632:
+			case 633:
+			// If the server is sending protected replies, the security
+			// data exchange must have already succeeded.  It does have
+			// encoded data in the reply, but 632 and 633 are also encrypted.
+			done = true;
+			break;
 
-				default:
-				break;
+			default:
+			break;
 			}
 		}
 

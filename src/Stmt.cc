@@ -257,25 +257,25 @@ ValPtr PrintStmt::DoExec(std::vector<ValPtr> vals, StmtFlowType& /* flow */) con
 
 	switch ( print_log_type )
 		{
-			case BifEnum::Log::REDIRECT_NONE:
-			break;
-			case BifEnum::Log::REDIRECT_ALL:
-				{
-				print_log(vals);
-				return nullptr;
-				}
-			case BifEnum::Log::REDIRECT_STDOUT:
-			if ( f->FileHandle() == stdout )
-				{
-				// Should catch even printing to a "manually opened" stdout file,
-				// like "/dev/stdout" or "-".
-				print_log(vals);
-				return nullptr;
-				}
-			break;
-			default:
-			reporter->InternalError("unknown Log::PrintLogType value: %d", print_log_type);
-			break;
+		case BifEnum::Log::REDIRECT_NONE:
+		break;
+		case BifEnum::Log::REDIRECT_ALL:
+			{
+			print_log(vals);
+			return nullptr;
+			}
+		case BifEnum::Log::REDIRECT_STDOUT:
+		if ( f->FileHandle() == stdout )
+			{
+			// Should catch even printing to a "manually opened" stdout file,
+			// like "/dev/stdout" or "-".
+			print_log(vals);
+			return nullptr;
+			}
+		break;
+		default:
+		reporter->InternalError("unknown Log::PrintLogType value: %d", print_log_type);
+		break;
 		}
 
 	DescStyle style = f->IsRawOutput() ? RAW_STYLE : STANDARD_STYLE;
@@ -665,41 +665,41 @@ SwitchStmt::SwitchStmt(ExprPtr index, case_list* arg_cases)
 
 					switch ( expr->Tag() )
 						{
-							// Simplify trivial unary plus/minus expressions on consts.
-							case EXPR_NEGATE:
+					// Simplify trivial unary plus/minus expressions on consts.
+						case EXPR_NEGATE:
+							{
+							NegExpr* ne = (NegExpr*)(expr);
+
+							if ( ne->Op()->IsConst() )
+								Unref(exprs.replace(j, new ConstExpr(ne->Eval(nullptr))));
+							}
+						break;
+
+						case EXPR_POSITIVE:
+							{
+							PosExpr* pe = (PosExpr*)(expr);
+
+							if ( pe->Op()->IsConst() )
+								Unref(exprs.replace(j, new ConstExpr(pe->Eval(nullptr))));
+							}
+						break;
+
+						case EXPR_NAME:
+							{
+							NameExpr* ne = (NameExpr*)(expr);
+
+							if ( ne->Id()->IsConst() )
 								{
-								NegExpr* ne = (NegExpr*)(expr);
+								auto v = ne->Eval(nullptr);
 
-								if ( ne->Op()->IsConst() )
-									Unref(exprs.replace(j, new ConstExpr(ne->Eval(nullptr))));
+								if ( v )
+									Unref(exprs.replace(j, new ConstExpr(std::move(v))));
 								}
-							break;
+							}
+						break;
 
-							case EXPR_POSITIVE:
-								{
-								PosExpr* pe = (PosExpr*)(expr);
-
-								if ( pe->Op()->IsConst() )
-									Unref(exprs.replace(j, new ConstExpr(pe->Eval(nullptr))));
-								}
-							break;
-
-							case EXPR_NAME:
-								{
-								NameExpr* ne = (NameExpr*)(expr);
-
-								if ( ne->Id()->IsConst() )
-									{
-									auto v = ne->Eval(nullptr);
-
-									if ( v )
-										Unref(exprs.replace(j, new ConstExpr(std::move(v))));
-									}
-								}
-							break;
-
-							default:
-							break;
+						default:
+						break;
 						}
 					}
 
@@ -1680,17 +1680,17 @@ ValPtr InitStmt::Exec(Frame* f, StmtFlowType& flow) const
 
 		switch ( t->Tag() )
 			{
-				case TYPE_RECORD:
-				v = make_intrusive<RecordVal>(cast_intrusive<RecordType>(t));
-				break;
-				case TYPE_VECTOR:
-				v = make_intrusive<VectorVal>(cast_intrusive<VectorType>(t));
-				break;
-				case TYPE_TABLE:
-				v = make_intrusive<TableVal>(cast_intrusive<TableType>(t), aggr->GetAttrs());
-				break;
-				default:
-				break;
+			case TYPE_RECORD:
+			v = make_intrusive<RecordVal>(cast_intrusive<RecordType>(t));
+			break;
+			case TYPE_VECTOR:
+			v = make_intrusive<VectorVal>(cast_intrusive<VectorType>(t));
+			break;
+			case TYPE_TABLE:
+			v = make_intrusive<TableVal>(cast_intrusive<TableType>(t), aggr->GetAttrs());
+			break;
+			default:
+			break;
 			}
 
 		f->SetElement(aggr, std::move(v));

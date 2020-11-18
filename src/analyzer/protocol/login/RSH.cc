@@ -49,73 +49,63 @@ void Contents_Rsh_Analyzer::DoDeliver(int len, const u_char* data)
 
 		switch ( state )
 			{
-				case RSH_FIRST_NULL:
-				if ( endp_state == analyzer::tcp::TCP_ENDPOINT_PARTIAL ||
-				     // We can be in closed if the data's due to
-				     // a dataful FIN being the first thing we see.
-				     endp_state == analyzer::tcp::TCP_ENDPOINT_CLOSED )
+			case RSH_FIRST_NULL:
+			if ( endp_state == analyzer::tcp::TCP_ENDPOINT_PARTIAL ||
+			     // We can be in closed if the data's due to
+			     // a dataful FIN being the first thing we see.
+			     endp_state == analyzer::tcp::TCP_ENDPOINT_CLOSED )
+				{
+				state = RSH_UNKNOWN;
+				++len, --data; // put back c and reprocess
+				continue;
+				}
+
+			if ( c >= '0' && c <= '9' )
+				; // skip stderr port number
+			else if ( c == '\0' )
+				state = RSH_CLIENT_USER_NAME;
+			else
+				BadProlog();
+
+			break;
+
+			case RSH_CLIENT_USER_NAME:
+			case RSH_SERVER_USER_NAME:
+			buf[offset++] = c;
+			if ( c == '\0' )
+				{
+				if ( state == RSH_CLIENT_USER_NAME )
 					{
-					state = RSH_UNKNOWN;
-					++len, --data; // put back c and reprocess
-					continue;
+					analyzer->ClientUserName((const char*)buf);
+					state = RSH_SERVER_USER_NAME;
 					}
 
-				if ( c >= '0' && c <= '9' )
-					; // skip stderr port number
-				else if ( c == '\0' )
-					state = RSH_CLIENT_USER_NAME;
+				else if ( state == RSH_SERVER_USER_NAME && offset > 1 )
+					{
+					analyzer->ServerUserName((const char*)buf);
+					save_state = state;
+					state = RSH_LINE_MODE;
+					}
+
+				offset = 0;
+				}
+			break;
+
+			case RSH_LINE_MODE:
+			case RSH_UNKNOWN:
+			case RSH_PRESUMED_REJECTED:
+			if ( state == RSH_PRESUMED_REJECTED )
+				{
+				Conn()->Weird("rsh_text_after_rejected");
+				state = RSH_UNKNOWN;
+				}
+
+			if ( c == '\n' || c == '\r' )
+				{ // CR or LF (RFC 1282)
+				if ( c == '\n' && last_char == '\r' )
+					// Compress CRLF to just 1 termination.
+					;
 				else
-					BadProlog();
-
-				break;
-
-				case RSH_CLIENT_USER_NAME:
-				case RSH_SERVER_USER_NAME:
-				buf[offset++] = c;
-				if ( c == '\0' )
-					{
-					if ( state == RSH_CLIENT_USER_NAME )
-						{
-						analyzer->ClientUserName((const char*)buf);
-						state = RSH_SERVER_USER_NAME;
-						}
-
-					else if ( state == RSH_SERVER_USER_NAME && offset > 1 )
-						{
-						analyzer->ServerUserName((const char*)buf);
-						save_state = state;
-						state = RSH_LINE_MODE;
-						}
-
-					offset = 0;
-					}
-				break;
-
-				case RSH_LINE_MODE:
-				case RSH_UNKNOWN:
-				case RSH_PRESUMED_REJECTED:
-				if ( state == RSH_PRESUMED_REJECTED )
-					{
-					Conn()->Weird("rsh_text_after_rejected");
-					state = RSH_UNKNOWN;
-					}
-
-				if ( c == '\n' || c == '\r' )
-					{ // CR or LF (RFC 1282)
-					if ( c == '\n' && last_char == '\r' )
-						// Compress CRLF to just 1 termination.
-						;
-					else
-						{
-						buf[offset] = '\0';
-						ForwardStream(offset, buf, IsOrig());
-						save_state = RSH_LINE_MODE;
-						offset = 0;
-						break;
-						}
-					}
-
-				if ( c == '\0' )
 					{
 					buf[offset] = '\0';
 					ForwardStream(offset, buf, IsOrig());
@@ -123,16 +113,26 @@ void Contents_Rsh_Analyzer::DoDeliver(int len, const u_char* data)
 					offset = 0;
 					break;
 					}
+				}
 
-				else
-					buf[offset++] = c;
-
-				last_char = c;
+			if ( c == '\0' )
+				{
+				buf[offset] = '\0';
+				ForwardStream(offset, buf, IsOrig());
+				save_state = RSH_LINE_MODE;
+				offset = 0;
 				break;
+				}
 
-				default:
-				reporter->AnalyzerError(this, "bad state in Contents_Rsh_Analyzer::DoDeliver");
-				break;
+			else
+				buf[offset++] = c;
+
+			last_char = c;
+			break;
+
+			default:
+			reporter->AnalyzerError(this, "bad state in Contents_Rsh_Analyzer::DoDeliver");
+			break;
 			}
 		}
 	}

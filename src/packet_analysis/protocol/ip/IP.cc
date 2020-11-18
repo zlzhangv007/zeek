@@ -236,31 +236,31 @@ bool IPAnalyzer::AnalyzePacket(size_t len, const uint8_t* data, Packet* packet)
 
 	switch ( proto )
 		{
-			case IPPROTO_TCP:
-			case IPPROTO_UDP:
-			case IPPROTO_ICMP:
-			case IPPROTO_ICMPV6:
-			DBG_LOG(DBG_PACKET_ANALYSIS, "Analysis in %s succeeded, next layer identifier is %#x.",
-			        GetAnalyzerName(), proto);
-			sessions->ProcessTransportLayer(run_state::processing_start_time, packet, len);
-			break;
-			case IPPROTO_NONE:
-			// If the packet is encapsulated in Teredo, then it was a bubble and
-			// the Teredo analyzer may have raised an event for that, else we're
-			// not sure the reason for the No Next header in the packet.
-			if ( ! (packet->encap && packet->encap->LastType() == BifEnum::Tunnel::TEREDO) )
-				{
-				sessions->Weird("ipv6_no_next", packet);
-				return_val = false;
-				}
-			break;
-			default:
-			packet->proto = proto;
+		case IPPROTO_TCP:
+		case IPPROTO_UDP:
+		case IPPROTO_ICMP:
+		case IPPROTO_ICMPV6:
+		DBG_LOG(DBG_PACKET_ANALYSIS, "Analysis in %s succeeded, next layer identifier is %#x.",
+		        GetAnalyzerName(), proto);
+		sessions->ProcessTransportLayer(run_state::processing_start_time, packet, len);
+		break;
+		case IPPROTO_NONE:
+		// If the packet is encapsulated in Teredo, then it was a bubble and
+		// the Teredo analyzer may have raised an event for that, else we're
+		// not sure the reason for the No Next header in the packet.
+		if ( ! (packet->encap && packet->encap->LastType() == BifEnum::Tunnel::TEREDO) )
+			{
+			sessions->Weird("ipv6_no_next", packet);
+			return_val = false;
+			}
+		break;
+		default:
+		packet->proto = proto;
 
-			// For everything else, pass it on to another analyzer. If there's no one to handle
-			// that, it'll report a Weird.
-			return_val = ForwardPacket(len, data, packet, proto);
-			break;
+		// For everything else, pass it on to another analyzer. If there's no one to handle
+		// that, it'll report a Weird.
+		return_val = ForwardPacket(len, data, packet, proto);
+		break;
 		}
 
 	if ( f )

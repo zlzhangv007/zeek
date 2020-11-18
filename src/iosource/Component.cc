@@ -85,20 +85,20 @@ void PktSrcComponent::DoDescribe(ODesc* d) const
 
 	switch ( type )
 		{
-			case LIVE:
-			d->Add("live input");
-			break;
+		case LIVE:
+		d->Add("live input");
+		break;
 
-			case TRACE:
-			d->Add("trace input");
-			break;
+		case TRACE:
+		d->Add("trace input");
+		break;
 
-			case BOTH:
-			d->Add("live and trace input");
-			break;
+		case BOTH:
+		d->Add("live and trace input");
+		break;
 
-			default:
-			reporter->InternalError("unknown PkrSrc type");
+		default:
+		reporter->InternalError("unknown PkrSrc type");
 		}
 	}
 

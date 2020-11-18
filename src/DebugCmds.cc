@@ -504,24 +504,24 @@ int dbg_cmd_break_set_state(DebugCmd cmd, const vector<string>& args)
 			{
 			switch ( cmd )
 				{
-					case dcDisableBreak:
-					g_debugger_state.breakpoints[bp_change]->SetEnable(false);
-					debug_msg("Breakpoint %d disabled\n", bp_change);
-					break;
+				case dcDisableBreak:
+				g_debugger_state.breakpoints[bp_change]->SetEnable(false);
+				debug_msg("Breakpoint %d disabled\n", bp_change);
+				break;
 
-					case dcEnableBreak:
-					g_debugger_state.breakpoints[bp_change]->SetEnable(true);
-					debug_msg("Breakpoint %d enabled\n", bp_change);
-					break;
+				case dcEnableBreak:
+				g_debugger_state.breakpoints[bp_change]->SetEnable(true);
+				debug_msg("Breakpoint %d enabled\n", bp_change);
+				break;
 
-					case dcDeleteBreak:
-					delete g_debugger_state.breakpoints[bp_change];
-					g_debugger_state.breakpoints.erase(bp_change);
-					debug_msg("Breakpoint %d deleted\n", bp_change);
-					break;
+				case dcDeleteBreak:
+				delete g_debugger_state.breakpoints[bp_change];
+				g_debugger_state.breakpoints.erase(bp_change);
+				debug_msg("Breakpoint %d deleted\n", bp_change);
+				break;
 
-					default:
-					reporter->InternalError("Invalid command in DbgCmdBreakSetState\n");
+				default:
+				reporter->InternalError("Invalid command in DbgCmdBreakSetState\n");
 				}
 			}
 

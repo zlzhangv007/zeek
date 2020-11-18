@@ -513,24 +513,24 @@ TableValPtr DNS_Mgr::LookupHost(const char* name)
 	// Not found, or priming.
 	switch ( mode )
 		{
-			case DNS_PRIME:
-			requests.push_back(new DNS_Mgr_Request(name, AF_INET, false));
-			requests.push_back(new DNS_Mgr_Request(name, AF_INET6, false));
-			return empty_addr_set();
+		case DNS_PRIME:
+		requests.push_back(new DNS_Mgr_Request(name, AF_INET, false));
+		requests.push_back(new DNS_Mgr_Request(name, AF_INET6, false));
+		return empty_addr_set();
 
-			case DNS_FORCE:
-			reporter->FatalError("can't find DNS entry for %s in cache", name);
-			return nullptr;
+		case DNS_FORCE:
+		reporter->FatalError("can't find DNS entry for %s in cache", name);
+		return nullptr;
 
-			case DNS_DEFAULT:
-			requests.push_back(new DNS_Mgr_Request(name, AF_INET, false));
-			requests.push_back(new DNS_Mgr_Request(name, AF_INET6, false));
-			Resolve();
-			return LookupHost(name);
+		case DNS_DEFAULT:
+		requests.push_back(new DNS_Mgr_Request(name, AF_INET, false));
+		requests.push_back(new DNS_Mgr_Request(name, AF_INET6, false));
+		Resolve();
+		return LookupHost(name);
 
-			default:
-			reporter->InternalError("bad mode in DNS_Mgr::LookupHost");
-			return nullptr;
+		default:
+		reporter->InternalError("bad mode in DNS_Mgr::LookupHost");
+		return nullptr;
 		}
 	}
 
@@ -559,22 +559,22 @@ ValPtr DNS_Mgr::LookupAddr(const IPAddr& addr)
 	// Not found, or priming.
 	switch ( mode )
 		{
-			case DNS_PRIME:
-			requests.push_back(new DNS_Mgr_Request(addr));
-			return make_intrusive<StringVal>("<none>");
+		case DNS_PRIME:
+		requests.push_back(new DNS_Mgr_Request(addr));
+		return make_intrusive<StringVal>("<none>");
 
-			case DNS_FORCE:
-			reporter->FatalError("can't find DNS entry for %s in cache", addr.AsString().c_str());
-			return nullptr;
+		case DNS_FORCE:
+		reporter->FatalError("can't find DNS entry for %s in cache", addr.AsString().c_str());
+		return nullptr;
 
-			case DNS_DEFAULT:
-			requests.push_back(new DNS_Mgr_Request(addr));
-			Resolve();
-			return LookupAddr(addr);
+		case DNS_DEFAULT:
+		requests.push_back(new DNS_Mgr_Request(addr));
+		Resolve();
+		return LookupAddr(addr);
 
-			default:
-			reporter->InternalError("bad mode in DNS_Mgr::LookupAddr");
-			return nullptr;
+		default:
+		reporter->InternalError("bad mode in DNS_Mgr::LookupAddr");
+		return nullptr;
 		}
 	}
 

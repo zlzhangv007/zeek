@@ -177,36 +177,36 @@ bool ReporterMessage::Process()
 	switch ( type )
 		{
 
-			case INFO:
-			reporter->Info("%s: %s", Object()->Name(), msg);
-			break;
+		case INFO:
+		reporter->Info("%s: %s", Object()->Name(), msg);
+		break;
 
-			case WARNING:
-			reporter->Warning("%s: %s", Object()->Name(), msg);
-			break;
+		case WARNING:
+		reporter->Warning("%s: %s", Object()->Name(), msg);
+		break;
 
-			case ERROR:
-			reporter->Error("%s: %s", Object()->Name(), msg);
-			break;
+		case ERROR:
+		reporter->Error("%s: %s", Object()->Name(), msg);
+		break;
 
-			case FATAL_ERROR:
-			reporter->FatalError("%s: %s", Object()->Name(), msg);
-			break;
+		case FATAL_ERROR:
+		reporter->FatalError("%s: %s", Object()->Name(), msg);
+		break;
 
-			case FATAL_ERROR_WITH_CORE:
-			reporter->FatalErrorWithCore("%s: %s", Object()->Name(), msg);
-			break;
+		case FATAL_ERROR_WITH_CORE:
+		reporter->FatalErrorWithCore("%s: %s", Object()->Name(), msg);
+		break;
 
-			case INTERNAL_WARNING:
-			reporter->InternalWarning("%s: %s", Object()->Name(), msg);
-			break;
+		case INTERNAL_WARNING:
+		reporter->InternalWarning("%s: %s", Object()->Name(), msg);
+		break;
 
-			case INTERNAL_ERROR:
-			reporter->InternalError("%s: %s", Object()->Name(), msg);
-			break;
+		case INTERNAL_ERROR:
+		reporter->InternalError("%s: %s", Object()->Name(), msg);
+		break;
 
-			default:
-			reporter->InternalError("unknown ReporterMessage type %d", type);
+		default:
+		reporter->InternalError("unknown ReporterMessage type %d", type);
 		}
 
 	return true;

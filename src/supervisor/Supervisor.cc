@@ -1407,16 +1407,16 @@ static ValPtr supervisor_role_to_cluster_node_type(BifEnum::Supervisor::ClusterR
 
 	switch ( role )
 		{
-			case BifEnum::Supervisor::LOGGER:
-			return node_type->GetEnumVal(node_type->Lookup("Cluster", "LOGGER"));
-			case BifEnum::Supervisor::MANAGER:
-			return node_type->GetEnumVal(node_type->Lookup("Cluster", "MANAGER"));
-			case BifEnum::Supervisor::PROXY:
-			return node_type->GetEnumVal(node_type->Lookup("Cluster", "PROXY"));
-			case BifEnum::Supervisor::WORKER:
-			return node_type->GetEnumVal(node_type->Lookup("Cluster", "WORKER"));
-			default:
-			return node_type->GetEnumVal(node_type->Lookup("Cluster", "NONE"));
+		case BifEnum::Supervisor::LOGGER:
+		return node_type->GetEnumVal(node_type->Lookup("Cluster", "LOGGER"));
+		case BifEnum::Supervisor::MANAGER:
+		return node_type->GetEnumVal(node_type->Lookup("Cluster", "MANAGER"));
+		case BifEnum::Supervisor::PROXY:
+		return node_type->GetEnumVal(node_type->Lookup("Cluster", "PROXY"));
+		case BifEnum::Supervisor::WORKER:
+		return node_type->GetEnumVal(node_type->Lookup("Cluster", "WORKER"));
+		default:
+		return node_type->GetEnumVal(node_type->Lookup("Cluster", "NONE"));
 		}
 	}
 

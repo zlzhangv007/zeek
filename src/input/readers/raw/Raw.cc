@@ -558,44 +558,44 @@ bool Raw::DoUpdate()
 		{
 		switch ( Info().mode )
 			{
-				case MODE_REREAD:
+			case MODE_REREAD:
+				{
+				assert(childpid == -1); // mode may not be used to execute child programs
+				// check if the file has changed
+				struct stat sb;
+				if ( stat(fname.c_str(), &sb) == -1 )
 					{
-					assert(childpid == -1); // mode may not be used to execute child programs
-					// check if the file has changed
-					struct stat sb;
-					if ( stat(fname.c_str(), &sb) == -1 )
-						{
-						Error(Fmt("Could not get stat for %s", fname.c_str()));
-						return false;
-						}
-
-					if ( sb.st_ino == ino && sb.st_mtime == mtime )
-						// no change
-						return true;
-
-					mtime = sb.st_mtime;
-					ino = sb.st_ino;
-					// file changed. reread.
-					//
-					// fallthrough
-					}
-
-				case MODE_MANUAL:
-				case MODE_STREAM:
-				if ( Info().mode == MODE_STREAM && file )
-					{
-					clearerr(file.get()); // remove end of file evil bits
-					break;
-					}
-
-				CloseInput();
-				if ( ! OpenInput() )
+					Error(Fmt("Could not get stat for %s", fname.c_str()));
 					return false;
+					}
 
+				if ( sb.st_ino == ino && sb.st_mtime == mtime )
+					// no change
+					return true;
+
+				mtime = sb.st_mtime;
+				ino = sb.st_ino;
+				// file changed. reread.
+				//
+				// fallthrough
+				}
+
+			case MODE_MANUAL:
+			case MODE_STREAM:
+			if ( Info().mode == MODE_STREAM && file )
+				{
+				clearerr(file.get()); // remove end of file evil bits
 				break;
+				}
 
-				default:
-				assert(false);
+			CloseInput();
+			if ( ! OpenInput() )
+				return false;
+
+			break;
+
+			default:
+			assert(false);
 			}
 		}
 
@@ -720,23 +720,23 @@ bool Raw::DoHeartbeat(double network_time, double current_time)
 	{
 	switch ( Info().mode )
 		{
-			case MODE_MANUAL:
-			// yay, we do nothing :)
-			break;
+		case MODE_MANUAL:
+		// yay, we do nothing :)
+		break;
 
-			case MODE_REREAD:
-			case MODE_STREAM:
+		case MODE_REREAD:
+		case MODE_STREAM:
 #ifdef DEBUG
-			Debug(DBG_INPUT, "Starting Heartbeat update");
+		Debug(DBG_INPUT, "Starting Heartbeat update");
 #endif
-			Update(); // call update and not DoUpdate, because update
-			          // checks disabled.
+		Update(); // call update and not DoUpdate, because update
+		          // checks disabled.
 #ifdef DEBUG
-			Debug(DBG_INPUT, "Finished with heartbeat update");
+		Debug(DBG_INPUT, "Finished with heartbeat update");
 #endif
-			break;
-			default:
-			assert(false);
+		break;
+		default:
+		assert(false);
 		}
 
 	return true;

@@ -44,157 +44,157 @@ void Contents_Rlogin_Analyzer::DoDeliver(int len, const u_char* data)
 
 		switch ( state )
 			{
-				case RLOGIN_FIRST_NULL:
-				if ( endp_state == analyzer::tcp::TCP_ENDPOINT_PARTIAL ||
-				     // We can be in closed if the data's due to
-				     // a dataful FIN being the first thing we see.
-				     endp_state == analyzer::tcp::TCP_ENDPOINT_CLOSED )
+			case RLOGIN_FIRST_NULL:
+			if ( endp_state == analyzer::tcp::TCP_ENDPOINT_PARTIAL ||
+			     // We can be in closed if the data's due to
+			     // a dataful FIN being the first thing we see.
+			     endp_state == analyzer::tcp::TCP_ENDPOINT_CLOSED )
+				{
+				state = RLOGIN_UNKNOWN;
+				++len, --data; // put back c and reprocess
+				continue;
+				}
+
+			if ( c == '\0' )
+				state = RLOGIN_CLIENT_USER_NAME;
+			else
+				BadProlog();
+			break;
+
+			case RLOGIN_CLIENT_USER_NAME:
+			case RLOGIN_SERVER_USER_NAME:
+			case RLOGIN_TERMINAL_TYPE:
+			buf[offset++] = c;
+			if ( c == '\0' )
+				{
+				if ( state == RLOGIN_CLIENT_USER_NAME )
 					{
-					state = RLOGIN_UNKNOWN;
-					++len, --data; // put back c and reprocess
-					continue;
+					analyzer->ClientUserName((const char*)buf);
+					state = RLOGIN_SERVER_USER_NAME;
 					}
 
-				if ( c == '\0' )
-					state = RLOGIN_CLIENT_USER_NAME;
-				else
-					BadProlog();
-				break;
-
-				case RLOGIN_CLIENT_USER_NAME:
-				case RLOGIN_SERVER_USER_NAME:
-				case RLOGIN_TERMINAL_TYPE:
-				buf[offset++] = c;
-				if ( c == '\0' )
+				else if ( state == RLOGIN_SERVER_USER_NAME )
 					{
-					if ( state == RLOGIN_CLIENT_USER_NAME )
-						{
-						analyzer->ClientUserName((const char*)buf);
-						state = RLOGIN_SERVER_USER_NAME;
-						}
-
-					else if ( state == RLOGIN_SERVER_USER_NAME )
-						{
-						analyzer->ServerUserName((const char*)buf);
-						state = RLOGIN_TERMINAL_TYPE;
-						}
-
-					else if ( state == RLOGIN_TERMINAL_TYPE )
-						{
-						analyzer->TerminalType((const char*)buf);
-						state = RLOGIN_LINE_MODE;
-						}
-
-					offset = 0;
-					}
-				break;
-
-				case RLOGIN_SERVER_ACK:
-				if ( endp_state == analyzer::tcp::TCP_ENDPOINT_PARTIAL ||
-				     // We can be in closed if the data's due to
-				     // a dataful FIN being the first thing we see.
-				     endp_state == analyzer::tcp::TCP_ENDPOINT_CLOSED )
-					{
-					state = RLOGIN_UNKNOWN;
-					++len, --data; // put back c and reprocess
-					continue;
+					analyzer->ServerUserName((const char*)buf);
+					state = RLOGIN_TERMINAL_TYPE;
 					}
 
-				if ( c == '\0' )
+				else if ( state == RLOGIN_TERMINAL_TYPE )
+					{
+					analyzer->TerminalType((const char*)buf);
 					state = RLOGIN_LINE_MODE;
+					}
+
+				offset = 0;
+				}
+			break;
+
+			case RLOGIN_SERVER_ACK:
+			if ( endp_state == analyzer::tcp::TCP_ENDPOINT_PARTIAL ||
+			     // We can be in closed if the data's due to
+			     // a dataful FIN being the first thing we see.
+			     endp_state == analyzer::tcp::TCP_ENDPOINT_CLOSED )
+				{
+				state = RLOGIN_UNKNOWN;
+				++len, --data; // put back c and reprocess
+				continue;
+				}
+
+			if ( c == '\0' )
+				state = RLOGIN_LINE_MODE;
+			else
+				state = RLOGIN_PRESUMED_REJECTED;
+			break;
+
+			case RLOGIN_IN_BAND_CONTROL_FF2:
+			if ( c == 255 )
+				state = RLOGIN_WINDOW_CHANGE_S1;
+			else
+				{
+				// Put back the \ff that took us into
+				// this state.
+				buf[offset++] = 255;
+				state = save_state;
+				++len, --data; // put back c and reprocess
+				continue;
+				}
+			break;
+
+			case RLOGIN_WINDOW_CHANGE_S1:
+			case RLOGIN_WINDOW_CHANGE_S2:
+			if ( c == 's' )
+				{
+				if ( state == RLOGIN_WINDOW_CHANGE_S1 )
+					state = RLOGIN_WINDOW_CHANGE_S2;
 				else
-					state = RLOGIN_PRESUMED_REJECTED;
-				break;
+					{
+					state = RLOGIN_WINDOW_CHANGE_REMAINDER;
+					num_bytes_to_scan = 8;
+					}
+				}
+			else
+				{
+				// Unknown control, or we're confused.
+				// Put back what we've consumed.
+				unsigned char buf[64];
+				int n = 0;
+				buf[n++] = '\xff';
+				buf[n++] = '\xff';
 
-				case RLOGIN_IN_BAND_CONTROL_FF2:
-				if ( c == 255 )
-					state = RLOGIN_WINDOW_CHANGE_S1;
+				if ( state == RLOGIN_WINDOW_CHANGE_S2 )
+					buf[n++] = 's';
+
+				state = RLOGIN_UNKNOWN;
+
+				DoDeliver(n, buf);
+				}
+			break;
+
+			case RLOGIN_WINDOW_CHANGE_REMAINDER:
+			if ( --num_bytes_to_scan == 0 )
+				state = save_state;
+			break;
+
+			case RLOGIN_LINE_MODE:
+			case RLOGIN_UNKNOWN:
+			case RLOGIN_PRESUMED_REJECTED:
+			assert(peer);
+			if ( state == RLOGIN_LINE_MODE && peer->state == RLOGIN_PRESUMED_REJECTED )
+				{
+				Conn()->Weird("rlogin_text_after_rejected");
+				state = RLOGIN_UNKNOWN;
+				}
+
+			if ( c == '\n' || c == '\r' ) // CR or LF (RFC 1282)
+				{
+				if ( c == '\n' && last_char == '\r' )
+					// Compress CRLF to just 1 termination.
+					;
 				else
 					{
-					// Put back the \ff that took us into
-					// this state.
-					buf[offset++] = 255;
-					state = save_state;
-					++len, --data; // put back c and reprocess
-					continue;
+					buf[offset] = '\0';
+					ForwardStream(offset, buf, IsOrig());
+					offset = 0;
+					break;
 					}
-				break;
+				}
 
-				case RLOGIN_WINDOW_CHANGE_S1:
-				case RLOGIN_WINDOW_CHANGE_S2:
-				if ( c == 's' )
-					{
-					if ( state == RLOGIN_WINDOW_CHANGE_S1 )
-						state = RLOGIN_WINDOW_CHANGE_S2;
-					else
-						{
-						state = RLOGIN_WINDOW_CHANGE_REMAINDER;
-						num_bytes_to_scan = 8;
-						}
-					}
-				else
-					{
-					// Unknown control, or we're confused.
-					// Put back what we've consumed.
-					unsigned char buf[64];
-					int n = 0;
-					buf[n++] = '\xff';
-					buf[n++] = '\xff';
+			else if ( c == 255 && IsOrig() && state != RLOGIN_PRESUMED_REJECTED &&
+			          state != RLOGIN_UNKNOWN )
+				{
+				save_state = state;
+				state = RLOGIN_IN_BAND_CONTROL_FF2;
+				}
 
-					if ( state == RLOGIN_WINDOW_CHANGE_S2 )
-						buf[n++] = 's';
+			else
+				buf[offset++] = c;
 
-					state = RLOGIN_UNKNOWN;
+			last_char = c;
+			break;
 
-					DoDeliver(n, buf);
-					}
-				break;
-
-				case RLOGIN_WINDOW_CHANGE_REMAINDER:
-				if ( --num_bytes_to_scan == 0 )
-					state = save_state;
-				break;
-
-				case RLOGIN_LINE_MODE:
-				case RLOGIN_UNKNOWN:
-				case RLOGIN_PRESUMED_REJECTED:
-				assert(peer);
-				if ( state == RLOGIN_LINE_MODE && peer->state == RLOGIN_PRESUMED_REJECTED )
-					{
-					Conn()->Weird("rlogin_text_after_rejected");
-					state = RLOGIN_UNKNOWN;
-					}
-
-				if ( c == '\n' || c == '\r' ) // CR or LF (RFC 1282)
-					{
-					if ( c == '\n' && last_char == '\r' )
-						// Compress CRLF to just 1 termination.
-						;
-					else
-						{
-						buf[offset] = '\0';
-						ForwardStream(offset, buf, IsOrig());
-						offset = 0;
-						break;
-						}
-					}
-
-				else if ( c == 255 && IsOrig() && state != RLOGIN_PRESUMED_REJECTED &&
-				          state != RLOGIN_UNKNOWN )
-					{
-					save_state = state;
-					state = RLOGIN_IN_BAND_CONTROL_FF2;
-					}
-
-				else
-					buf[offset++] = c;
-
-				last_char = c;
-				break;
-
-				default:
-				reporter->AnalyzerError(this, "bad state in Contents_Rlogin_Analyzer::DoDeliver");
-				break;
+			default:
+			reporter->AnalyzerError(this, "bad state in Contents_Rlogin_Analyzer::DoDeliver");
+			break;
 			}
 		}
 	}

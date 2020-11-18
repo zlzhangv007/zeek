@@ -82,46 +82,46 @@ void NetbiosSSN_Interpreter::ParseMessage(unsigned int type, unsigned int flags,
 
 	switch ( type )
 		{
-			case NETBIOS_SSN_MSG:
-			ParseSessionMsg(data, len, is_query);
-			break;
+		case NETBIOS_SSN_MSG:
+		ParseSessionMsg(data, len, is_query);
+		break;
 
-			case NETBIOS_SSN_REQ:
-			ParseSessionReq(data, len, is_query);
-			break;
+		case NETBIOS_SSN_REQ:
+		ParseSessionReq(data, len, is_query);
+		break;
 
-			case NETBIOS_SSN_POS_RESP:
-			ParseSessionPosResp(data, len, is_query);
-			break;
+		case NETBIOS_SSN_POS_RESP:
+		ParseSessionPosResp(data, len, is_query);
+		break;
 
-			case NETBIOS_SSN_NEG_RESP:
-			ParseSessionNegResp(data, len, is_query);
-			break;
+		case NETBIOS_SSN_NEG_RESP:
+		ParseSessionNegResp(data, len, is_query);
+		break;
 
-			case NETBIOS_SSN_RETARG_RESP:
-			ParseRetArgResp(data, len, is_query);
-			break;
+		case NETBIOS_SSN_RETARG_RESP:
+		ParseRetArgResp(data, len, is_query);
+		break;
 
-			case NETBIOS_SSN_KEEP_ALIVE:
-			ParseKeepAlive(data, len, is_query);
-			break;
+		case NETBIOS_SSN_KEEP_ALIVE:
+		ParseKeepAlive(data, len, is_query);
+		break;
 
-			case NETBIOS_DGM_DIRECT_UNIQUE:
-			case NETBIOS_DGM_DIRECT_GROUP:
-			case NETBIOS_DGM_BROADCAST:
-			ParseBroadcast(data, len, is_query);
-			break;
+		case NETBIOS_DGM_DIRECT_UNIQUE:
+		case NETBIOS_DGM_DIRECT_GROUP:
+		case NETBIOS_DGM_BROADCAST:
+		ParseBroadcast(data, len, is_query);
+		break;
 
-			case NETBIOS_DGM_ERROR:
-			case NETBIOS_DGG_QUERY_REQ:
-			case NETBIOS_DGM_POS_RESP:
-			case NETBIOS_DGM_NEG_RESP:
-			ParseDatagram(data, len, is_query);
-			break;
+		case NETBIOS_DGM_ERROR:
+		case NETBIOS_DGG_QUERY_REQ:
+		case NETBIOS_DGM_POS_RESP:
+		case NETBIOS_DGM_NEG_RESP:
+		ParseDatagram(data, len, is_query);
+		break;
 
-			default:
-			analyzer->Weird("unknown_netbios_type", util::fmt("0x%x", type));
-			break;
+		default:
+		analyzer->Weird("unknown_netbios_type", util::fmt("0x%x", type));
+		break;
 		}
 	}
 

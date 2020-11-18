@@ -330,18 +330,18 @@ Manager::tag_set* Manager::LookupPort(TransportProto proto, uint32_t port, bool 
 
 	switch ( proto )
 		{
-			case TRANSPORT_TCP:
-			m = &analyzers_by_port_tcp;
-			break;
+		case TRANSPORT_TCP:
+		m = &analyzers_by_port_tcp;
+		break;
 
-			case TRANSPORT_UDP:
-			m = &analyzers_by_port_udp;
-			break;
+		case TRANSPORT_UDP:
+		m = &analyzers_by_port_udp;
+		break;
 
-			default:
-			reporter->InternalWarning(
-				"unsupported transport protocol in analyzer::Manager::LookupPort");
-			return nullptr;
+		default:
+		reporter->InternalWarning(
+			"unsupported transport protocol in analyzer::Manager::LookupPort");
+		return nullptr;
 		}
 
 	analyzer_map_by_port::const_iterator i = m->find(port);
@@ -372,30 +372,30 @@ bool Manager::BuildInitialAnalyzerTree(Connection* conn)
 	switch ( conn->ConnTransport() )
 		{
 
-			case TRANSPORT_TCP:
-			root = tcp = new analyzer::tcp::TCP_Analyzer(conn);
-			pia = new analyzer::pia::PIA_TCP(conn);
-			check_port = true;
-			DBG_ANALYZER(conn, "activated TCP analyzer");
+		case TRANSPORT_TCP:
+		root = tcp = new analyzer::tcp::TCP_Analyzer(conn);
+		pia = new analyzer::pia::PIA_TCP(conn);
+		check_port = true;
+		DBG_ANALYZER(conn, "activated TCP analyzer");
+		break;
+
+		case TRANSPORT_UDP:
+		root = new analyzer::udp::UDP_Analyzer(conn);
+		pia = new analyzer::pia::PIA_UDP(conn);
+		check_port = true;
+		DBG_ANALYZER(conn, "activated UDP analyzer");
+		break;
+
+		case TRANSPORT_ICMP:
+			{
+			root = new analyzer::icmp::ICMP_Analyzer(conn);
+			DBG_ANALYZER(conn, "activated ICMP analyzer");
 			break;
+			}
 
-			case TRANSPORT_UDP:
-			root = new analyzer::udp::UDP_Analyzer(conn);
-			pia = new analyzer::pia::PIA_UDP(conn);
-			check_port = true;
-			DBG_ANALYZER(conn, "activated UDP analyzer");
-			break;
-
-			case TRANSPORT_ICMP:
-				{
-				root = new analyzer::icmp::ICMP_Analyzer(conn);
-				DBG_ANALYZER(conn, "activated ICMP analyzer");
-				break;
-				}
-
-			default:
-			reporter->InternalWarning("unknown protocol can't build analyzer tree");
-			return false;
+		default:
+		reporter->InternalWarning("unknown protocol can't build analyzer tree");
+		return false;
 		}
 
 	bool scheduled = ApplyScheduledAnalyzers(conn, false, root);

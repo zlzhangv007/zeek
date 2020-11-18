@@ -611,26 +611,26 @@ void Connection::Describe(ODesc* d) const
 
 	switch ( proto )
 		{
-			case TRANSPORT_TCP:
-			d->Add("TCP");
-			break;
+		case TRANSPORT_TCP:
+		d->Add("TCP");
+		break;
 
-			case TRANSPORT_UDP:
-			d->Add("UDP");
-			break;
+		case TRANSPORT_UDP:
+		d->Add("UDP");
+		break;
 
-			case TRANSPORT_ICMP:
-			d->Add("ICMP");
-			break;
+		case TRANSPORT_ICMP:
+		d->Add("ICMP");
+		break;
 
-			case TRANSPORT_UNKNOWN:
-			d->Add("unknown");
-			reporter->InternalWarning("unknown transport in Connction::Describe()");
+		case TRANSPORT_UNKNOWN:
+		d->Add("unknown");
+		reporter->InternalWarning("unknown transport in Connction::Describe()");
 
-			break;
+		break;
 
-			default:
-			reporter->InternalError("unhandled transport type in Connection::Describe");
+		default:
+		reporter->InternalError("unhandled transport type in Connection::Describe");
 		}
 
 	d->SP();

@@ -199,24 +199,24 @@ TypePtr Type::ShallowClone()
 	{
 	switch ( tag )
 		{
-			case TYPE_VOID:
-			case TYPE_BOOL:
-			case TYPE_INT:
-			case TYPE_COUNT:
-			case TYPE_DOUBLE:
-			case TYPE_TIME:
-			case TYPE_INTERVAL:
-			case TYPE_STRING:
-			case TYPE_PATTERN:
-			case TYPE_TIMER:
-			case TYPE_PORT:
-			case TYPE_ADDR:
-			case TYPE_SUBNET:
-			case TYPE_ANY:
-			return make_intrusive<Type>(tag, base_type);
+		case TYPE_VOID:
+		case TYPE_BOOL:
+		case TYPE_INT:
+		case TYPE_COUNT:
+		case TYPE_DOUBLE:
+		case TYPE_TIME:
+		case TYPE_INTERVAL:
+		case TYPE_STRING:
+		case TYPE_PATTERN:
+		case TYPE_TIMER:
+		case TYPE_PORT:
+		case TYPE_ADDR:
+		case TYPE_SUBNET:
+		case TYPE_ANY:
+		return make_intrusive<Type>(tag, base_type);
 
-			default:
-			reporter->InternalError("cloning illegal base Type");
+		default:
+		reporter->InternalError("cloning illegal base Type");
 		}
 	return nullptr;
 	}
@@ -448,54 +448,54 @@ static bool is_supported_index_type(const TypePtr& t, const char** tname)
 
 	switch ( tag )
 		{
-			// Allow functions, since they can be compared for Func* pointer equality.
-			case TYPE_FUNC:
-			return true;
+	// Allow functions, since they can be compared for Func* pointer equality.
+		case TYPE_FUNC:
+		return true;
 
-			case TYPE_PATTERN:
-			return true;
+		case TYPE_PATTERN:
+		return true;
 
-			case TYPE_RECORD:
-				{
-				auto rt = t->AsRecordType();
+		case TYPE_RECORD:
+			{
+			auto rt = t->AsRecordType();
 
-				for ( auto i = 0; i < rt->NumFields(); ++i )
-					if ( ! is_supported_index_type(rt->GetFieldType(i), tname) )
-						return false;
-
-				return true;
-				}
-
-			case TYPE_LIST:
-				{
-				for ( const auto& type : t->AsTypeList()->GetTypes() )
-					if ( ! is_supported_index_type(type, tname) )
-						return false;
-
-				return true;
-				}
-
-			case TYPE_TABLE:
-				{
-				auto tt = t->AsTableType();
-
-				if ( ! is_supported_index_type(tt->GetIndices(), tname) )
+			for ( auto i = 0; i < rt->NumFields(); ++i )
+				if ( ! is_supported_index_type(rt->GetFieldType(i), tname) )
 					return false;
 
-				const auto& yt = tt->Yield();
+			return true;
+			}
 
-				if ( ! yt )
-					return true;
+		case TYPE_LIST:
+			{
+			for ( const auto& type : t->AsTypeList()->GetTypes() )
+				if ( ! is_supported_index_type(type, tname) )
+					return false;
 
-				return is_supported_index_type(yt, tname);
-				}
+			return true;
+			}
 
-			case TYPE_VECTOR:
-			return is_supported_index_type(t->AsVectorType()->Yield(), tname);
+		case TYPE_TABLE:
+			{
+			auto tt = t->AsTableType();
 
-			default:
-			*tname = type_name(tag);
-			return false;
+			if ( ! is_supported_index_type(tt->GetIndices(), tname) )
+				return false;
+
+			const auto& yt = tt->Yield();
+
+			if ( ! yt )
+				return true;
+
+			return is_supported_index_type(yt, tname);
+			}
+
+		case TYPE_VECTOR:
+		return is_supported_index_type(t->AsVectorType()->Yield(), tname);
+
+		default:
+		*tname = type_name(tag);
+		return false;
 		}
 	}
 
@@ -639,18 +639,18 @@ string FuncType::FlavorString() const
 	switch ( flavor )
 		{
 
-			case FUNC_FLAVOR_FUNCTION:
-			return "function";
+		case FUNC_FLAVOR_FUNCTION:
+		return "function";
 
-			case FUNC_FLAVOR_EVENT:
-			return "event";
+		case FUNC_FLAVOR_EVENT:
+		return "event";
 
-			case FUNC_FLAVOR_HOOK:
-			return "hook";
+		case FUNC_FLAVOR_HOOK:
+		return "hook";
 
-			default:
-			reporter->InternalError("Invalid function flavor");
-			return "invalid_func_flavor";
+		default:
+		reporter->InternalError("Invalid function flavor");
+		return "invalid_func_flavor";
 		}
 	}
 
@@ -1581,138 +1581,137 @@ bool same_type(const Type& arg_t1, const Type& arg_t2, bool is_init, bool match_
 
 	switch ( t1->Tag() )
 		{
-			case TYPE_VOID:
-			case TYPE_BOOL:
-			case TYPE_INT:
-			case TYPE_COUNT:
+		case TYPE_VOID:
+		case TYPE_BOOL:
+		case TYPE_INT:
+		case TYPE_COUNT:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-			case TYPE_COUNTER:
+		case TYPE_COUNTER:
 #pragma GCC diagnostic pop
-			case TYPE_DOUBLE:
-			case TYPE_TIME:
-			case TYPE_INTERVAL:
-			case TYPE_STRING:
-			case TYPE_PATTERN:
-			case TYPE_TIMER:
-			case TYPE_PORT:
-			case TYPE_ADDR:
-			case TYPE_SUBNET:
-			case TYPE_ANY:
-			case TYPE_ERROR:
+		case TYPE_DOUBLE:
+		case TYPE_TIME:
+		case TYPE_INTERVAL:
+		case TYPE_STRING:
+		case TYPE_PATTERN:
+		case TYPE_TIMER:
+		case TYPE_PORT:
+		case TYPE_ADDR:
+		case TYPE_SUBNET:
+		case TYPE_ANY:
+		case TYPE_ERROR:
+		return true;
+
+		case TYPE_ENUM:
+		// We should probably check to see whether all of the
+		// enumerations are present and in the same location.
+		// FIXME: Yes, but perhaps we should better return
+		// true per default?
+		return true;
+
+		case TYPE_TABLE:
+			{
+			const IndexType* it1 = (const IndexType*)t1;
+			const IndexType* it2 = (const IndexType*)t2;
+
+			const auto& tl1 = it1->GetIndices();
+			const auto& tl2 = it2->GetIndices();
+
+			if ( tl1 || tl2 )
+				{
+				if ( ! tl1 || ! tl2 || ! same_type(tl1, tl2, is_init, match_record_field_names) )
+					return false;
+				}
+
+			const auto& y1 = t1->Yield();
+			const auto& y2 = t2->Yield();
+
+			if ( y1 || y2 )
+				{
+				if ( ! y1 || ! y2 || ! same_type(y1, y2, is_init, match_record_field_names) )
+					return false;
+				}
+
 			return true;
+			}
 
-			case TYPE_ENUM:
-			// We should probably check to see whether all of the
-			// enumerations are present and in the same location.
-			// FIXME: Yes, but perhaps we should better return
-			// true per default?
+		case TYPE_FUNC:
+			{
+			const FuncType* ft1 = (const FuncType*)t1;
+			const FuncType* ft2 = (const FuncType*)t2;
+
+			if ( ft1->Flavor() != ft2->Flavor() )
+				return false;
+
+			if ( t1->Yield() || t2->Yield() )
+				{
+				if ( ! t1->Yield() || ! t2->Yield() ||
+				     ! same_type(t1->Yield(), t2->Yield(), is_init, match_record_field_names) )
+					return false;
+				}
+
+			return ft1->CheckArgs(ft2->ParamList()->GetTypes(), is_init);
+			}
+
+		case TYPE_RECORD:
+			{
+			const RecordType* rt1 = (const RecordType*)t1;
+			const RecordType* rt2 = (const RecordType*)t2;
+
+			if ( rt1->NumFields() != rt2->NumFields() )
+				return false;
+
+			for ( int i = 0; i < rt1->NumFields(); ++i )
+				{
+				const TypeDecl* td1 = rt1->FieldDecl(i);
+				const TypeDecl* td2 = rt2->FieldDecl(i);
+
+				if ( (match_record_field_names && ! util::streq(td1->id, td2->id)) ||
+				     ! same_type(td1->type, td2->type, is_init, match_record_field_names) )
+					return false;
+
+				if ( ! same_attrs(td1->attrs.get(), td2->attrs.get()) )
+					return false;
+				}
+
 			return true;
+			}
 
-			case TYPE_TABLE:
-				{
-				const IndexType* it1 = (const IndexType*)t1;
-				const IndexType* it2 = (const IndexType*)t2;
+		case TYPE_LIST:
+			{
+			const auto& tl1 = t1->AsTypeList()->GetTypes();
+			const auto& tl2 = t2->AsTypeList()->GetTypes();
 
-				const auto& tl1 = it1->GetIndices();
-				const auto& tl2 = it2->GetIndices();
+			if ( tl1.size() != tl2.size() )
+				return false;
 
-				if ( tl1 || tl2 )
-					{
-					if ( ! tl1 || ! tl2 ||
-					     ! same_type(tl1, tl2, is_init, match_record_field_names) )
-						return false;
-					}
-
-				const auto& y1 = t1->Yield();
-				const auto& y2 = t2->Yield();
-
-				if ( y1 || y2 )
-					{
-					if ( ! y1 || ! y2 || ! same_type(y1, y2, is_init, match_record_field_names) )
-						return false;
-					}
-
-				return true;
-				}
-
-			case TYPE_FUNC:
-				{
-				const FuncType* ft1 = (const FuncType*)t1;
-				const FuncType* ft2 = (const FuncType*)t2;
-
-				if ( ft1->Flavor() != ft2->Flavor() )
+			for ( auto i = 0u; i < tl1.size(); ++i )
+				if ( ! same_type(tl1[i], tl2[i], is_init, match_record_field_names) )
 					return false;
 
-				if ( t1->Yield() || t2->Yield() )
-					{
-					if ( ! t1->Yield() || ! t2->Yield() ||
-					     ! same_type(t1->Yield(), t2->Yield(), is_init, match_record_field_names) )
-						return false;
-					}
+			return true;
+			}
 
-				return ft1->CheckArgs(ft2->ParamList()->GetTypes(), is_init);
-				}
+		case TYPE_VECTOR:
+		case TYPE_FILE:
+		return same_type(t1->Yield(), t2->Yield(), is_init, match_record_field_names);
 
-			case TYPE_RECORD:
-				{
-				const RecordType* rt1 = (const RecordType*)t1;
-				const RecordType* rt2 = (const RecordType*)t2;
+		case TYPE_OPAQUE:
+			{
+			const OpaqueType* ot1 = (const OpaqueType*)t1;
+			const OpaqueType* ot2 = (const OpaqueType*)t2;
+			return ot1->Name() == ot2->Name();
+			}
 
-				if ( rt1->NumFields() != rt2->NumFields() )
-					return false;
+		case TYPE_TYPE:
+			{
+			auto tt1 = t1->AsTypeType();
+			auto tt2 = t2->AsTypeType();
+			return same_type(tt1->GetType(), tt1->GetType(), is_init, match_record_field_names);
+			}
 
-				for ( int i = 0; i < rt1->NumFields(); ++i )
-					{
-					const TypeDecl* td1 = rt1->FieldDecl(i);
-					const TypeDecl* td2 = rt2->FieldDecl(i);
-
-					if ( (match_record_field_names && ! util::streq(td1->id, td2->id)) ||
-					     ! same_type(td1->type, td2->type, is_init, match_record_field_names) )
-						return false;
-
-					if ( ! same_attrs(td1->attrs.get(), td2->attrs.get()) )
-						return false;
-					}
-
-				return true;
-				}
-
-			case TYPE_LIST:
-				{
-				const auto& tl1 = t1->AsTypeList()->GetTypes();
-				const auto& tl2 = t2->AsTypeList()->GetTypes();
-
-				if ( tl1.size() != tl2.size() )
-					return false;
-
-				for ( auto i = 0u; i < tl1.size(); ++i )
-					if ( ! same_type(tl1[i], tl2[i], is_init, match_record_field_names) )
-						return false;
-
-				return true;
-				}
-
-			case TYPE_VECTOR:
-			case TYPE_FILE:
-			return same_type(t1->Yield(), t2->Yield(), is_init, match_record_field_names);
-
-			case TYPE_OPAQUE:
-				{
-				const OpaqueType* ot1 = (const OpaqueType*)t1;
-				const OpaqueType* ot2 = (const OpaqueType*)t2;
-				return ot1->Name() == ot2->Name();
-				}
-
-			case TYPE_TYPE:
-				{
-				auto tt1 = t1->AsTypeType();
-				auto tt2 = t2->AsTypeType();
-				return same_type(tt1->GetType(), tt1->GetType(), is_init, match_record_field_names);
-				}
-
-			case TYPE_UNION:
-			reporter->Error("union type in same_type()");
+		case TYPE_UNION:
+		reporter->Error("union type in same_type()");
 		}
 	return false;
 	}
@@ -1790,42 +1789,42 @@ bool is_assignable(TypeTag t)
 	{
 	switch ( t )
 		{
-			case TYPE_BOOL:
-			case TYPE_INT:
-			case TYPE_COUNT:
+		case TYPE_BOOL:
+		case TYPE_INT:
+		case TYPE_COUNT:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-			case TYPE_COUNTER:
+		case TYPE_COUNTER:
 #pragma GCC diagnostic pop
-			case TYPE_DOUBLE:
-			case TYPE_TIME:
-			case TYPE_INTERVAL:
-			case TYPE_STRING:
-			case TYPE_PATTERN:
-			case TYPE_ENUM:
-			case TYPE_TIMER:
-			case TYPE_PORT:
-			case TYPE_ADDR:
-			case TYPE_SUBNET:
-			case TYPE_RECORD:
-			case TYPE_FUNC:
-			case TYPE_ANY:
-			case TYPE_ERROR:
-			case TYPE_LIST:
-			return true;
+		case TYPE_DOUBLE:
+		case TYPE_TIME:
+		case TYPE_INTERVAL:
+		case TYPE_STRING:
+		case TYPE_PATTERN:
+		case TYPE_ENUM:
+		case TYPE_TIMER:
+		case TYPE_PORT:
+		case TYPE_ADDR:
+		case TYPE_SUBNET:
+		case TYPE_RECORD:
+		case TYPE_FUNC:
+		case TYPE_ANY:
+		case TYPE_ERROR:
+		case TYPE_LIST:
+		return true;
 
-			case TYPE_VECTOR:
-			case TYPE_FILE:
-			case TYPE_OPAQUE:
-			case TYPE_TABLE:
-			case TYPE_TYPE:
-			return true;
+		case TYPE_VECTOR:
+		case TYPE_FILE:
+		case TYPE_OPAQUE:
+		case TYPE_TABLE:
+		case TYPE_TYPE:
+		return true;
 
-			case TYPE_VOID:
-			return false;
+		case TYPE_VOID:
+		return false;
 
-			case TYPE_UNION:
-			reporter->Error("union type in is_assignable()");
+		case TYPE_UNION:
+		reporter->Error("union type in is_assignable()");
 		}
 
 	return false;
@@ -1878,219 +1877,219 @@ TypePtr merge_types(const TypePtr& arg_t1, const TypePtr& arg_t2)
 
 	switch ( tg1 )
 		{
-			case TYPE_TIME:
-			case TYPE_INTERVAL:
-			case TYPE_STRING:
-			case TYPE_PATTERN:
-			case TYPE_TIMER:
-			case TYPE_PORT:
-			case TYPE_ADDR:
-			case TYPE_SUBNET:
-			case TYPE_BOOL:
-			case TYPE_ANY:
-			case TYPE_ERROR:
-			return base_type(tg1);
+		case TYPE_TIME:
+		case TYPE_INTERVAL:
+		case TYPE_STRING:
+		case TYPE_PATTERN:
+		case TYPE_TIMER:
+		case TYPE_PORT:
+		case TYPE_ADDR:
+		case TYPE_SUBNET:
+		case TYPE_BOOL:
+		case TYPE_ANY:
+		case TYPE_ERROR:
+		return base_type(tg1);
 
-			case TYPE_ENUM:
+		case TYPE_ENUM:
+			{
+			// Could compare pointers t1 == t2, but maybe there's someone out
+			// there creating clones of the type, so safer to compare name.
+			if ( t1->GetName() != t2->GetName() )
 				{
-				// Could compare pointers t1 == t2, but maybe there's someone out
-				// there creating clones of the type, so safer to compare name.
-				if ( t1->GetName() != t2->GetName() )
-					{
-					std::string msg = util::fmt("incompatible enum types: '%s' and '%s'",
-					                            t1->GetName().data(), t2->GetName().data());
+				std::string msg = util::fmt("incompatible enum types: '%s' and '%s'",
+				                            t1->GetName().data(), t2->GetName().data());
 
-					t1->Error(msg.data(), t2);
-					return nullptr;
-					}
-
-				// Doing a lookup here as a roundabout way of ref-ing t1, without
-				// changing the function params which has t1 as const and also
-				// (potentially) avoiding a pitfall mentioned earlier about clones.
-				const auto& id = detail::global_scope()->Find(t1->GetName());
-
-				if ( id && id->IsType() && id->GetType()->Tag() == TYPE_ENUM )
-					// It should make most sense to return the real type here rather
-					// than a copy since it may be redef'd later in parsing.  If we
-					// return a copy, then whoever is using this return value won't
-					// actually see those changes from the redef.
-					return id->GetType();
-
-				std::string msg =
-					util::fmt("incompatible enum types: '%s' and '%s'"
-				              " ('%s' enum type ID is invalid)",
-				              t1->GetName().data(), t2->GetName().data(), t1->GetName().data());
 				t1->Error(msg.data(), t2);
 				return nullptr;
 				}
 
-			case TYPE_TABLE:
+			// Doing a lookup here as a roundabout way of ref-ing t1, without
+			// changing the function params which has t1 as const and also
+			// (potentially) avoiding a pitfall mentioned earlier about clones.
+			const auto& id = detail::global_scope()->Find(t1->GetName());
+
+			if ( id && id->IsType() && id->GetType()->Tag() == TYPE_ENUM )
+				// It should make most sense to return the real type here rather
+				// than a copy since it may be redef'd later in parsing.  If we
+				// return a copy, then whoever is using this return value won't
+				// actually see those changes from the redef.
+				return id->GetType();
+
+			std::string msg =
+				util::fmt("incompatible enum types: '%s' and '%s'"
+			              " ('%s' enum type ID is invalid)",
+			              t1->GetName().data(), t2->GetName().data(), t1->GetName().data());
+			t1->Error(msg.data(), t2);
+			return nullptr;
+			}
+
+		case TYPE_TABLE:
+			{
+			const IndexType* it1 = (const IndexType*)t1;
+			const IndexType* it2 = (const IndexType*)t2;
+
+			const auto& tl1 = it1->GetIndexTypes();
+			const auto& tl2 = it2->GetIndexTypes();
+			TypeListPtr tl3;
+
+			if ( tl1.size() != tl2.size() )
 				{
-				const IndexType* it1 = (const IndexType*)t1;
-				const IndexType* it2 = (const IndexType*)t2;
+				t1->Error("incompatible types", t2);
+				return nullptr;
+				}
 
-				const auto& tl1 = it1->GetIndexTypes();
-				const auto& tl2 = it2->GetIndexTypes();
-				TypeListPtr tl3;
+			tl3 = make_intrusive<TypeList>();
 
-				if ( tl1.size() != tl2.size() )
+			for ( auto i = 0u; i < tl1.size(); ++i )
+				{
+				auto tl3_i = merge_types(tl1[i], tl2[i]);
+				if ( ! tl3_i )
+					return nullptr;
+
+				tl3->Append(std::move(tl3_i));
+				}
+
+			const auto& y1 = t1->Yield();
+			const auto& y2 = t2->Yield();
+			TypePtr y3;
+
+			if ( y1 || y2 )
+				{
+				if ( ! y1 || ! y2 )
 					{
 					t1->Error("incompatible types", t2);
 					return nullptr;
 					}
 
-				tl3 = make_intrusive<TypeList>();
+				y3 = merge_types(y1, y2);
+				if ( ! y3 )
+					return nullptr;
+				}
 
-				for ( auto i = 0u; i < tl1.size(); ++i )
+			if ( t1->IsSet() )
+				return make_intrusive<SetType>(std::move(tl3), nullptr);
+			else
+				return make_intrusive<TableType>(std::move(tl3), std::move(y3));
+			}
+
+		case TYPE_FUNC:
+			{
+			if ( ! same_type(t1, t2) )
+				{
+				t1->Error("incompatible types", t2);
+				return nullptr;
+				}
+
+			const FuncType* ft1 = (const FuncType*)t1;
+			const FuncType* ft2 = (const FuncType*)t1;
+			auto args = cast_intrusive<RecordType>(merge_types(ft1->Params(), ft2->Params()));
+			auto yield = t1->Yield() ? merge_types(t1->Yield(), t2->Yield()) : nullptr;
+
+			return make_intrusive<FuncType>(std::move(args), std::move(yield), ft1->Flavor());
+			}
+
+		case TYPE_RECORD:
+			{
+			const RecordType* rt1 = (const RecordType*)t1;
+			const RecordType* rt2 = (const RecordType*)t2;
+
+			if ( rt1->NumFields() != rt2->NumFields() )
+				return nullptr;
+
+			type_decl_list* tdl3 = new type_decl_list(rt1->NumFields());
+
+			for ( int i = 0; i < rt1->NumFields(); ++i )
+				{
+				const TypeDecl* td1 = rt1->FieldDecl(i);
+				const TypeDecl* td2 = rt2->FieldDecl(i);
+				auto tdl3_i = merge_types(td1->type, td2->type);
+
+				if ( ! util::streq(td1->id, td2->id) || ! tdl3_i )
 					{
-					auto tl3_i = merge_types(tl1[i], tl2[i]);
-					if ( ! tl3_i )
-						return nullptr;
-
-					tl3->Append(std::move(tl3_i));
+					t1->Error("incompatible record fields", t2);
+					delete tdl3;
+					return nullptr;
 					}
 
-				const auto& y1 = t1->Yield();
-				const auto& y2 = t2->Yield();
-				TypePtr y3;
+				tdl3->push_back(new TypeDecl(util::copy_string(td1->id), std::move(tdl3_i)));
+				}
 
-				if ( y1 || y2 )
-					{
-					if ( ! y1 || ! y2 )
-						{
-						t1->Error("incompatible types", t2);
-						return nullptr;
-						}
+			return make_intrusive<RecordType>(tdl3);
+			}
 
-					y3 = merge_types(y1, y2);
-					if ( ! y3 )
-						return nullptr;
-					}
+		case TYPE_LIST:
+			{
+			const TypeList* tl1 = t1->AsTypeList();
+			const TypeList* tl2 = t2->AsTypeList();
 
-				if ( t1->IsSet() )
-					return make_intrusive<SetType>(std::move(tl3), nullptr);
+			if ( tl1->IsPure() != tl2->IsPure() )
+				{
+				tl1->Error("incompatible lists", tl2);
+				return nullptr;
+				}
+
+			const auto& l1 = tl1->GetTypes();
+			const auto& l2 = tl2->GetTypes();
+
+			if ( l1.size() == 0 || l2.size() == 0 )
+				{
+				if ( l1.size() == 0 )
+					tl1->Error("empty list");
 				else
-					return make_intrusive<TableType>(std::move(tl3), std::move(y3));
-				}
-
-			case TYPE_FUNC:
-				{
-				if ( ! same_type(t1, t2) )
-					{
-					t1->Error("incompatible types", t2);
-					return nullptr;
-					}
-
-				const FuncType* ft1 = (const FuncType*)t1;
-				const FuncType* ft2 = (const FuncType*)t1;
-				auto args = cast_intrusive<RecordType>(merge_types(ft1->Params(), ft2->Params()));
-				auto yield = t1->Yield() ? merge_types(t1->Yield(), t2->Yield()) : nullptr;
-
-				return make_intrusive<FuncType>(std::move(args), std::move(yield), ft1->Flavor());
-				}
-
-			case TYPE_RECORD:
-				{
-				const RecordType* rt1 = (const RecordType*)t1;
-				const RecordType* rt2 = (const RecordType*)t2;
-
-				if ( rt1->NumFields() != rt2->NumFields() )
-					return nullptr;
-
-				type_decl_list* tdl3 = new type_decl_list(rt1->NumFields());
-
-				for ( int i = 0; i < rt1->NumFields(); ++i )
-					{
-					const TypeDecl* td1 = rt1->FieldDecl(i);
-					const TypeDecl* td2 = rt2->FieldDecl(i);
-					auto tdl3_i = merge_types(td1->type, td2->type);
-
-					if ( ! util::streq(td1->id, td2->id) || ! tdl3_i )
-						{
-						t1->Error("incompatible record fields", t2);
-						delete tdl3;
-						return nullptr;
-						}
-
-					tdl3->push_back(new TypeDecl(util::copy_string(td1->id), std::move(tdl3_i)));
-					}
-
-				return make_intrusive<RecordType>(tdl3);
-				}
-
-			case TYPE_LIST:
-				{
-				const TypeList* tl1 = t1->AsTypeList();
-				const TypeList* tl2 = t2->AsTypeList();
-
-				if ( tl1->IsPure() != tl2->IsPure() )
-					{
-					tl1->Error("incompatible lists", tl2);
-					return nullptr;
-					}
-
-				const auto& l1 = tl1->GetTypes();
-				const auto& l2 = tl2->GetTypes();
-
-				if ( l1.size() == 0 || l2.size() == 0 )
-					{
-					if ( l1.size() == 0 )
-						tl1->Error("empty list");
-					else
-						tl2->Error("empty list");
-					return nullptr;
-					}
-
-				if ( tl1->IsPure() )
-					{
-					// We will be expanding the pure list when converting
-					// the initialization expression into a set of values.
-					// So the merge type of the list is the type of one
-					// of the elements, providing they're consistent.
-					return merge_types(l1[0], l2[0]);
-					}
-
-				// Impure lists - must have the same size and match element
-				// by element.
-				if ( l1.size() != l2.size() )
-					{
-					tl1->Error("different number of indices", tl2);
-					return nullptr;
-					}
-
-				auto tl3 = make_intrusive<TypeList>();
-
-				for ( auto i = 0u; i < l1.size(); ++i )
-					tl3->Append(merge_types(l1[i], l2[i]));
-
-				return tl3;
-				}
-
-			case TYPE_VECTOR:
-			if ( ! same_type(t1->Yield(), t2->Yield()) )
-				{
-				t1->Error("incompatible types", t2);
+					tl2->Error("empty list");
 				return nullptr;
 				}
 
-			return make_intrusive<VectorType>(merge_types(t1->Yield(), t2->Yield()));
-
-			case TYPE_FILE:
-			if ( ! same_type(t1->Yield(), t2->Yield()) )
+			if ( tl1->IsPure() )
 				{
-				t1->Error("incompatible types", t2);
+				// We will be expanding the pure list when converting
+				// the initialization expression into a set of values.
+				// So the merge type of the list is the type of one
+				// of the elements, providing they're consistent.
+				return merge_types(l1[0], l2[0]);
+				}
+
+			// Impure lists - must have the same size and match element
+			// by element.
+			if ( l1.size() != l2.size() )
+				{
+				tl1->Error("different number of indices", tl2);
 				return nullptr;
 				}
 
-			return make_intrusive<FileType>(merge_types(t1->Yield(), t2->Yield()));
+			auto tl3 = make_intrusive<TypeList>();
 
-			case TYPE_UNION:
-			reporter->InternalError("union type in merge_types()");
-			return nullptr;
+			for ( auto i = 0u; i < l1.size(); ++i )
+				tl3->Append(merge_types(l1[i], l2[i]));
 
-			default:
-			reporter->InternalError("bad type in merge_types()");
+			return tl3;
+			}
+
+		case TYPE_VECTOR:
+		if ( ! same_type(t1->Yield(), t2->Yield()) )
+			{
+			t1->Error("incompatible types", t2);
 			return nullptr;
+			}
+
+		return make_intrusive<VectorType>(merge_types(t1->Yield(), t2->Yield()));
+
+		case TYPE_FILE:
+		if ( ! same_type(t1->Yield(), t2->Yield()) )
+			{
+			t1->Error("incompatible types", t2);
+			return nullptr;
+			}
+
+		return make_intrusive<FileType>(merge_types(t1->Yield(), t2->Yield()));
+
+		case TYPE_UNION:
+		reporter->InternalError("union type in merge_types()");
+		return nullptr;
+
+		default:
+		reporter->InternalError("bad type in merge_types()");
+		return nullptr;
 		}
 	}
 
@@ -2225,15 +2224,15 @@ bool is_atomic_type(const Type& t)
 	{
 	switch ( t.InternalType() )
 		{
-			case TYPE_INTERNAL_INT:
-			case TYPE_INTERNAL_UNSIGNED:
-			case TYPE_INTERNAL_DOUBLE:
-			case TYPE_INTERNAL_STRING:
-			case TYPE_INTERNAL_ADDR:
-			case TYPE_INTERNAL_SUBNET:
-			return true;
-			default:
-			return false;
+		case TYPE_INTERNAL_INT:
+		case TYPE_INTERNAL_UNSIGNED:
+		case TYPE_INTERNAL_DOUBLE:
+		case TYPE_INTERNAL_STRING:
+		case TYPE_INTERNAL_ADDR:
+		case TYPE_INTERNAL_SUBNET:
+		return true;
+		default:
+		return false;
 		}
 	}
 

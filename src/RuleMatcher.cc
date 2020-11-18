@@ -465,17 +465,17 @@ static inline uint32_t getval(const u_char* data, int size)
 	{
 	switch ( size )
 		{
-			case 1:
-			return *(uint8_t*)data;
+		case 1:
+		return *(uint8_t*)data;
 
-			case 2:
-			return ntohs(*(uint16_t*)data);
+		case 2:
+		return ntohs(*(uint16_t*)data);
 
-			case 4:
-			return ntohl(*(uint32_t*)data);
+		case 4:
+		return ntohl(*(uint32_t*)data);
 
-			default:
-			reporter->InternalError("illegal HdrTest size");
+		default:
+		reporter->InternalError("illegal HdrTest size");
 		}
 
 	// Should not be reached.
@@ -540,33 +540,33 @@ static inline bool compare(const maskedvalue_list& mvals, uint32_t v, RuleHdrTes
 	{
 	switch ( comp )
 		{
-			case RuleHdrTest::EQ:
-			return match_or(mvals, v, std::equal_to<uint32_t>());
-			break;
+		case RuleHdrTest::EQ:
+		return match_or(mvals, v, std::equal_to<uint32_t>());
+		break;
 
-			case RuleHdrTest::NE:
-			return match_not_and(mvals, v, std::equal_to<uint32_t>());
-			break;
+		case RuleHdrTest::NE:
+		return match_not_and(mvals, v, std::equal_to<uint32_t>());
+		break;
 
-			case RuleHdrTest::LT:
-			return match_or(mvals, v, std::less<uint32_t>());
-			break;
+		case RuleHdrTest::LT:
+		return match_or(mvals, v, std::less<uint32_t>());
+		break;
 
-			case RuleHdrTest::GT:
-			return match_or(mvals, v, std::greater<uint32_t>());
-			break;
+		case RuleHdrTest::GT:
+		return match_or(mvals, v, std::greater<uint32_t>());
+		break;
 
-			case RuleHdrTest::LE:
-			return match_or(mvals, v, std::less_equal<uint32_t>());
-			break;
+		case RuleHdrTest::LE:
+		return match_or(mvals, v, std::less_equal<uint32_t>());
+		break;
 
-			case RuleHdrTest::GE:
-			return match_or(mvals, v, std::greater_equal<uint32_t>());
-			break;
+		case RuleHdrTest::GE:
+		return match_or(mvals, v, std::greater_equal<uint32_t>());
+		break;
 
-			default:
-			reporter->InternalError("unknown RuleHdrTest comparison type");
-			break;
+		default:
+		reporter->InternalError("unknown RuleHdrTest comparison type");
+		break;
 		}
 	return false;
 	}
@@ -576,33 +576,33 @@ static inline bool compare(const vector<IPPrefix>& prefixes, const IPAddr& a,
 	{
 	switch ( comp )
 		{
-			case RuleHdrTest::EQ:
-			return match_or(prefixes, a, std::equal_to<IPAddr>());
-			break;
+		case RuleHdrTest::EQ:
+		return match_or(prefixes, a, std::equal_to<IPAddr>());
+		break;
 
-			case RuleHdrTest::NE:
-			return match_not_and(prefixes, a, std::equal_to<IPAddr>());
-			break;
+		case RuleHdrTest::NE:
+		return match_not_and(prefixes, a, std::equal_to<IPAddr>());
+		break;
 
-			case RuleHdrTest::LT:
-			return match_or(prefixes, a, std::less<IPAddr>());
-			break;
+		case RuleHdrTest::LT:
+		return match_or(prefixes, a, std::less<IPAddr>());
+		break;
 
-			case RuleHdrTest::GT:
-			return match_or(prefixes, a, std::greater<IPAddr>());
-			break;
+		case RuleHdrTest::GT:
+		return match_or(prefixes, a, std::greater<IPAddr>());
+		break;
 
-			case RuleHdrTest::LE:
-			return match_or(prefixes, a, std::less_equal<IPAddr>());
-			break;
+		case RuleHdrTest::LE:
+		return match_or(prefixes, a, std::less_equal<IPAddr>());
+		break;
 
-			case RuleHdrTest::GE:
-			return match_or(prefixes, a, std::greater_equal<IPAddr>());
-			break;
+		case RuleHdrTest::GE:
+		return match_or(prefixes, a, std::greater_equal<IPAddr>());
+		break;
 
-			default:
-			reporter->InternalError("unknown RuleHdrTest comparison type");
-			break;
+		default:
+		reporter->InternalError("unknown RuleHdrTest comparison type");
+		break;
 		}
 	return false;
 	}
@@ -779,47 +779,46 @@ RuleEndpointState* RuleMatcher::InitEndpoint(analyzer::Analyzer* analyzer, const
 				// Evaluate the header test.
 				switch ( h->prot )
 					{
-						case RuleHdrTest::NEXT:
-						match = compare(*h->vals, ip->NextProto(), h->comp);
-						break;
+					case RuleHdrTest::NEXT:
+					match = compare(*h->vals, ip->NextProto(), h->comp);
+					break;
 
-						case RuleHdrTest::IP:
-						if ( ! ip->IP4_Hdr() )
-							continue;
+					case RuleHdrTest::IP:
+					if ( ! ip->IP4_Hdr() )
+						continue;
 
-						match = compare(*h->vals,
-						                getval((const u_char*)ip->IP4_Hdr() + h->offset, h->size),
-						                h->comp);
-						break;
+					match =
+						compare(*h->vals, getval((const u_char*)ip->IP4_Hdr() + h->offset, h->size),
+					            h->comp);
+					break;
 
-						case RuleHdrTest::IPv6:
-						if ( ! ip->IP6_Hdr() )
-							continue;
+					case RuleHdrTest::IPv6:
+					if ( ! ip->IP6_Hdr() )
+						continue;
 
-						match = compare(*h->vals,
-						                getval((const u_char*)ip->IP6_Hdr() + h->offset, h->size),
-						                h->comp);
-						break;
+					match =
+						compare(*h->vals, getval((const u_char*)ip->IP6_Hdr() + h->offset, h->size),
+					            h->comp);
+					break;
 
-						case RuleHdrTest::ICMP:
-						case RuleHdrTest::ICMPv6:
-						case RuleHdrTest::TCP:
-						case RuleHdrTest::UDP:
-						match =
-							compare(*h->vals, getval(ip->Payload() + h->offset, h->size), h->comp);
-						break;
+					case RuleHdrTest::ICMP:
+					case RuleHdrTest::ICMPv6:
+					case RuleHdrTest::TCP:
+					case RuleHdrTest::UDP:
+					match = compare(*h->vals, getval(ip->Payload() + h->offset, h->size), h->comp);
+					break;
 
-						case RuleHdrTest::IPSrc:
-						match = compare(h->prefix_vals, ip->IPHeaderSrcAddr(), h->comp);
-						break;
+					case RuleHdrTest::IPSrc:
+					match = compare(h->prefix_vals, ip->IPHeaderSrcAddr(), h->comp);
+					break;
 
-						case RuleHdrTest::IPDst:
-						match = compare(h->prefix_vals, ip->IPHeaderDstAddr(), h->comp);
-						break;
+					case RuleHdrTest::IPDst:
+					match = compare(h->prefix_vals, ip->IPHeaderDstAddr(), h->comp);
+					break;
 
-						default:
-						reporter->InternalError("unknown RuleHdrTest protocol type");
-						break;
+					default:
+					reporter->InternalError("unknown RuleHdrTest protocol type");
+					break;
 					}
 
 				if ( match )
@@ -1270,58 +1269,58 @@ static bool val_to_maskedval(Val* v, maskedvalue_list* append_to, vector<IPPrefi
 
 	switch ( v->GetType()->Tag() )
 		{
-			case TYPE_PORT:
-			mval->val = v->AsPortVal()->Port();
-			mval->mask = 0xffffffff;
-			break;
+		case TYPE_PORT:
+		mval->val = v->AsPortVal()->Port();
+		mval->mask = 0xffffffff;
+		break;
 
-			case TYPE_BOOL:
-			case TYPE_COUNT:
-			case TYPE_ENUM:
-			case TYPE_INT:
-			mval->val = v->CoerceToUnsigned();
-			mval->mask = 0xffffffff;
-			break;
+		case TYPE_BOOL:
+		case TYPE_COUNT:
+		case TYPE_ENUM:
+		case TYPE_INT:
+		mval->val = v->CoerceToUnsigned();
+		mval->mask = 0xffffffff;
+		break;
 
-			case TYPE_SUBNET:
+		case TYPE_SUBNET:
+			{
+			if ( prefix_vector )
 				{
-				if ( prefix_vector )
+				prefix_vector->push_back(v->AsSubNet());
+				delete mval;
+				return true;
+				}
+			else
+				{
+				const uint32_t* n;
+				uint32_t m[4];
+				v->AsSubNet().Prefix().GetBytes(&n);
+				v->AsSubNetVal()->Mask().CopyIPv6(m);
+
+				for ( unsigned int i = 0; i < 4; ++i )
+					m[i] = ntohl(m[i]);
+
+				bool is_v4_mask = m[0] == 0xffffffff && m[1] == m[0] && m[2] == m[0];
+
+				if ( v->AsSubNet().Prefix().GetFamily() == IPv4 && is_v4_mask )
 					{
-					prefix_vector->push_back(v->AsSubNet());
-					delete mval;
-					return true;
+					mval->val = ntohl(*n);
+					mval->mask = m[3];
 					}
 				else
 					{
-					const uint32_t* n;
-					uint32_t m[4];
-					v->AsSubNet().Prefix().GetBytes(&n);
-					v->AsSubNetVal()->Mask().CopyIPv6(m);
-
-					for ( unsigned int i = 0; i < 4; ++i )
-						m[i] = ntohl(m[i]);
-
-					bool is_v4_mask = m[0] == 0xffffffff && m[1] == m[0] && m[2] == m[0];
-
-					if ( v->AsSubNet().Prefix().GetFamily() == IPv4 && is_v4_mask )
-						{
-						mval->val = ntohl(*n);
-						mval->mask = m[3];
-						}
-					else
-						{
-						rules_error("IPv6 subnets not supported");
-						mval->val = 0;
-						mval->mask = 0;
-						}
+					rules_error("IPv6 subnets not supported");
+					mval->val = 0;
+					mval->mask = 0;
 					}
 				}
-			break;
+			}
+		break;
 
-			default:
-			rules_error("Wrong type of identifier");
-			delete mval;
-			return false;
+		default:
+		rules_error("Wrong type of identifier");
+		delete mval;
+		return false;
 		}
 
 	append_to->push_back(mval);

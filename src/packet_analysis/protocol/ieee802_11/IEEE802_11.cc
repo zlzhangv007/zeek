@@ -52,25 +52,25 @@ bool IEEE802_11Analyzer::AnalyzePacket(size_t len, const uint8_t* data, Packet* 
 	// on 'To DS' and 'From DS' flags
 	switch ( data[1] & 0x03 )
 		{
-			case 0x00:
-			packet->l2_src = data + 10;
-			packet->l2_dst = data + 4;
-			break;
+		case 0x00:
+		packet->l2_src = data + 10;
+		packet->l2_dst = data + 4;
+		break;
 
-			case 0x01:
-			packet->l2_src = data + 10;
-			packet->l2_dst = data + 16;
-			break;
+		case 0x01:
+		packet->l2_src = data + 10;
+		packet->l2_dst = data + 16;
+		break;
 
-			case 0x02:
-			packet->l2_src = data + 16;
-			packet->l2_dst = data + 4;
-			break;
+		case 0x02:
+		packet->l2_src = data + 16;
+		packet->l2_dst = data + 4;
+		break;
 
-			case 0x03:
-			packet->l2_src = data + 24;
-			packet->l2_dst = data + 16;
-			break;
+		case 0x03:
+		packet->l2_src = data + 24;
+		packet->l2_dst = data + 16;
+		break;
 		}
 
 	// skip 802.11 data header

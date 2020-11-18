@@ -77,13 +77,13 @@ std::unique_ptr<Hasher> Hasher::Unserialize(const broker::data& data)
 
 	switch ( *type )
 		{
-			case Default:
-			hasher = std::unique_ptr<Hasher>(new DefaultHasher(*k, {*h1, *h2}));
-			break;
+		case Default:
+		hasher = std::unique_ptr<Hasher>(new DefaultHasher(*k, {*h1, *h2}));
+		break;
 
-			case Double:
-			hasher = std::unique_ptr<Hasher>(new DoubleHasher(*k, {*h1, *h2}));
-			break;
+		case Double:
+		hasher = std::unique_ptr<Hasher>(new DoubleHasher(*k, {*h1, *h2}));
+		break;
 		}
 
 	// Note that the derived classed don't hold any further state of

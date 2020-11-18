@@ -105,59 +105,59 @@ void NetSessions::ProcessTransportLayer(double t, const Packet* pkt, size_t rema
 
 	switch ( proto )
 		{
-			case IPPROTO_TCP:
-				{
-				const struct tcphdr* tp = (const struct tcphdr*)data;
-				id.src_port = tp->th_sport;
-				id.dst_port = tp->th_dport;
-				id.is_one_way = false;
-				d = &tcp_conns;
-				break;
-				}
+		case IPPROTO_TCP:
+			{
+			const struct tcphdr* tp = (const struct tcphdr*)data;
+			id.src_port = tp->th_sport;
+			id.dst_port = tp->th_dport;
+			id.is_one_way = false;
+			d = &tcp_conns;
+			break;
+			}
 
-			case IPPROTO_UDP:
-				{
-				const struct udphdr* up = (const struct udphdr*)data;
-				id.src_port = up->uh_sport;
-				id.dst_port = up->uh_dport;
-				id.is_one_way = false;
-				d = &udp_conns;
-				break;
-				}
+		case IPPROTO_UDP:
+			{
+			const struct udphdr* up = (const struct udphdr*)data;
+			id.src_port = up->uh_sport;
+			id.dst_port = up->uh_dport;
+			id.is_one_way = false;
+			d = &udp_conns;
+			break;
+			}
 
-			case IPPROTO_ICMP:
-				{
-				const struct icmp* icmpp = (const struct icmp*)data;
+		case IPPROTO_ICMP:
+			{
+			const struct icmp* icmpp = (const struct icmp*)data;
 
-				id.src_port = icmpp->icmp_type;
-				id.dst_port = analyzer::icmp::ICMP4_counterpart(icmpp->icmp_type, icmpp->icmp_code,
-				                                                id.is_one_way);
+			id.src_port = icmpp->icmp_type;
+			id.dst_port = analyzer::icmp::ICMP4_counterpart(icmpp->icmp_type, icmpp->icmp_code,
+			                                                id.is_one_way);
 
-				id.src_port = htons(id.src_port);
-				id.dst_port = htons(id.dst_port);
+			id.src_port = htons(id.src_port);
+			id.dst_port = htons(id.dst_port);
 
-				d = &icmp_conns;
-				break;
-				}
+			d = &icmp_conns;
+			break;
+			}
 
-			case IPPROTO_ICMPV6:
-				{
-				const struct icmp* icmpp = (const struct icmp*)data;
+		case IPPROTO_ICMPV6:
+			{
+			const struct icmp* icmpp = (const struct icmp*)data;
 
-				id.src_port = icmpp->icmp_type;
-				id.dst_port = analyzer::icmp::ICMP6_counterpart(icmpp->icmp_type, icmpp->icmp_code,
-				                                                id.is_one_way);
+			id.src_port = icmpp->icmp_type;
+			id.dst_port = analyzer::icmp::ICMP6_counterpart(icmpp->icmp_type, icmpp->icmp_code,
+			                                                id.is_one_way);
 
-				id.src_port = htons(id.src_port);
-				id.dst_port = htons(id.dst_port);
+			id.src_port = htons(id.src_port);
+			id.dst_port = htons(id.dst_port);
 
-				d = &icmp_conns;
-				break;
-				}
+			d = &icmp_conns;
+			break;
+			}
 
-			default:
-			Weird("unknown_protocol", pkt, util::fmt("%d", proto));
-			return;
+		default:
+		Weird("unknown_protocol", pkt, util::fmt("%d", proto));
+		return;
 		}
 
 	detail::ConnIDKey key = detail::BuildConnIDKey(id);
@@ -274,18 +274,18 @@ bool NetSessions::CheckHeaderTrunc(int proto, uint32_t len, uint32_t caplen, con
 	uint32_t min_hdr_len = 0;
 	switch ( proto )
 		{
-			case IPPROTO_TCP:
-			min_hdr_len = sizeof(struct tcphdr);
-			break;
-			case IPPROTO_UDP:
-			min_hdr_len = sizeof(struct udphdr);
-			break;
-			case IPPROTO_ICMP:
-			case IPPROTO_ICMPV6:
-			default:
-			// Use for all other packets.
-			min_hdr_len = ICMP_MINLEN;
-			break;
+		case IPPROTO_TCP:
+		min_hdr_len = sizeof(struct tcphdr);
+		break;
+		case IPPROTO_UDP:
+		min_hdr_len = sizeof(struct udphdr);
+		break;
+		case IPPROTO_ICMP:
+		case IPPROTO_ICMPV6:
+		default:
+		// Use for all other packets.
+		min_hdr_len = ICMP_MINLEN;
+		break;
 		}
 
 	if ( len < min_hdr_len )
@@ -406,24 +406,24 @@ void NetSessions::Remove(Connection* c)
 
 		switch ( c->ConnTransport() )
 			{
-				case TRANSPORT_TCP:
-				if ( tcp_conns.erase(key) == 0 )
-					reporter->InternalWarning("connection missing");
-				break;
+			case TRANSPORT_TCP:
+			if ( tcp_conns.erase(key) == 0 )
+				reporter->InternalWarning("connection missing");
+			break;
 
-				case TRANSPORT_UDP:
-				if ( udp_conns.erase(key) == 0 )
-					reporter->InternalWarning("connection missing");
-				break;
+			case TRANSPORT_UDP:
+			if ( udp_conns.erase(key) == 0 )
+				reporter->InternalWarning("connection missing");
+			break;
 
-				case TRANSPORT_ICMP:
-				if ( icmp_conns.erase(key) == 0 )
-					reporter->InternalWarning("connection missing");
-				break;
+			case TRANSPORT_ICMP:
+			if ( icmp_conns.erase(key) == 0 )
+				reporter->InternalWarning("connection missing");
+			break;
 
-				case TRANSPORT_UNKNOWN:
-				reporter->InternalWarning("unknown transport when removing connection");
-				break;
+			case TRANSPORT_UNKNOWN:
+			reporter->InternalWarning("unknown transport when removing connection");
+			break;
 			}
 
 		Unref(c);
@@ -438,31 +438,31 @@ void NetSessions::Insert(Connection* c)
 
 	switch ( c->ConnTransport() )
 		{
-			// Remove first. Otherwise the map would still reference the old key for
-			// already existing connections.
+		// Remove first. Otherwise the map would still reference the old key for
+		// already existing connections.
 
-			case TRANSPORT_TCP:
-			old = LookupConn(tcp_conns, c->Key());
-			tcp_conns.erase(c->Key());
-			InsertConnection(&tcp_conns, c->Key(), c);
-			break;
+		case TRANSPORT_TCP:
+		old = LookupConn(tcp_conns, c->Key());
+		tcp_conns.erase(c->Key());
+		InsertConnection(&tcp_conns, c->Key(), c);
+		break;
 
-			case TRANSPORT_UDP:
-			old = LookupConn(udp_conns, c->Key());
-			udp_conns.erase(c->Key());
-			InsertConnection(&udp_conns, c->Key(), c);
-			break;
+		case TRANSPORT_UDP:
+		old = LookupConn(udp_conns, c->Key());
+		udp_conns.erase(c->Key());
+		InsertConnection(&udp_conns, c->Key(), c);
+		break;
 
-			case TRANSPORT_ICMP:
-			old = LookupConn(icmp_conns, c->Key());
-			icmp_conns.erase(c->Key());
-			InsertConnection(&icmp_conns, c->Key(), c);
-			break;
+		case TRANSPORT_ICMP:
+		old = LookupConn(icmp_conns, c->Key());
+		icmp_conns.erase(c->Key());
+		InsertConnection(&icmp_conns, c->Key(), c);
+		break;
 
-			default:
-			reporter->InternalWarning("unknown connection type");
-			Unref(c);
-			return;
+		default:
+		reporter->InternalWarning("unknown connection type");
+		Unref(c);
+		return;
 		}
 
 	if ( old && old != c )
@@ -546,21 +546,21 @@ Connection* NetSessions::NewConn(const detail::ConnIDKey& k, double t, const Con
 	TransportProto tproto = TRANSPORT_UNKNOWN;
 	switch ( proto )
 		{
-			case IPPROTO_ICMP:
-			tproto = TRANSPORT_ICMP;
-			break;
-			case IPPROTO_TCP:
-			tproto = TRANSPORT_TCP;
-			break;
-			case IPPROTO_UDP:
-			tproto = TRANSPORT_UDP;
-			break;
-			case IPPROTO_ICMPV6:
-			tproto = TRANSPORT_ICMP;
-			break;
-			default:
-			reporter->InternalWarning("unknown transport protocol");
-			return nullptr;
+		case IPPROTO_ICMP:
+		tproto = TRANSPORT_ICMP;
+		break;
+		case IPPROTO_TCP:
+		tproto = TRANSPORT_TCP;
+		break;
+		case IPPROTO_UDP:
+		tproto = TRANSPORT_UDP;
+		break;
+		case IPPROTO_ICMPV6:
+		tproto = TRANSPORT_ICMP;
+		break;
+		default:
+		reporter->InternalWarning("unknown transport protocol");
+		return nullptr;
 		};
 
 	if ( tproto == TRANSPORT_TCP )
@@ -765,23 +765,23 @@ void NetSessions::InsertConnection(ConnectionMap* m, const detail::ConnIDKey& ke
 
 	switch ( conn->ConnTransport() )
 		{
-			case TRANSPORT_TCP:
-			stats.cumulative_TCP_conns++;
-			if ( m->size() > stats.max_TCP_conns )
-				stats.max_TCP_conns = m->size();
-			break;
-			case TRANSPORT_UDP:
-			stats.cumulative_UDP_conns++;
-			if ( m->size() > stats.max_UDP_conns )
-				stats.max_UDP_conns = m->size();
-			break;
-			case TRANSPORT_ICMP:
-			stats.cumulative_ICMP_conns++;
-			if ( m->size() > stats.max_ICMP_conns )
-				stats.max_ICMP_conns = m->size();
-			break;
-			default:
-			break;
+		case TRANSPORT_TCP:
+		stats.cumulative_TCP_conns++;
+		if ( m->size() > stats.max_TCP_conns )
+			stats.max_TCP_conns = m->size();
+		break;
+		case TRANSPORT_UDP:
+		stats.cumulative_UDP_conns++;
+		if ( m->size() > stats.max_UDP_conns )
+			stats.max_UDP_conns = m->size();
+		break;
+		case TRANSPORT_ICMP:
+		stats.cumulative_ICMP_conns++;
+		if ( m->size() > stats.max_ICMP_conns )
+			stats.max_ICMP_conns = m->size();
+		break;
+		default:
+		break;
 		}
 	}
 

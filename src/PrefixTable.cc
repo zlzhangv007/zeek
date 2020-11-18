@@ -54,17 +54,17 @@ void* PrefixTable::Insert(const Val* value, void* data)
 
 	switch ( value->GetType()->Tag() )
 		{
-			case TYPE_ADDR:
-			return Insert(value->AsAddr(), 128, data);
-			break;
+		case TYPE_ADDR:
+		return Insert(value->AsAddr(), 128, data);
+		break;
 
-			case TYPE_SUBNET:
-			return Insert(value->AsSubNet().Prefix(), value->AsSubNet().LengthIPv6(), data);
-			break;
+		case TYPE_SUBNET:
+		return Insert(value->AsSubNet().Prefix(), value->AsSubNet().LengthIPv6(), data);
+		break;
 
-			default:
-			reporter->InternalWarning("Wrong index type for PrefixTable");
-			return nullptr;
+		default:
+		reporter->InternalWarning("Wrong index type for PrefixTable");
+		return nullptr;
 		}
 	}
 
@@ -112,18 +112,17 @@ void* PrefixTable::Lookup(const Val* value, bool exact) const
 
 	switch ( value->GetType()->Tag() )
 		{
-			case TYPE_ADDR:
-			return Lookup(value->AsAddr(), 128, exact);
-			break;
+		case TYPE_ADDR:
+		return Lookup(value->AsAddr(), 128, exact);
+		break;
 
-			case TYPE_SUBNET:
-			return Lookup(value->AsSubNet().Prefix(), value->AsSubNet().LengthIPv6(), exact);
-			break;
+		case TYPE_SUBNET:
+		return Lookup(value->AsSubNet().Prefix(), value->AsSubNet().LengthIPv6(), exact);
+		break;
 
-			default:
-			reporter->InternalWarning("Wrong index type %d for PrefixTable",
-			                          value->GetType()->Tag());
-			return nullptr;
+		default:
+		reporter->InternalWarning("Wrong index type %d for PrefixTable", value->GetType()->Tag());
+		return nullptr;
 		}
 	}
 
@@ -150,17 +149,17 @@ void* PrefixTable::Remove(const Val* value)
 
 	switch ( value->GetType()->Tag() )
 		{
-			case TYPE_ADDR:
-			return Remove(value->AsAddr(), 128);
-			break;
+		case TYPE_ADDR:
+		return Remove(value->AsAddr(), 128);
+		break;
 
-			case TYPE_SUBNET:
-			return Remove(value->AsSubNet().Prefix(), value->AsSubNet().LengthIPv6());
-			break;
+		case TYPE_SUBNET:
+		return Remove(value->AsSubNet().Prefix(), value->AsSubNet().LengthIPv6());
+		break;
 
-			default:
-			reporter->InternalWarning("Wrong index type for PrefixTable");
-			return nullptr;
+		default:
+		reporter->InternalWarning("Wrong index type for PrefixTable");
+		return nullptr;
 		}
 	}
 

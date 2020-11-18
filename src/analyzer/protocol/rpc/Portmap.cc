@@ -28,50 +28,50 @@ bool PortmapperInterp::RPC_BuildCall(RPC_CallInfo* c, const u_char*& buf, int& n
 
 	switch ( c->Proc() )
 		{
-			case PMAPPROC_NULL:
-			break;
+		case PMAPPROC_NULL:
+		break;
 
-			case PMAPPROC_SET:
-				{
-				auto m = ExtractMapping(buf, n);
-				if ( ! m )
-					return false;
-				c->AddVal(std::move(m));
-				}
-			break;
+		case PMAPPROC_SET:
+			{
+			auto m = ExtractMapping(buf, n);
+			if ( ! m )
+				return false;
+			c->AddVal(std::move(m));
+			}
+		break;
 
-			case PMAPPROC_UNSET:
-				{
-				auto m = ExtractMapping(buf, n);
-				if ( ! m )
-					return false;
-				c->AddVal(std::move(m));
-				}
-			break;
+		case PMAPPROC_UNSET:
+			{
+			auto m = ExtractMapping(buf, n);
+			if ( ! m )
+				return false;
+			c->AddVal(std::move(m));
+			}
+		break;
 
-			case PMAPPROC_GETPORT:
-				{
-				auto pr = ExtractPortRequest(buf, n);
-				if ( ! pr )
-					return false;
-				c->AddVal(std::move(pr));
-				}
-			break;
+		case PMAPPROC_GETPORT:
+			{
+			auto pr = ExtractPortRequest(buf, n);
+			if ( ! pr )
+				return false;
+			c->AddVal(std::move(pr));
+			}
+		break;
 
-			case PMAPPROC_DUMP:
-			break;
+		case PMAPPROC_DUMP:
+		break;
 
-			case PMAPPROC_CALLIT:
-				{
-				auto call_it = ExtractCallItRequest(buf, n);
-				if ( ! call_it )
-					return false;
-				c->AddVal(std::move(call_it));
-				}
-			break;
+		case PMAPPROC_CALLIT:
+			{
+			auto call_it = ExtractCallItRequest(buf, n);
+			if ( ! call_it )
+				return false;
+			c->AddVal(std::move(call_it));
+			}
+		break;
 
-			default:
-			return false;
+		default:
+		return false;
 		}
 
 	return true;
@@ -87,105 +87,104 @@ bool PortmapperInterp::RPC_BuildReply(RPC_CallInfo* c, BifEnum::rpc_status statu
 
 	switch ( c->Proc() )
 		{
-			case PMAPPROC_NULL:
-			event = success ? pm_request_null : pm_attempt_null;
-			break;
+		case PMAPPROC_NULL:
+		event = success ? pm_request_null : pm_attempt_null;
+		break;
 
-			case PMAPPROC_SET:
-			if ( success )
+		case PMAPPROC_SET:
+		if ( success )
+			{
+			uint32_t status = extract_XDR_uint32(buf, n);
+			if ( ! buf )
+				return false;
+
+			reply = val_mgr->Bool(status);
+			event = pm_request_set;
+			}
+		else
+			event = pm_attempt_set;
+
+		break;
+
+		case PMAPPROC_UNSET:
+		if ( success )
+			{
+			uint32_t status = extract_XDR_uint32(buf, n);
+			if ( ! buf )
+				return false;
+
+			reply = val_mgr->Bool(status);
+			event = pm_request_unset;
+			}
+		else
+			event = pm_attempt_unset;
+
+		break;
+
+		case PMAPPROC_GETPORT:
+		if ( success )
+			{
+			uint32_t port = extract_XDR_uint32(buf, n);
+			if ( ! buf )
+				return false;
+
+			RecordVal* rv = c->RequestVal()->AsRecordVal();
+			const auto& is_tcp = rv->GetField(2);
+			reply = val_mgr->Port(CheckPort(port), is_tcp->IsOne() ? TRANSPORT_TCP : TRANSPORT_UDP);
+			event = pm_request_getport;
+			}
+		else
+			event = pm_attempt_getport;
+		break;
+
+		case PMAPPROC_DUMP:
+		event = success ? pm_request_dump : pm_attempt_dump;
+		if ( success )
+			{
+			static auto pm_mappings = id::find_type<TableType>("pm_mappings");
+			auto mappings = make_intrusive<TableVal>(pm_mappings);
+			uint32_t nmap = 0;
+
+			// Each call in the loop test pulls the next "opted"
+			// element to see if there are more mappings.
+			while ( extract_XDR_uint32(buf, n) && buf )
 				{
-				uint32_t status = extract_XDR_uint32(buf, n);
-				if ( ! buf )
-					return false;
+				auto m = ExtractMapping(buf, n);
+				if ( ! m )
+					break;
 
-				reply = val_mgr->Bool(status);
-				event = pm_request_set;
+				auto index = val_mgr->Count(++nmap);
+				mappings->Assign(std::move(index), std::move(m));
 				}
-			else
-				event = pm_attempt_set;
 
-			break;
+			if ( ! buf )
+				return false;
 
-			case PMAPPROC_UNSET:
-			if ( success )
-				{
-				uint32_t status = extract_XDR_uint32(buf, n);
-				if ( ! buf )
-					return false;
+			reply = std::move(mappings);
+			event = pm_request_dump;
+			}
+		else
+			event = pm_attempt_dump;
+		break;
 
-				reply = val_mgr->Bool(status);
-				event = pm_request_unset;
-				}
-			else
-				event = pm_attempt_unset;
+		case PMAPPROC_CALLIT:
+		if ( success )
+			{
+			uint32_t port = extract_XDR_uint32(buf, n);
+			int reply_n;
+			const u_char* opaque_reply = extract_XDR_opaque(buf, n, reply_n);
+			if ( ! opaque_reply )
+				return false;
 
-			break;
+			reply = val_mgr->Port(CheckPort(port), TRANSPORT_UDP);
+			event = pm_request_callit;
+			}
+		else
+			event = pm_attempt_callit;
+		break;
 
-			case PMAPPROC_GETPORT:
-			if ( success )
-				{
-				uint32_t port = extract_XDR_uint32(buf, n);
-				if ( ! buf )
-					return false;
-
-				RecordVal* rv = c->RequestVal()->AsRecordVal();
-				const auto& is_tcp = rv->GetField(2);
-				reply =
-					val_mgr->Port(CheckPort(port), is_tcp->IsOne() ? TRANSPORT_TCP : TRANSPORT_UDP);
-				event = pm_request_getport;
-				}
-			else
-				event = pm_attempt_getport;
-			break;
-
-			case PMAPPROC_DUMP:
-			event = success ? pm_request_dump : pm_attempt_dump;
-			if ( success )
-				{
-				static auto pm_mappings = id::find_type<TableType>("pm_mappings");
-				auto mappings = make_intrusive<TableVal>(pm_mappings);
-				uint32_t nmap = 0;
-
-				// Each call in the loop test pulls the next "opted"
-				// element to see if there are more mappings.
-				while ( extract_XDR_uint32(buf, n) && buf )
-					{
-					auto m = ExtractMapping(buf, n);
-					if ( ! m )
-						break;
-
-					auto index = val_mgr->Count(++nmap);
-					mappings->Assign(std::move(index), std::move(m));
-					}
-
-				if ( ! buf )
-					return false;
-
-				reply = std::move(mappings);
-				event = pm_request_dump;
-				}
-			else
-				event = pm_attempt_dump;
-			break;
-
-			case PMAPPROC_CALLIT:
-			if ( success )
-				{
-				uint32_t port = extract_XDR_uint32(buf, n);
-				int reply_n;
-				const u_char* opaque_reply = extract_XDR_opaque(buf, n, reply_n);
-				if ( ! opaque_reply )
-					return false;
-
-				reply = val_mgr->Port(CheckPort(port), TRANSPORT_UDP);
-				event = pm_request_callit;
-				}
-			else
-				event = pm_attempt_callit;
-			break;
-
-			default:
-			return false;
+		default:
+		return false;
 		}
 
 	Event(event, c->TakeRequestVal(), status, std::move(reply));

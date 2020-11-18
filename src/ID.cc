@@ -446,24 +446,24 @@ void ID::DescribeReSTShort(ODesc* d) const
 
 			switch ( t )
 				{
-					case TYPE_TABLE:
-					d->Add(type->IsSet() ? "set" : type_name(t));
-					break;
+				case TYPE_TABLE:
+				d->Add(type->IsSet() ? "set" : type_name(t));
+				break;
 
-					case TYPE_FUNC:
-					d->Add(type->AsFuncType()->FlavorString().c_str());
-					break;
+				case TYPE_FUNC:
+				d->Add(type->AsFuncType()->FlavorString().c_str());
+				break;
 
-					case TYPE_ENUM:
-					if ( is_type )
-						d->Add(type_name(t));
-					else
-						d->Add(zeekygen_mgr->GetEnumTypeName(Name()).c_str());
-					break;
-
-					default:
+				case TYPE_ENUM:
+				if ( is_type )
 					d->Add(type_name(t));
-					break;
+				else
+					d->Add(zeekygen_mgr->GetEnumTypeName(Name()).c_str());
+				break;
+
+				default:
+				d->Add(type_name(t));
+				break;
 				}
 			}
 
@@ -571,24 +571,24 @@ void ID::DescribeReST(ODesc* d, bool roles_only) const
 			{
 			switch ( type->Tag() )
 				{
-					case TYPE_TABLE:
-					if ( iv->AsTable()->Length() == 0 )
-						{
-						d->Add(" ``{}``");
-						d->NL();
-						break;
-						}
-					// Fall-through.
+				case TYPE_TABLE:
+				if ( iv->AsTable()->Length() == 0 )
+					{
+					d->Add(" ``{}``");
+					d->NL();
+					break;
+					}
+				// Fall-through.
 
-					default:
-					d->NL();
-					d->PushIndent();
-					d->Add("::");
-					d->NL();
-					d->PushIndent();
-					iv->DescribeReST(d);
-					d->PopIndent();
-					d->PopIndent();
+				default:
+				d->NL();
+				d->PushIndent();
+				d->Add("::");
+				d->NL();
+				d->PushIndent();
+				iv->DescribeReST(d);
+				d->PopIndent();
+				d->PopIndent();
 				}
 			}
 

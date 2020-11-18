@@ -104,43 +104,41 @@ bool ARPAnalyzer::AnalyzePacket(size_t len, const uint8_t* data, Packet* packet)
 	// Check the address description fields.
 	switch ( ntohs(ah->ar_hrd) )
 		{
-			case ARPHRD_ETHER:
-			if ( ah->ar_hln != 6 )
-				{
-				// don't know how to handle the opcode
-				BadARPEvent(ah, "corrupt-arp-header (hrd=%i, hln=%i)", ntohs(ah->ar_hrd),
-				            ah->ar_hln);
-				return false;
-				}
-			break;
+		case ARPHRD_ETHER:
+		if ( ah->ar_hln != 6 )
+			{
+			// don't know how to handle the opcode
+			BadARPEvent(ah, "corrupt-arp-header (hrd=%i, hln=%i)", ntohs(ah->ar_hrd), ah->ar_hln);
+			return false;
+			}
+		break;
 
-			default:
-				{
-				// don't know how to proceed
-				BadARPEvent(ah, "unknown-arp-hw-address (hrd=%i)", ntohs(ah->ar_hrd));
-				return false;
-				}
+		default:
+			{
+			// don't know how to proceed
+			BadARPEvent(ah, "unknown-arp-hw-address (hrd=%i)", ntohs(ah->ar_hrd));
+			return false;
+			}
 		}
 
 	// Note: We don't support IPv6 addresses.
 	switch ( ntohs(ah->ar_pro) )
 		{
-			case ETHERTYPE_IP:
-			if ( ah->ar_pln != 4 )
-				{
-				// don't know how to handle the opcode
-				BadARPEvent(ah, "corrupt-arp-header (pro=%i, pln=%i)", ntohs(ah->ar_pro),
-				            ah->ar_pln);
-				return false;
-				}
-			break;
+		case ETHERTYPE_IP:
+		if ( ah->ar_pln != 4 )
+			{
+			// don't know how to handle the opcode
+			BadARPEvent(ah, "corrupt-arp-header (pro=%i, pln=%i)", ntohs(ah->ar_pro), ah->ar_pln);
+			return false;
+			}
+		break;
 
-			default:
-				{
-				// don't know how to proceed
-				BadARPEvent(ah, "unknown-arp-proto-address (pro=%i)", ntohs(ah->ar_pro));
-				return false;
-				}
+		default:
+			{
+			// don't know how to proceed
+			BadARPEvent(ah, "unknown-arp-proto-address (pro=%i)", ntohs(ah->ar_pro));
+			return false;
+			}
 		}
 
 	// Check MAC src address = ARP sender MAC address.
@@ -153,32 +151,32 @@ bool ARPAnalyzer::AnalyzePacket(size_t len, const uint8_t* data, Packet* packet)
 	// Check the code is supported.
 	switch ( ntohs(ah->ar_op) )
 		{
-			case ARPOP_REQUEST:
-			RequestReplyEvent(arp_request, packet->l2_src, packet->l2_dst, ar_spa(ah), ar_sha(ah),
-			                  ar_tpa(ah), ar_tha(ah));
-			break;
+		case ARPOP_REQUEST:
+		RequestReplyEvent(arp_request, packet->l2_src, packet->l2_dst, ar_spa(ah), ar_sha(ah),
+		                  ar_tpa(ah), ar_tha(ah));
+		break;
 
-			case ARPOP_REPLY:
-			RequestReplyEvent(arp_reply, packet->l2_src, packet->l2_dst, ar_spa(ah), ar_sha(ah),
-			                  ar_tpa(ah), ar_tha(ah));
-			break;
+		case ARPOP_REPLY:
+		RequestReplyEvent(arp_reply, packet->l2_src, packet->l2_dst, ar_spa(ah), ar_sha(ah),
+		                  ar_tpa(ah), ar_tha(ah));
+		break;
 
-			case ARPOP_REVREQUEST:
-			case ARPOP_REVREPLY:
-			case ARPOP_INVREQUEST:
-			case ARPOP_INVREPLY:
-				{
-				// don't know how to handle the opcode
-				BadARPEvent(ah, "unimplemented-arp-opcode (%i)", ntohs(ah->ar_op));
-				return false;
-				}
+		case ARPOP_REVREQUEST:
+		case ARPOP_REVREPLY:
+		case ARPOP_INVREQUEST:
+		case ARPOP_INVREPLY:
+			{
+			// don't know how to handle the opcode
+			BadARPEvent(ah, "unimplemented-arp-opcode (%i)", ntohs(ah->ar_op));
+			return false;
+			}
 
-			default:
-				{
-				// invalid opcode
-				BadARPEvent(ah, "invalid-arp-opcode (opcode=%i)", ntohs(ah->ar_op));
-				return false;
-				}
+		default:
+			{
+			// invalid opcode
+			BadARPEvent(ah, "invalid-arp-opcode (opcode=%i)", ntohs(ah->ar_op));
+			return false;
+			}
 		}
 
 	// Leave packet analyzer land

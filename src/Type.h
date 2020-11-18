@@ -98,52 +98,52 @@ constexpr InternalTypeTag to_internal_type_tag(TypeTag tag) noexcept
 	{
 	switch ( tag )
 		{
-			case TYPE_VOID:
-			return TYPE_INTERNAL_VOID;
+		case TYPE_VOID:
+		return TYPE_INTERNAL_VOID;
 
-			case TYPE_BOOL:
-			case TYPE_INT:
-			case TYPE_ENUM:
-			return TYPE_INTERNAL_INT;
+		case TYPE_BOOL:
+		case TYPE_INT:
+		case TYPE_ENUM:
+		return TYPE_INTERNAL_INT;
 
-			case TYPE_COUNT:
+		case TYPE_COUNT:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-			case TYPE_COUNTER:
+		case TYPE_COUNTER:
 #pragma GCC diagnostic pop
-			case TYPE_PORT:
-			return TYPE_INTERNAL_UNSIGNED;
+		case TYPE_PORT:
+		return TYPE_INTERNAL_UNSIGNED;
 
-			case TYPE_DOUBLE:
-			case TYPE_TIME:
-			case TYPE_INTERVAL:
-			return TYPE_INTERNAL_DOUBLE;
+		case TYPE_DOUBLE:
+		case TYPE_TIME:
+		case TYPE_INTERVAL:
+		return TYPE_INTERNAL_DOUBLE;
 
-			case TYPE_STRING:
-			return TYPE_INTERNAL_STRING;
+		case TYPE_STRING:
+		return TYPE_INTERNAL_STRING;
 
-			case TYPE_ADDR:
-			return TYPE_INTERNAL_ADDR;
+		case TYPE_ADDR:
+		return TYPE_INTERNAL_ADDR;
 
-			case TYPE_SUBNET:
-			return TYPE_INTERNAL_SUBNET;
+		case TYPE_SUBNET:
+		return TYPE_INTERNAL_SUBNET;
 
-			case TYPE_PATTERN:
-			case TYPE_TIMER:
-			case TYPE_ANY:
-			case TYPE_TABLE:
-			case TYPE_UNION:
-			case TYPE_RECORD:
-			case TYPE_LIST:
-			case TYPE_FUNC:
-			case TYPE_FILE:
-			case TYPE_OPAQUE:
-			case TYPE_VECTOR:
-			case TYPE_TYPE:
-			return TYPE_INTERNAL_OTHER;
+		case TYPE_PATTERN:
+		case TYPE_TIMER:
+		case TYPE_ANY:
+		case TYPE_TABLE:
+		case TYPE_UNION:
+		case TYPE_RECORD:
+		case TYPE_LIST:
+		case TYPE_FUNC:
+		case TYPE_FILE:
+		case TYPE_OPAQUE:
+		case TYPE_VECTOR:
+		case TYPE_TYPE:
+		return TYPE_INTERNAL_OTHER;
 
-			case TYPE_ERROR:
-			return TYPE_INTERNAL_ERROR;
+		case TYPE_ERROR:
+		return TYPE_INTERNAL_ERROR;
 		}
 
 	/* this should be unreachable */

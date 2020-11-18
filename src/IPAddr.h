@@ -514,16 +514,16 @@ inline void IPAddr::ConvertToThreadingValue(threading::Value::addr_t* v) const
 	switch ( v->family )
 		{
 
-			case IPv4:
-			CopyIPv4(&v->in.in4);
-			return;
+		case IPv4:
+		CopyIPv4(&v->in.in4);
+		return;
 
-			case IPv6:
-			CopyIPv6(&v->in.in6);
-			return;
+		case IPv6:
+		CopyIPv6(&v->in.in6);
+		return;
 
-			// Can't be reached.
-			abort();
+		// Can't be reached.
+		abort();
 		}
 	}
 

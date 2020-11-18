@@ -199,39 +199,39 @@ bool Binary::DoUpdate()
 		{
 		switch ( Info().mode )
 			{
-				case MODE_REREAD:
+			case MODE_REREAD:
+				{
+				switch ( UpdateModificationTime() )
 					{
-					switch ( UpdateModificationTime() )
-						{
-							case -1:
-							return false; // error
-							case 0:
-							return true; // no change
-							case 1:
-							break; // file changed. reread.
-							default:
-							assert(false);
-						}
-					// fallthrough
+					case -1:
+					return false; // error
+					case 0:
+					return true; // no change
+					case 1:
+					break; // file changed. reread.
+					default:
+					assert(false);
 					}
+				// fallthrough
+				}
 
-				case MODE_MANUAL:
-				case MODE_STREAM:
-				if ( Info().mode == MODE_STREAM && in )
-					{
-					in->clear(); // remove end of file evil bits
-					break;
-					}
-
-				CloseInput();
-
-				if ( ! OpenInput() )
-					return false;
-
+			case MODE_MANUAL:
+			case MODE_STREAM:
+			if ( Info().mode == MODE_STREAM && in )
+				{
+				in->clear(); // remove end of file evil bits
 				break;
+				}
 
-				default:
-				assert(false);
+			CloseInput();
+
+			if ( ! OpenInput() )
+				return false;
+
+			break;
+
+			default:
+			assert(false);
 			}
 		}
 
@@ -269,23 +269,23 @@ bool Binary::DoHeartbeat(double network_time, double current_time)
 	{
 	switch ( Info().mode )
 		{
-			case MODE_MANUAL:
-			// yay, we do nothing :)
-			break;
+		case MODE_MANUAL:
+		// yay, we do nothing :)
+		break;
 
-			case MODE_REREAD:
-			case MODE_STREAM:
+		case MODE_REREAD:
+		case MODE_STREAM:
 #ifdef DEBUG
-			Debug(DBG_INPUT, "Starting Heartbeat update");
+		Debug(DBG_INPUT, "Starting Heartbeat update");
 #endif
-			Update(); // call update and not DoUpdate, because update
-			          // checks disabled.
+		Update(); // call update and not DoUpdate, because update
+		          // checks disabled.
 #ifdef DEBUG
-			Debug(DBG_INPUT, "Finished with heartbeat update");
+		Debug(DBG_INPUT, "Finished with heartbeat update");
 #endif
-			break;
-			default:
-			assert(false);
+		break;
+		default:
+		assert(false);
 		}
 
 	return true;

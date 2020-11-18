@@ -327,162 +327,162 @@ Options parse_cmdline(int argc, char** argv)
 	        EOF )
 		switch ( op )
 			{
-				case 'a':
-				rval.parse_only = true;
-				break;
-				case 'b':
-				rval.bare_mode = true;
-				break;
-				case 'd':
-				rval.debug_scripts = true;
-				break;
-				case 'e':
-				rval.script_code_to_exec = optarg;
-				break;
-				case 'f':
-				rval.pcap_filter = optarg;
-				break;
-				case 'h':
-				rval.print_usage = true;
-				break;
-				case 'i':
-				if ( rval.interface )
-					{
-					fprintf(stderr, "ERROR: Only a single interface option (-i) is allowed.\n");
-					exit(1);
-					}
+			case 'a':
+			rval.parse_only = true;
+			break;
+			case 'b':
+			rval.bare_mode = true;
+			break;
+			case 'd':
+			rval.debug_scripts = true;
+			break;
+			case 'e':
+			rval.script_code_to_exec = optarg;
+			break;
+			case 'f':
+			rval.pcap_filter = optarg;
+			break;
+			case 'h':
+			rval.print_usage = true;
+			break;
+			case 'i':
+			if ( rval.interface )
+				{
+				fprintf(stderr, "ERROR: Only a single interface option (-i) is allowed.\n");
+				exit(1);
+				}
 
-				if ( rval.pcap_file )
-					{
-					fprintf(stderr, "ERROR: Using -i is not allow when reading a pcap file.\n");
-					exit(1);
-					}
+			if ( rval.pcap_file )
+				{
+				fprintf(stderr, "ERROR: Using -i is not allow when reading a pcap file.\n");
+				exit(1);
+				}
 
-				rval.interface = optarg;
-				break;
-				case 'j':
-				rval.supervisor_mode = true;
-				if ( optarg )
-					{
-					// TODO: for supervised offline pcap reading, the argument is
-					// expected to be number of workers like "-j 4" or possibly a
-					// list of worker/proxy/logger counts like "-j 4,2,1"
-					}
-				break;
-				case 'p':
-				rval.script_prefixes.emplace_back(optarg);
-				break;
-				case 'r':
-				if ( rval.pcap_file )
-					{
-					fprintf(stderr, "ERROR: Only a single readfile option (-r) is allowed.\n");
-					exit(1);
-					}
+			rval.interface = optarg;
+			break;
+			case 'j':
+			rval.supervisor_mode = true;
+			if ( optarg )
+				{
+				// TODO: for supervised offline pcap reading, the argument is
+				// expected to be number of workers like "-j 4" or possibly a
+				// list of worker/proxy/logger counts like "-j 4,2,1"
+				}
+			break;
+			case 'p':
+			rval.script_prefixes.emplace_back(optarg);
+			break;
+			case 'r':
+			if ( rval.pcap_file )
+				{
+				fprintf(stderr, "ERROR: Only a single readfile option (-r) is allowed.\n");
+				exit(1);
+				}
 
-				if ( rval.interface )
-					{
-					fprintf(stderr, "Using -r is not allowed when reading a live interface.\n");
-					exit(1);
-					}
+			if ( rval.interface )
+				{
+				fprintf(stderr, "Using -r is not allowed when reading a live interface.\n");
+				exit(1);
+				}
 
-				rval.pcap_file = optarg;
-				break;
-				case 's':
-				rval.signature_files.emplace_back(optarg);
-				break;
-				case 't':
-				rval.debug_script_tracing_file = optarg;
-				break;
-				case 'v':
-				rval.print_version = true;
-				break;
-				case 'w':
-				rval.pcap_output_file = optarg;
-				break;
-				case 'B':
-				rval.debug_log_streams = optarg;
-				break;
-				case 'C':
-				rval.ignore_checksums = true;
-				break;
-				case 'D':
-				rval.deterministic_mode = true;
-				break;
-				case 'E':
-				rval.pseudo_realtime = 1.0;
-				if ( optarg )
-					rval.pseudo_realtime = atof(optarg);
-				break;
-				case 'F':
-				if ( rval.dns_mode != detail::DNS_DEFAULT )
-					usage(zargs[0], 1);
-				rval.dns_mode = detail::DNS_FORCE;
-				break;
-				case 'G':
-				rval.random_seed_input_file = optarg;
-				break;
-				case 'H':
-				rval.random_seed_output_file = optarg;
-				break;
-				case 'I':
-				rval.identifier_to_print = optarg;
-				break;
-				case 'N':
-				++rval.print_plugins;
-				break;
-				case 'P':
-				if ( rval.dns_mode != detail::DNS_DEFAULT )
-					usage(zargs[0], 1);
-				rval.dns_mode = detail::DNS_PRIME;
-				break;
-				case 'Q':
-				rval.print_execution_time = true;
-				break;
-				case 'S':
-				rval.print_signature_debug_info = true;
-				break;
-				case 'T':
-				rval.signature_re_level = atoi(optarg);
-				break;
-				case 'U':
-				rval.process_status_file = optarg;
-				break;
-				case 'W':
-				rval.use_watchdog = true;
-				break;
-				case 'X':
-				rval.zeekygen_config_file = optarg;
-				break;
+			rval.pcap_file = optarg;
+			break;
+			case 's':
+			rval.signature_files.emplace_back(optarg);
+			break;
+			case 't':
+			rval.debug_script_tracing_file = optarg;
+			break;
+			case 'v':
+			rval.print_version = true;
+			break;
+			case 'w':
+			rval.pcap_output_file = optarg;
+			break;
+			case 'B':
+			rval.debug_log_streams = optarg;
+			break;
+			case 'C':
+			rval.ignore_checksums = true;
+			break;
+			case 'D':
+			rval.deterministic_mode = true;
+			break;
+			case 'E':
+			rval.pseudo_realtime = 1.0;
+			if ( optarg )
+				rval.pseudo_realtime = atof(optarg);
+			break;
+			case 'F':
+			if ( rval.dns_mode != detail::DNS_DEFAULT )
+				usage(zargs[0], 1);
+			rval.dns_mode = detail::DNS_FORCE;
+			break;
+			case 'G':
+			rval.random_seed_input_file = optarg;
+			break;
+			case 'H':
+			rval.random_seed_output_file = optarg;
+			break;
+			case 'I':
+			rval.identifier_to_print = optarg;
+			break;
+			case 'N':
+			++rval.print_plugins;
+			break;
+			case 'P':
+			if ( rval.dns_mode != detail::DNS_DEFAULT )
+				usage(zargs[0], 1);
+			rval.dns_mode = detail::DNS_PRIME;
+			break;
+			case 'Q':
+			rval.print_execution_time = true;
+			break;
+			case 'S':
+			rval.print_signature_debug_info = true;
+			break;
+			case 'T':
+			rval.signature_re_level = atoi(optarg);
+			break;
+			case 'U':
+			rval.process_status_file = optarg;
+			break;
+			case 'W':
+			rval.use_watchdog = true;
+			break;
+			case 'X':
+			rval.zeekygen_config_file = optarg;
+			break;
 
 #ifdef USE_PERFTOOLS_DEBUG
-				case 'm':
-				rval.perftools_check_leaks = 1;
-				break;
-				case 'M':
-				rval.perftools_profile = 1;
-				break;
+			case 'm':
+			rval.perftools_check_leaks = 1;
+			break;
+			case 'M':
+			rval.perftools_profile = 1;
+			break;
 #endif
 
 #ifdef USE_IDMEF
-				case 'n':
-				rval.libidmef_dtd_path = optarg;
-				break;
+			case 'n':
+			rval.libidmef_dtd_path = optarg;
+			break;
 #endif
 
-				case '#':
-				fprintf(stderr, "ERROR: --test only allowed as first argument.\n");
-				usage(zargs[0], 1);
-				break;
+			case '#':
+			fprintf(stderr, "ERROR: --test only allowed as first argument.\n");
+			usage(zargs[0], 1);
+			break;
 
-				case 0:
-				// This happens for long options that don't have
-				// a short-option equivalent.
-				break;
+			case 0:
+			// This happens for long options that don't have
+			// a short-option equivalent.
+			break;
 
-				case '?':
-				default:
-				usage(zargs[0], 1);
-				break;
+			case '?':
+			default:
+			usage(zargs[0], 1);
+			break;
 			}
 
 	// Process remaining arguments. X=Y arguments indicate script

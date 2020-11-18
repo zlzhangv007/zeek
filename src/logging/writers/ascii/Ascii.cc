@@ -889,19 +889,19 @@ bool Ascii::InternalClose(int fd)
 
 	switch ( res )
 		{
-			case Z_STREAM_ERROR:
-			Error("Ascii::InternalClose gzclose error: invalid file stream");
-			break;
-			case Z_BUF_ERROR:
-			Error("Ascii::InternalClose gzclose error: "
-			      "no compression progress possible during buffer flush");
-			break;
-			case Z_ERRNO:
-			Error(Fmt("Ascii::InternalClose gzclose error: %s\n", Strerror(errno)));
-			break;
-			default:
-			Error("Ascii::InternalClose invalid gzclose result");
-			break;
+		case Z_STREAM_ERROR:
+		Error("Ascii::InternalClose gzclose error: invalid file stream");
+		break;
+		case Z_BUF_ERROR:
+		Error("Ascii::InternalClose gzclose error: "
+		      "no compression progress possible during buffer flush");
+		break;
+		case Z_ERRNO:
+		Error(Fmt("Ascii::InternalClose gzclose error: %s\n", Strerror(errno)));
+		break;
+		default:
+		Error("Ascii::InternalClose invalid gzclose result");
+		break;
 		}
 
 	return false;

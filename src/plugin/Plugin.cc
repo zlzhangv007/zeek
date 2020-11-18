@@ -69,167 +69,167 @@ void HookArgument::Describe(ODesc* d) const
 	{
 	switch ( type )
 		{
-			case BOOL:
-			d->Add(arg.bool_ ? "true" : "false");
-			break;
+		case BOOL:
+		d->Add(arg.bool_ ? "true" : "false");
+		break;
 
-			case DOUBLE:
-			d->Add(arg.double_);
-			break;
+		case DOUBLE:
+		d->Add(arg.double_);
+		break;
 
-			case EVENT:
-			if ( arg.event )
+		case EVENT:
+		if ( arg.event )
+			{
+			d->Add(arg.event->Handler()->Name());
+			d->Add("(");
+			describe_vals(arg.event->Args(), d);
+			d->Add(")");
+			}
+		else
+			d->Add("<null>");
+		break;
+
+		case CONN:
+		if ( arg.conn )
+			arg.conn->Describe(d);
+		break;
+
+		case FUNC_RESULT:
+		if ( func_result.first )
+			{
+			if ( func_result.second )
+				func_result.second->Describe(d);
+			else
+				d->Add("<null>");
+			}
+		else
+			d->Add("<no result>");
+
+		break;
+
+		case FRAME:
+		if ( arg.frame )
+			d->Add("<frame>");
+		else
+			d->Add("<null>");
+		break;
+
+		case FUNC:
+		if ( arg.func )
+			d->Add(arg.func->Name());
+		else
+			d->Add("<null>");
+		break;
+
+		case INT:
+		d->Add(arg.int_);
+		break;
+
+		case STRING:
+		d->Add(arg_string);
+		break;
+
+		case VAL:
+		if ( arg.val )
+			arg.val->Describe(d);
+
+		else
+			d->Add("<null>");
+		break;
+
+		case VAL_LIST:
+		if ( arg.vals )
+			{
+			d->Add("(");
+			describe_vals(arg.vals, d);
+			d->Add(")");
+			}
+		else
+			d->Add("<null>");
+		break;
+
+		case ARG_LIST:
+		if ( arg.args )
+			{
+			d->Add("(");
+			describe_vals(*arg.args, d);
+			d->Add(")");
+			}
+		else
+			d->Add("<null>");
+		break;
+
+		case VOID:
+		d->Add("<void>");
+		break;
+
+		case VOIDP:
+		d->Add("<void ptr>");
+		break;
+
+		case WRITER_INFO:
+			{
+			d->Add(arg.winfo->path);
+			d->Add("(");
+			d->Add(arg.winfo->network_time);
+			d->Add(",");
+			d->Add(arg.winfo->rotation_interval);
+			d->Add(",");
+			d->Add(arg.winfo->rotation_base);
+
+			if ( arg.winfo->config.size() > 0 )
 				{
-				d->Add(arg.event->Handler()->Name());
-				d->Add("(");
-				describe_vals(arg.event->Args(), d);
-				d->Add(")");
-				}
-			else
-				d->Add("<null>");
-			break;
+				bool first = true;
+				d->Add("config: {");
 
-			case CONN:
-			if ( arg.conn )
-				arg.conn->Describe(d);
-			break;
-
-			case FUNC_RESULT:
-			if ( func_result.first )
-				{
-				if ( func_result.second )
-					func_result.second->Describe(d);
-				else
-					d->Add("<null>");
-				}
-			else
-				d->Add("<no result>");
-
-			break;
-
-			case FRAME:
-			if ( arg.frame )
-				d->Add("<frame>");
-			else
-				d->Add("<null>");
-			break;
-
-			case FUNC:
-			if ( arg.func )
-				d->Add(arg.func->Name());
-			else
-				d->Add("<null>");
-			break;
-
-			case INT:
-			d->Add(arg.int_);
-			break;
-
-			case STRING:
-			d->Add(arg_string);
-			break;
-
-			case VAL:
-			if ( arg.val )
-				arg.val->Describe(d);
-
-			else
-				d->Add("<null>");
-			break;
-
-			case VAL_LIST:
-			if ( arg.vals )
-				{
-				d->Add("(");
-				describe_vals(arg.vals, d);
-				d->Add(")");
-				}
-			else
-				d->Add("<null>");
-			break;
-
-			case ARG_LIST:
-			if ( arg.args )
-				{
-				d->Add("(");
-				describe_vals(*arg.args, d);
-				d->Add(")");
-				}
-			else
-				d->Add("<null>");
-			break;
-
-			case VOID:
-			d->Add("<void>");
-			break;
-
-			case VOIDP:
-			d->Add("<void ptr>");
-			break;
-
-			case WRITER_INFO:
-				{
-				d->Add(arg.winfo->path);
-				d->Add("(");
-				d->Add(arg.winfo->network_time);
-				d->Add(",");
-				d->Add(arg.winfo->rotation_interval);
-				d->Add(",");
-				d->Add(arg.winfo->rotation_base);
-
-				if ( arg.winfo->config.size() > 0 )
+				for ( auto& v : arg.winfo->config )
 					{
-					bool first = true;
-					d->Add("config: {");
-
-					for ( auto& v : arg.winfo->config )
-						{
-						if ( ! first )
-							d->Add(", ");
-
-						d->Add(v.first);
-						d->Add(": ");
-						d->Add(v.second);
-						first = false;
-						}
-
-					d->Add("}");
-					}
-
-				d->Add(")");
-				}
-			break;
-
-			case THREAD_FIELDS:
-				{
-				d->Add("{");
-
-				for ( int i = 0; i < tfields.first; i++ )
-					{
-					const threading::Field* f = tfields.second[i];
-
-					if ( i > 0 )
+					if ( ! first )
 						d->Add(", ");
 
-					d->Add(f->name);
-					d->Add(" (");
-					d->Add(f->TypeName());
-					d->Add(")");
+					d->Add(v.first);
+					d->Add(": ");
+					d->Add(v.second);
+					first = false;
 					}
 
 				d->Add("}");
 				}
-			break;
 
-			case LOCATION:
-			if ( arg.loc )
+			d->Add(")");
+			}
+		break;
+
+		case THREAD_FIELDS:
+			{
+			d->Add("{");
+
+			for ( int i = 0; i < tfields.first; i++ )
 				{
-				arg.loc->Describe(d);
+				const threading::Field* f = tfields.second[i];
+
+				if ( i > 0 )
+					d->Add(", ");
+
+				d->Add(f->name);
+				d->Add(" (");
+				d->Add(f->TypeName());
+				d->Add(")");
 				}
-			else
-				{
-				d->Add("<no location>");
-				}
+
+			d->Add("}");
+			}
+		break;
+
+		case LOCATION:
+		if ( arg.loc )
+			{
+			arg.loc->Describe(d);
+			}
+		else
+			{
+			d->Add("<no location>");
+			}
 		}
 	}
 
@@ -489,28 +489,28 @@ void Plugin::Describe(ODesc* d) const
 
 		switch ( (*i).GetType() )
 			{
-				case BifItem::FUNCTION:
-				type = "Function";
-				break;
+			case BifItem::FUNCTION:
+			type = "Function";
+			break;
 
-				case BifItem::EVENT:
-				type = "Event";
-				break;
+			case BifItem::EVENT:
+			type = "Event";
+			break;
 
-				case BifItem::CONSTANT:
-				type = "Constant";
-				break;
+			case BifItem::CONSTANT:
+			type = "Constant";
+			break;
 
-				case BifItem::GLOBAL:
-				type = "Global";
-				break;
+			case BifItem::GLOBAL:
+			type = "Global";
+			break;
 
-				case BifItem::TYPE:
-				type = "Type";
-				break;
+			case BifItem::TYPE:
+			type = "Type";
+			break;
 
-				default:
-				type = "<unknown>";
+			default:
+			type = "<unknown>";
 			}
 
 		d->Add("    ");

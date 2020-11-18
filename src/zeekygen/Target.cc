@@ -80,49 +80,48 @@ static void write_plugin_components(FILE* f, const plugin::Plugin* p)
 		{
 		switch ( component->Type() )
 			{
-				case plugin::component::ANALYZER:
-					{
-					const analyzer::Component* c =
-						dynamic_cast<const analyzer::Component*>(component);
+			case plugin::component::ANALYZER:
+				{
+				const analyzer::Component* c = dynamic_cast<const analyzer::Component*>(component);
 
-					if ( c )
-						write_analyzer_component(f, c);
-					else
-						reporter->InternalError("component type mismatch");
-					}
-				break;
+				if ( c )
+					write_analyzer_component(f, c);
+				else
+					reporter->InternalError("component type mismatch");
+				}
+			break;
 
-				case plugin::component::PACKET_ANALYZER:
-					{
-					const packet_analysis::Component* c =
-						dynamic_cast<const packet_analysis::Component*>(component);
+			case plugin::component::PACKET_ANALYZER:
+				{
+				const packet_analysis::Component* c =
+					dynamic_cast<const packet_analysis::Component*>(component);
 
-					if ( c )
-						write_analyzer_component(f, c);
-					else
-						reporter->InternalError("component type mismatch");
-					}
-				break;
+				if ( c )
+					write_analyzer_component(f, c);
+				else
+					reporter->InternalError("component type mismatch");
+				}
+			break;
 
-				case plugin::component::FILE_ANALYZER:
-					{
-					const auto* c = dynamic_cast<const file_analysis::Component*>(component);
+			case plugin::component::FILE_ANALYZER:
+				{
+				const auto* c = dynamic_cast<const file_analysis::Component*>(component);
 
-					if ( c )
-						write_analyzer_component(f, c);
-					else
-						reporter->InternalError("component type mismatch");
-					}
-				break;
+				if ( c )
+					write_analyzer_component(f, c);
+				else
+					reporter->InternalError("component type mismatch");
+				}
+			break;
 
-				case plugin::component::READER:
-				reporter->InternalError("docs for READER component unimplemented");
+			case plugin::component::READER:
+			reporter->InternalError("docs for READER component unimplemented");
 
-				case plugin::component::WRITER:
-				reporter->InternalError("docs for WRITER component unimplemented");
+			case plugin::component::WRITER:
+			reporter->InternalError("docs for WRITER component unimplemented");
 
-				default:
-				reporter->InternalError("docs for unknown component unimplemented");
+			default:
+			reporter->InternalError("docs for unknown component unimplemented");
 			}
 		}
 	}

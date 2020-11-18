@@ -200,92 +200,92 @@ int expand_escape(const char*& s)
 	{
 	switch ( *(s++) )
 		{
-			case 'b':
-			return '\b';
-			case 'f':
-			return '\f';
-			case 'n':
-			return '\n';
-			case 'r':
-			return '\r';
-			case 't':
-			return '\t';
-			case 'a':
-			return '\a';
-			case 'v':
-			return '\v';
+		case 'b':
+		return '\b';
+		case 'f':
+		return '\f';
+		case 'n':
+		return '\n';
+		case 'r':
+		return '\r';
+		case 't':
+		return '\t';
+		case 'a':
+		return '\a';
+		case 'v':
+		return '\v';
 
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-				{ // \<octal>{1,3}
-				--s; // put back the first octal digit
-				const char* start = s;
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+			{ // \<octal>{1,3}
+			--s; // put back the first octal digit
+			const char* start = s;
 
-				// require at least one octal digit and parse at most three
+			// require at least one octal digit and parse at most three
 
-				int result = parse_octal_digit(*s++);
+			int result = parse_octal_digit(*s++);
 
-				if ( result < 0 )
-					{
-					reporter->Error("bad octal escape: %s", start);
-					return 0;
-					}
+			if ( result < 0 )
+				{
+				reporter->Error("bad octal escape: %s", start);
+				return 0;
+				}
 
-				// second digit?
-				int digit = parse_octal_digit(*s);
+			// second digit?
+			int digit = parse_octal_digit(*s);
+
+			if ( digit >= 0 )
+				{
+				result = (result << 3) | digit;
+				++s;
+
+				// third digit?
+				digit = parse_octal_digit(*s);
 
 				if ( digit >= 0 )
 					{
 					result = (result << 3) | digit;
 					++s;
-
-					// third digit?
-					digit = parse_octal_digit(*s);
-
-					if ( digit >= 0 )
-						{
-						result = (result << 3) | digit;
-						++s;
-						}
 					}
-
-				return result;
 				}
 
-			case 'x':
-				{ /* \x<hex> */
-				const char* start = s;
+			return result;
+			}
 
-				// Look at most 2 characters, so that "\x0ddir" -> "^Mdir".
+		case 'x':
+			{ /* \x<hex> */
+			const char* start = s;
 
-				int result = parse_hex_digit(*s++);
+			// Look at most 2 characters, so that "\x0ddir" -> "^Mdir".
 
-				if ( result < 0 )
-					{
-					reporter->Error("bad hexadecimal escape: %s", start);
-					return 0;
-					}
+			int result = parse_hex_digit(*s++);
 
-				// second digit?
-				int digit = parse_hex_digit(*s);
-
-				if ( digit >= 0 )
-					{
-					result = (result << 4) | digit;
-					++s;
-					}
-
-				return result;
+			if ( result < 0 )
+				{
+				reporter->Error("bad hexadecimal escape: %s", start);
+				return 0;
 				}
 
-			default:
-			return s[-1];
+			// second digit?
+			int digit = parse_hex_digit(*s);
+
+			if ( digit >= 0 )
+				{
+				result = (result << 4) | digit;
+				++s;
+				}
+
+			return result;
+			}
+
+		default:
+		return s[-1];
 		}
 	}
 

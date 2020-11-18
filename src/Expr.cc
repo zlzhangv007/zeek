@@ -676,106 +676,106 @@ ValPtr BinaryExpr::Fold(Val* v1, Val* v2) const
 	else                                                                                           \
 		i3 = d1 op d2;
 
-			case EXPR_ADD:
-			case EXPR_ADD_TO:
-			DO_FOLD(+);
-			break;
-			case EXPR_SUB:
-			case EXPR_REMOVE_FROM:
-			DO_FOLD(-);
-			break;
-			case EXPR_TIMES:
-			DO_FOLD(*);
-			break;
-			case EXPR_DIVIDE:
+		case EXPR_ADD:
+		case EXPR_ADD_TO:
+		DO_FOLD(+);
+		break;
+		case EXPR_SUB:
+		case EXPR_REMOVE_FROM:
+		DO_FOLD(-);
+		break;
+		case EXPR_TIMES:
+		DO_FOLD(*);
+		break;
+		case EXPR_DIVIDE:
+			{
+			if ( is_integral )
 				{
-				if ( is_integral )
-					{
-					if ( i2 == 0 )
-						RuntimeError("division by zero");
+				if ( i2 == 0 )
+					RuntimeError("division by zero");
 
-					i3 = i1 / i2;
-					}
-
-				else if ( is_unsigned )
-					{
-					if ( u2 == 0 )
-						RuntimeError("division by zero");
-
-					u3 = u1 / u2;
-					}
-				else
-					{
-					if ( d2 == 0 )
-						RuntimeError("division by zero");
-
-					d3 = d1 / d2;
-					}
-				}
-			break;
-
-			case EXPR_MOD:
-				{
-				if ( is_integral )
-					{
-					if ( i2 == 0 )
-						RuntimeError("modulo by zero");
-
-					i3 = i1 % i2;
-					}
-
-				else if ( is_unsigned )
-					{
-					if ( u2 == 0 )
-						RuntimeError("modulo by zero");
-
-					u3 = u1 % u2;
-					}
-
-				else
-					RuntimeErrorWithCallStack("bad type in BinaryExpr::Fold");
+				i3 = i1 / i2;
 				}
 
-			break;
+			else if ( is_unsigned )
+				{
+				if ( u2 == 0 )
+					RuntimeError("division by zero");
 
-			case EXPR_AND:
-			DO_UINT_FOLD(&);
-			break;
-			case EXPR_OR:
-			DO_UINT_FOLD(|);
-			break;
-			case EXPR_XOR:
-			DO_UINT_FOLD(^);
-			break;
+				u3 = u1 / u2;
+				}
+			else
+				{
+				if ( d2 == 0 )
+					RuntimeError("division by zero");
 
-			case EXPR_AND_AND:
-			DO_INT_FOLD(&&);
-			break;
-			case EXPR_OR_OR:
-			DO_INT_FOLD(||);
-			break;
+				d3 = d1 / d2;
+				}
+			}
+		break;
 
-			case EXPR_LT:
-			DO_INT_VAL_FOLD(<);
-			break;
-			case EXPR_LE:
-			DO_INT_VAL_FOLD(<=);
-			break;
-			case EXPR_EQ:
-			DO_INT_VAL_FOLD(==);
-			break;
-			case EXPR_NE:
-			DO_INT_VAL_FOLD(!=);
-			break;
-			case EXPR_GE:
-			DO_INT_VAL_FOLD(>=);
-			break;
-			case EXPR_GT:
-			DO_INT_VAL_FOLD(>);
-			break;
+		case EXPR_MOD:
+			{
+			if ( is_integral )
+				{
+				if ( i2 == 0 )
+					RuntimeError("modulo by zero");
 
-			default:
-			BadTag("BinaryExpr::Fold", expr_name(tag));
+				i3 = i1 % i2;
+				}
+
+			else if ( is_unsigned )
+				{
+				if ( u2 == 0 )
+					RuntimeError("modulo by zero");
+
+				u3 = u1 % u2;
+				}
+
+			else
+				RuntimeErrorWithCallStack("bad type in BinaryExpr::Fold");
+			}
+
+		break;
+
+		case EXPR_AND:
+		DO_UINT_FOLD(&);
+		break;
+		case EXPR_OR:
+		DO_UINT_FOLD(|);
+		break;
+		case EXPR_XOR:
+		DO_UINT_FOLD(^);
+		break;
+
+		case EXPR_AND_AND:
+		DO_INT_FOLD(&&);
+		break;
+		case EXPR_OR_OR:
+		DO_INT_FOLD(||);
+		break;
+
+		case EXPR_LT:
+		DO_INT_VAL_FOLD(<);
+		break;
+		case EXPR_LE:
+		DO_INT_VAL_FOLD(<=);
+		break;
+		case EXPR_EQ:
+		DO_INT_VAL_FOLD(==);
+		break;
+		case EXPR_NE:
+		DO_INT_VAL_FOLD(!=);
+		break;
+		case EXPR_GE:
+		DO_INT_VAL_FOLD(>=);
+		break;
+		case EXPR_GT:
+		DO_INT_VAL_FOLD(>);
+		break;
+
+		default:
+		BadTag("BinaryExpr::Fold", expr_name(tag));
 		}
 
 	const auto& ret_type = IsVector(GetType()->Tag()) ? GetType()->Yield() : GetType();
@@ -809,31 +809,31 @@ ValPtr BinaryExpr::StringFold(Val* v1, Val* v2) const
 		break;                                                                                     \
 		}
 
-			case EXPR_LT:
-			DO_FOLD(<)
-			case EXPR_LE:
-			DO_FOLD(<=)
-			case EXPR_EQ:
-			DO_FOLD(==)
-			case EXPR_NE:
-			DO_FOLD(!=)
-			case EXPR_GE:
-			DO_FOLD(>=)
-			case EXPR_GT:
-			DO_FOLD(>)
+		case EXPR_LT:
+		DO_FOLD(<)
+		case EXPR_LE:
+		DO_FOLD(<=)
+		case EXPR_EQ:
+		DO_FOLD(==)
+		case EXPR_NE:
+		DO_FOLD(!=)
+		case EXPR_GE:
+		DO_FOLD(>=)
+		case EXPR_GT:
+		DO_FOLD(>)
 
-			case EXPR_ADD:
-			case EXPR_ADD_TO:
-				{
-				std::vector<const String*> strings;
-				strings.push_back(s1);
-				strings.push_back(s2);
+		case EXPR_ADD:
+		case EXPR_ADD_TO:
+			{
+			std::vector<const String*> strings;
+			strings.push_back(s1);
+			strings.push_back(s2);
 
-				return make_intrusive<StringVal>(concatenate(strings));
-				}
+			return make_intrusive<StringVal>(concatenate(strings));
+			}
 
-			default:
-			BadTag("BinaryExpr::StringFold", expr_name(tag));
+		default:
+		BadTag("BinaryExpr::StringFold", expr_name(tag));
 		}
 
 	return val_mgr->Bool(result);
@@ -861,54 +861,54 @@ ValPtr BinaryExpr::SetFold(Val* v1, Val* v2) const
 
 	switch ( tag )
 		{
-			case EXPR_AND:
-			return tv1->Intersection(*tv2);
+		case EXPR_AND:
+		return tv1->Intersection(*tv2);
 
-			case EXPR_OR:
-				{
-				auto rval = v1->Clone();
+		case EXPR_OR:
+			{
+			auto rval = v1->Clone();
 
-				if ( ! tv2->AddTo(rval.get(), false, false) )
-					reporter->InternalError("set union failed to type check");
+			if ( ! tv2->AddTo(rval.get(), false, false) )
+				reporter->InternalError("set union failed to type check");
 
-				return rval;
-				}
+			return rval;
+			}
 
-			case EXPR_SUB:
-				{
-				auto rval = v1->Clone();
+		case EXPR_SUB:
+			{
+			auto rval = v1->Clone();
 
-				if ( ! tv2->RemoveFrom(rval.get()) )
-					reporter->InternalError("set difference failed to type check");
+			if ( ! tv2->RemoveFrom(rval.get()) )
+				reporter->InternalError("set difference failed to type check");
 
-				return rval;
-				}
+			return rval;
+			}
 
-			case EXPR_EQ:
-			res = tv1->EqualTo(*tv2);
-			break;
+		case EXPR_EQ:
+		res = tv1->EqualTo(*tv2);
+		break;
 
-			case EXPR_NE:
-			res = ! tv1->EqualTo(*tv2);
-			break;
+		case EXPR_NE:
+		res = ! tv1->EqualTo(*tv2);
+		break;
 
-			case EXPR_LT:
-			res = tv1->IsSubsetOf(*tv2) && tv1->Size() < tv2->Size();
-			break;
+		case EXPR_LT:
+		res = tv1->IsSubsetOf(*tv2) && tv1->Size() < tv2->Size();
+		break;
 
-			case EXPR_LE:
-			res = tv1->IsSubsetOf(*tv2);
-			break;
+		case EXPR_LE:
+		res = tv1->IsSubsetOf(*tv2);
+		break;
 
-			case EXPR_GE:
-			case EXPR_GT:
-			// These should't happen due to canonicalization.
-			reporter->InternalError("confusion over canonicalization in set comparison");
-			break;
+		case EXPR_GE:
+		case EXPR_GT:
+		// These should't happen due to canonicalization.
+		reporter->InternalError("confusion over canonicalization in set comparison");
+		break;
 
-			default:
-			BadTag("BinaryExpr::SetFold", expr_name(tag));
-			return nullptr;
+		default:
+		BadTag("BinaryExpr::SetFold", expr_name(tag));
+		return nullptr;
 		}
 
 	return val_mgr->Bool(res);
@@ -923,27 +923,27 @@ ValPtr BinaryExpr::AddrFold(Val* v1, Val* v2) const
 	switch ( tag )
 		{
 
-			case EXPR_LT:
-			result = a1 < a2;
-			break;
-			case EXPR_LE:
-			result = a1 < a2 || a1 == a2;
-			break;
-			case EXPR_EQ:
-			result = a1 == a2;
-			break;
-			case EXPR_NE:
-			result = a1 != a2;
-			break;
-			case EXPR_GE:
-			result = ! (a1 < a2);
-			break;
-			case EXPR_GT:
-			result = (! (a1 < a2)) && (a1 != a2);
-			break;
+		case EXPR_LT:
+		result = a1 < a2;
+		break;
+		case EXPR_LE:
+		result = a1 < a2 || a1 == a2;
+		break;
+		case EXPR_EQ:
+		result = a1 == a2;
+		break;
+		case EXPR_NE:
+		result = a1 != a2;
+		break;
+		case EXPR_GE:
+		result = ! (a1 < a2);
+		break;
+		case EXPR_GT:
+		result = (! (a1 < a2)) && (a1 != a2);
+		break;
 
-			default:
-			BadTag("BinaryExpr::AddrFold", expr_name(tag));
+		default:
+		BadTag("BinaryExpr::AddrFold", expr_name(tag));
 		}
 
 	return val_mgr->Bool(result);
@@ -1817,34 +1817,34 @@ EqExpr::EqExpr(BroExprTag arg_tag, ExprPtr arg_op1, ExprPtr arg_op2)
 		{
 		switch ( bt1 )
 			{
-				case TYPE_BOOL:
-				case TYPE_TIME:
-				case TYPE_INTERVAL:
-				case TYPE_STRING:
-				case TYPE_PORT:
-				case TYPE_ADDR:
-				case TYPE_SUBNET:
-				case TYPE_ERROR:
-				case TYPE_FUNC:
-				break;
+			case TYPE_BOOL:
+			case TYPE_TIME:
+			case TYPE_INTERVAL:
+			case TYPE_STRING:
+			case TYPE_PORT:
+			case TYPE_ADDR:
+			case TYPE_SUBNET:
+			case TYPE_ERROR:
+			case TYPE_FUNC:
+			break;
 
-				case TYPE_ENUM:
+			case TYPE_ENUM:
+			if ( ! same_type(t1, t2) )
+				ExprError("illegal enum comparison");
+			break;
+
+			case TYPE_TABLE:
+			if ( t1->IsSet() && t2->IsSet() )
+				{
 				if ( ! same_type(t1, t2) )
-					ExprError("illegal enum comparison");
+					ExprError("incompatible sets in comparison");
 				break;
+				}
 
-				case TYPE_TABLE:
-				if ( t1->IsSet() && t2->IsSet() )
-					{
-					if ( ! same_type(t1, t2) )
-						ExprError("incompatible sets in comparison");
-					break;
-					}
+			// FALL THROUGH
 
-				// FALL THROUGH
-
-				default:
-				ExprError("illegal comparison");
+			default:
+			ExprError("illegal comparison");
 			}
 		}
 
@@ -2755,75 +2755,75 @@ ValPtr IndexExpr::Fold(Val* v1, Val* v2) const
 
 	switch ( v1->GetType()->Tag() )
 		{
-			case TYPE_VECTOR:
+		case TYPE_VECTOR:
+			{
+			VectorVal* vect = v1->AsVectorVal();
+			const ListVal* lv = v2->AsListVal();
+
+			if ( lv->Length() == 1 )
+				v = vect->At(lv->Idx(0)->CoerceToUnsigned());
+			else
 				{
-				VectorVal* vect = v1->AsVectorVal();
-				const ListVal* lv = v2->AsListVal();
+				size_t len = vect->Size();
+				auto result = make_intrusive<VectorVal>(vect->GetType<VectorType>());
 
-				if ( lv->Length() == 1 )
-					v = vect->At(lv->Idx(0)->CoerceToUnsigned());
-				else
+				bro_int_t first = get_slice_index(lv->Idx(0)->CoerceToInt(), len);
+				bro_int_t last = get_slice_index(lv->Idx(1)->CoerceToInt(), len);
+				bro_int_t sub_length = last - first;
+
+				if ( sub_length >= 0 )
 					{
-					size_t len = vect->Size();
-					auto result = make_intrusive<VectorVal>(vect->GetType<VectorType>());
+					result->Resize(sub_length);
 
-					bro_int_t first = get_slice_index(lv->Idx(0)->CoerceToInt(), len);
-					bro_int_t last = get_slice_index(lv->Idx(1)->CoerceToInt(), len);
-					bro_int_t sub_length = last - first;
-
-					if ( sub_length >= 0 )
-						{
-						result->Resize(sub_length);
-
-						for ( bro_int_t idx = first; idx < last; idx++ )
-							result->Assign(idx - first, vect->At(idx));
-						}
-
-					return result;
+					for ( bro_int_t idx = first; idx < last; idx++ )
+						result->Assign(idx - first, vect->At(idx));
 					}
+
+				return result;
 				}
-			break;
+			}
+		break;
 
-			case TYPE_TABLE:
-			v = v1->AsTableVal()->FindOrDefault(
-				{NewRef {}, v2}); // Then, we jump into the TableVal here.
-			break;
+		case TYPE_TABLE:
+		v = v1->AsTableVal()->FindOrDefault(
+			{NewRef {}, v2}); // Then, we jump into the TableVal here.
+		break;
 
-			case TYPE_STRING:
+		case TYPE_STRING:
+			{
+			const ListVal* lv = v2->AsListVal();
+			const String* s = v1->AsString();
+			int len = s->Len();
+			String* substring = nullptr;
+
+			if ( lv->Length() == 1 )
 				{
-				const ListVal* lv = v2->AsListVal();
-				const String* s = v1->AsString();
-				int len = s->Len();
-				String* substring = nullptr;
+				bro_int_t idx = lv->Idx(0)->AsInt();
 
-				if ( lv->Length() == 1 )
-					{
-					bro_int_t idx = lv->Idx(0)->AsInt();
+				if ( idx < 0 )
+					idx += len;
 
-					if ( idx < 0 )
-						idx += len;
+				// Out-of-range index will return null pointer.
+				substring = s->GetSubstring(idx, 1);
+				}
+			else
+				{
+				bro_int_t first = get_slice_index(lv->Idx(0)->AsInt(), len);
+				bro_int_t last = get_slice_index(lv->Idx(1)->AsInt(), len);
+				bro_int_t substring_len = last - first;
 
-					// Out-of-range index will return null pointer.
-					substring = s->GetSubstring(idx, 1);
-					}
+				if ( substring_len < 0 )
+					substring = nullptr;
 				else
-					{
-					bro_int_t first = get_slice_index(lv->Idx(0)->AsInt(), len);
-					bro_int_t last = get_slice_index(lv->Idx(1)->AsInt(), len);
-					bro_int_t substring_len = last - first;
-
-					if ( substring_len < 0 )
-						substring = nullptr;
-					else
-						substring = s->GetSubstring(first, substring_len);
-					}
-
-				return make_intrusive<StringVal>(substring ? substring : new String(""));
+					substring = s->GetSubstring(first, substring_len);
 				}
 
-			default:
-			RuntimeError("type cannot be indexed");
-			break;
+			return make_intrusive<StringVal>(substring ? substring : new String(""));
+			}
+
+		default:
+		RuntimeError("type cannot be indexed");
+		break;
 		}
 
 	if ( v )
@@ -2855,50 +2855,28 @@ void IndexExpr::Assign(Frame* f, ValPtr v)
 
 	switch ( v1->GetType()->Tag() )
 		{
-			case TYPE_VECTOR:
+		case TYPE_VECTOR:
+			{
+			const ListVal* lv = v2->AsListVal();
+			VectorVal* v1_vect = v1->AsVectorVal();
+
+			if ( lv->Length() > 1 )
 				{
-				const ListVal* lv = v2->AsListVal();
-				VectorVal* v1_vect = v1->AsVectorVal();
+				auto len = v1_vect->Size();
+				bro_int_t first = get_slice_index(lv->Idx(0)->CoerceToInt(), len);
+				bro_int_t last = get_slice_index(lv->Idx(1)->CoerceToInt(), len);
 
-				if ( lv->Length() > 1 )
-					{
-					auto len = v1_vect->Size();
-					bro_int_t first = get_slice_index(lv->Idx(0)->CoerceToInt(), len);
-					bro_int_t last = get_slice_index(lv->Idx(1)->CoerceToInt(), len);
+				// Remove the elements from the vector within the slice
+				for ( auto idx = first; idx < last; idx++ )
+					v1_vect->Remove(first);
 
-					// Remove the elements from the vector within the slice
-					for ( auto idx = first; idx < last; idx++ )
-						v1_vect->Remove(first);
+				// Insert the new elements starting at the first position
+				VectorVal* v_vect = v->AsVectorVal();
 
-					// Insert the new elements starting at the first position
-					VectorVal* v_vect = v->AsVectorVal();
-
-					for ( auto idx = 0u; idx < v_vect->Size(); idx++, first++ )
-						v1_vect->Insert(first, v_vect->At(idx));
-					}
-				else if ( ! v1_vect->Assign(lv->Idx(0)->CoerceToUnsigned(), std::move(v)) )
-					{
-					v = std::move(v_extra);
-
-					if ( v )
-						{
-						ODesc d;
-						v->Describe(&d);
-						const auto& vt = v->GetType();
-						auto vtt = vt->Tag();
-						std::string tn = vtt == TYPE_RECORD ? vt->GetName() : type_name(vtt);
-						RuntimeErrorWithCallStack(util::fmt(
-							"vector index assignment failed for invalid type '%s', value: %s",
-							tn.data(), d.Description()));
-						}
-					else
-						RuntimeErrorWithCallStack("assignment failed with null value");
-					}
-				break;
+				for ( auto idx = 0u; idx < v_vect->Size(); idx++, first++ )
+					v1_vect->Insert(first, v_vect->At(idx));
 				}
-
-			case TYPE_TABLE:
-			if ( ! v1->AsTableVal()->Assign(std::move(v2), std::move(v)) )
+			else if ( ! v1_vect->Assign(lv->Idx(0)->CoerceToUnsigned(), std::move(v)) )
 				{
 				v = std::move(v_extra);
 
@@ -2910,21 +2888,43 @@ void IndexExpr::Assign(Frame* f, ValPtr v)
 					auto vtt = vt->Tag();
 					std::string tn = vtt == TYPE_RECORD ? vt->GetName() : type_name(vtt);
 					RuntimeErrorWithCallStack(
-						util::fmt("table index assignment failed for invalid type '%s', value: %s",
+						util::fmt("vector index assignment failed for invalid type '%s', value: %s",
 					              tn.data(), d.Description()));
 					}
 				else
 					RuntimeErrorWithCallStack("assignment failed with null value");
 				}
 			break;
+			}
 
-			case TYPE_STRING:
-			RuntimeErrorWithCallStack("assignment via string index accessor not allowed");
-			break;
+		case TYPE_TABLE:
+		if ( ! v1->AsTableVal()->Assign(std::move(v2), std::move(v)) )
+			{
+			v = std::move(v_extra);
 
-			default:
-			RuntimeErrorWithCallStack("bad index expression type in assignment");
-			break;
+			if ( v )
+				{
+				ODesc d;
+				v->Describe(&d);
+				const auto& vt = v->GetType();
+				auto vtt = vt->Tag();
+				std::string tn = vtt == TYPE_RECORD ? vt->GetName() : type_name(vtt);
+				RuntimeErrorWithCallStack(
+					util::fmt("table index assignment failed for invalid type '%s', value: %s",
+				              tn.data(), d.Description()));
+				}
+			else
+				RuntimeErrorWithCallStack("assignment failed with null value");
+			}
+		break;
+
+		case TYPE_STRING:
+		RuntimeErrorWithCallStack("assignment via string index accessor not allowed");
+		break;
+
+		default:
+		RuntimeErrorWithCallStack("bad index expression type in assignment");
+		break;
 		}
 	}
 
@@ -3609,18 +3609,18 @@ ValPtr ArithCoerceExpr::FoldSingleVal(Val* v, InternalTypeTag t) const
 	{
 	switch ( t )
 		{
-			case TYPE_INTERNAL_DOUBLE:
-			return make_intrusive<DoubleVal>(v->CoerceToDouble());
+		case TYPE_INTERNAL_DOUBLE:
+		return make_intrusive<DoubleVal>(v->CoerceToDouble());
 
-			case TYPE_INTERNAL_INT:
-			return val_mgr->Int(v->CoerceToInt());
+		case TYPE_INTERNAL_INT:
+		return val_mgr->Int(v->CoerceToInt());
 
-			case TYPE_INTERNAL_UNSIGNED:
-			return val_mgr->Count(v->CoerceToUnsigned());
+		case TYPE_INTERNAL_UNSIGNED:
+		return val_mgr->Count(v->CoerceToUnsigned());
 
-			default:
-			RuntimeErrorWithCallStack("bad type in CoerceExpr::Fold");
-			return nullptr;
+		default:
+		RuntimeErrorWithCallStack("bad type in CoerceExpr::Fold");
+		return nullptr;
 		}
 	}
 
@@ -4155,25 +4155,25 @@ CallExpr::CallExpr(ExprPtr arg_func, ListExprPtr arg_args, bool in_hook)
 			switch ( func_type->AsFuncType()->Flavor() )
 				{
 
-					case FUNC_FLAVOR_FUNCTION:
-					Error("function has no yield type");
-					SetError();
-					break;
+				case FUNC_FLAVOR_FUNCTION:
+				Error("function has no yield type");
+				SetError();
+				break;
 
-					case FUNC_FLAVOR_EVENT:
-					Error("event called in expression, use event statement instead");
-					SetError();
-					break;
+				case FUNC_FLAVOR_EVENT:
+				Error("event called in expression, use event statement instead");
+				SetError();
+				break;
 
-					case FUNC_FLAVOR_HOOK:
-					Error("hook has no yield type");
-					SetError();
-					break;
+				case FUNC_FLAVOR_HOOK:
+				Error("hook has no yield type");
+				SetError();
+				break;
 
-					default:
-					Error("invalid function flavor");
-					SetError();
-					break;
+				default:
+				Error("invalid function flavor");
+				SetError();
+				break;
 				}
 			}
 		else

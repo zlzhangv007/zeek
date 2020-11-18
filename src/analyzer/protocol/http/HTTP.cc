@@ -116,45 +116,45 @@ void HTTP_Entity::Deliver(int len, const char* data, bool trailing_CRLF)
 		{
 		switch ( chunked_transfer_state )
 			{
-				case EXPECT_CHUNK_SIZE:
-				ASSERT(trailing_CRLF);
-				if ( ! util::atoi_n(len, data, nullptr, 16, expect_data_length) )
-					{
-					http_message->Weird("HTTP_bad_chunk_size");
-					expect_data_length = 0;
-					}
+			case EXPECT_CHUNK_SIZE:
+			ASSERT(trailing_CRLF);
+			if ( ! util::atoi_n(len, data, nullptr, 16, expect_data_length) )
+				{
+				http_message->Weird("HTTP_bad_chunk_size");
+				expect_data_length = 0;
+				}
 
-				if ( expect_data_length > 0 )
-					{
-					chunked_transfer_state = EXPECT_CHUNK_DATA;
-					SetPlainDelivery(expect_data_length);
-					}
-				else
-					{
-					// This is the last chunk
-					in_header = 1;
-					chunked_transfer_state = EXPECT_CHUNK_TRAILER;
-					}
-				break;
+			if ( expect_data_length > 0 )
+				{
+				chunked_transfer_state = EXPECT_CHUNK_DATA;
+				SetPlainDelivery(expect_data_length);
+				}
+			else
+				{
+				// This is the last chunk
+				in_header = 1;
+				chunked_transfer_state = EXPECT_CHUNK_TRAILER;
+				}
+			break;
 
-				case EXPECT_CHUNK_DATA:
-				ASSERT(! trailing_CRLF);
-				ASSERT(len <= expect_data_length);
-				expect_data_length -= len;
-				if ( expect_data_length <= 0 )
-					{
-					SetPlainDelivery(0);
-					chunked_transfer_state = EXPECT_CHUNK_DATA_CRLF;
-					}
-				DeliverBody(len, data, false);
-				break;
+			case EXPECT_CHUNK_DATA:
+			ASSERT(! trailing_CRLF);
+			ASSERT(len <= expect_data_length);
+			expect_data_length -= len;
+			if ( expect_data_length <= 0 )
+				{
+				SetPlainDelivery(0);
+				chunked_transfer_state = EXPECT_CHUNK_DATA_CRLF;
+				}
+			DeliverBody(len, data, false);
+			break;
 
-				case EXPECT_CHUNK_DATA_CRLF:
-				ASSERT(trailing_CRLF);
-				if ( len > 0 )
-					IllegalFormat("inaccurate chunk size: data before <CR><LF>");
-				chunked_transfer_state = EXPECT_CHUNK_SIZE;
-				break;
+			case EXPECT_CHUNK_DATA_CRLF:
+			ASSERT(trailing_CRLF);
+			if ( len > 0 )
+				IllegalFormat("inaccurate chunk size: data before <CR><LF>");
+			chunked_transfer_state = EXPECT_CHUNK_SIZE;
+			break;
 			}
 		}
 
@@ -765,21 +765,21 @@ void HTTP_Message::SubmitEvent(int event_type, const char* detail)
 
 	switch ( event_type )
 		{
-			case analyzer::mime::MIME_EVENT_ILLEGAL_FORMAT:
-			category = "illegal format";
-			break;
+		case analyzer::mime::MIME_EVENT_ILLEGAL_FORMAT:
+		category = "illegal format";
+		break;
 
-			case analyzer::mime::MIME_EVENT_ILLEGAL_ENCODING:
-			category = "illegal encoding";
-			break;
+		case analyzer::mime::MIME_EVENT_ILLEGAL_ENCODING:
+		category = "illegal encoding";
+		break;
 
-			case analyzer::mime::MIME_EVENT_CONTENT_GAP:
-			category = "content gap";
-			break;
+		case analyzer::mime::MIME_EVENT_CONTENT_GAP:
+		category = "content gap";
+		break;
 
-			default:
-			reporter->AnalyzerError(MyHTTP_Analyzer(), "unrecognized HTTP message event");
-			return;
+		default:
+		reporter->AnalyzerError(MyHTTP_Analyzer(), "unrecognized HTTP message event");
+		return;
 		}
 
 	MyHTTP_Analyzer()->HTTP_Event(category, detail);
@@ -915,134 +915,133 @@ void HTTP_Analyzer::DeliverStream(int len, const u_char* data, bool is_orig)
 
 		switch ( request_state )
 			{
-				case EXPECT_REQUEST_LINE:
+			case EXPECT_REQUEST_LINE:
+				{
+				int res = HTTP_RequestLine(line, end_of_line);
+
+				if ( res < 0 )
+					return;
+
+				else if ( res > 0 )
 					{
-					int res = HTTP_RequestLine(line, end_of_line);
+					++num_requests;
 
-					if ( res < 0 )
-						return;
+					if ( ! keep_alive && num_requests > 1 )
+						Weird("unexpected_multiple_HTTP_requests");
 
-					else if ( res > 0 )
-						{
-						++num_requests;
+					request_state = EXPECT_REQUEST_MESSAGE;
+					request_ongoing = 1;
+					unanswered_requests.push(request_method);
+					HTTP_Request();
+					InitHTTPMessage(content_line, request_message, is_orig, HTTP_BODY_MAYBE, len);
+					}
 
-						if ( ! keep_alive && num_requests > 1 )
-							Weird("unexpected_multiple_HTTP_requests");
-
-						request_state = EXPECT_REQUEST_MESSAGE;
-						request_ongoing = 1;
-						unanswered_requests.push(request_method);
-						HTTP_Request();
-						InitHTTPMessage(content_line, request_message, is_orig, HTTP_BODY_MAYBE,
-						                len);
-						}
-
+				else
+					{
+					if ( ! RequestExpected() )
+						HTTP_Event("crud_trailing_HTTP_request",
+						           analyzer::mime::to_string_val(line, end_of_line));
 					else
 						{
-						if ( ! RequestExpected() )
-							HTTP_Event("crud_trailing_HTTP_request",
-							           analyzer::mime::to_string_val(line, end_of_line));
+						// We do see HTTP requests with a
+						// trailing EOL that's not accounted
+						// for by the content-length. This
+						// will lead to a call to this method
+						// with len==0 while we are expecting
+						// a new request. Since HTTP servers
+						// handle such requests gracefully,
+						// we should do so as well.
+						if ( len == 0 )
+							Weird("empty_http_request");
 						else
 							{
-							// We do see HTTP requests with a
-							// trailing EOL that's not accounted
-							// for by the content-length. This
-							// will lead to a call to this method
-							// with len==0 while we are expecting
-							// a new request. Since HTTP servers
-							// handle such requests gracefully,
-							// we should do so as well.
-							if ( len == 0 )
-								Weird("empty_http_request");
-							else
-								{
-								ProtocolViolation("not a http request line");
-								request_state = EXPECT_REQUEST_NOTHING;
-								}
+							ProtocolViolation("not a http request line");
+							request_state = EXPECT_REQUEST_NOTHING;
 							}
 						}
 					}
-				break;
+				}
+			break;
 
-				case EXPECT_REQUEST_MESSAGE:
-				request_message->Deliver(len, line, true);
-				break;
+			case EXPECT_REQUEST_MESSAGE:
+			request_message->Deliver(len, line, true);
+			break;
 
-				case EXPECT_REQUEST_TRAILER:
-				break;
+			case EXPECT_REQUEST_TRAILER:
+			break;
 
-				case EXPECT_REQUEST_NOTHING:
-				break;
+			case EXPECT_REQUEST_NOTHING:
+			break;
 			}
 		}
 	else
 		{ // HTTP reply
 		switch ( reply_state )
 			{
-				case EXPECT_REPLY_LINE:
-				if ( HTTP_ReplyLine(line, end_of_line) )
+			case EXPECT_REPLY_LINE:
+			if ( HTTP_ReplyLine(line, end_of_line) )
+				{
+				++num_replies;
+
+				if ( ! unanswered_requests.empty() )
+					ProtocolConfirmation();
+
+				reply_state = EXPECT_REPLY_MESSAGE;
+				reply_ongoing = 1;
+
+				HTTP_Reply();
+
+				if ( connect_request && reply_code != 200 )
+					// Request failed, do not set up tunnel.
+					connect_request = false;
+
+				InitHTTPMessage(content_line, reply_message, is_orig, ExpectReplyMessageBody(),
+				                len);
+				}
+			else
+				{
+				if ( line != end_of_line )
 					{
-					++num_replies;
-
-					if ( ! unanswered_requests.empty() )
-						ProtocolConfirmation();
-
-					reply_state = EXPECT_REPLY_MESSAGE;
-					reply_ongoing = 1;
-
-					HTTP_Reply();
-
-					if ( connect_request && reply_code != 200 )
-						// Request failed, do not set up tunnel.
-						connect_request = false;
-
-					InitHTTPMessage(content_line, reply_message, is_orig, ExpectReplyMessageBody(),
-					                len);
+					ProtocolViolation("not a http reply line");
+					reply_state = EXPECT_REPLY_NOTHING;
 					}
+				}
+
+			break;
+
+			case EXPECT_REPLY_MESSAGE:
+			reply_message->Deliver(len, line, true);
+
+			if ( connect_request && len == 0 )
+				{
+				// End of message header reached, set up
+				// tunnel decapsulation.
+				pia = new analyzer::pia::PIA_TCP(Conn());
+
+				if ( AddChildAnalyzer(pia) )
+					{
+					pia->FirstPacket(true, nullptr);
+					pia->FirstPacket(false, nullptr);
+
+					// This connection has transitioned to no longer
+					// being http and the content line support analyzers
+					// need to be removed.
+					RemoveSupportAnalyzer(content_line_orig);
+					RemoveSupportAnalyzer(content_line_resp);
+					}
+
 				else
-					{
-					if ( line != end_of_line )
-						{
-						ProtocolViolation("not a http reply line");
-						reply_state = EXPECT_REPLY_NOTHING;
-						}
-					}
+					// AddChildAnalyzer() will have deleted PIA.
+					pia = nullptr;
+				}
 
-				break;
+			break;
 
-				case EXPECT_REPLY_MESSAGE:
-				reply_message->Deliver(len, line, true);
+			case EXPECT_REPLY_TRAILER:
+			break;
 
-				if ( connect_request && len == 0 )
-					{
-					// End of message header reached, set up
-					// tunnel decapsulation.
-					pia = new analyzer::pia::PIA_TCP(Conn());
-
-					if ( AddChildAnalyzer(pia) )
-						{
-						pia->FirstPacket(true, nullptr);
-						pia->FirstPacket(false, nullptr);
-
-						// This connection has transitioned to no longer
-						// being http and the content line support analyzers
-						// need to be removed.
-						RemoveSupportAnalyzer(content_line_orig);
-						RemoveSupportAnalyzer(content_line_resp);
-						}
-
-					else
-						// AddChildAnalyzer() will have deleted PIA.
-						pia = nullptr;
-					}
-
-				break;
-
-				case EXPECT_REPLY_TRAILER:
-				break;
-
-				case EXPECT_REPLY_NOTHING:
-				break;
+			case EXPECT_REPLY_NOTHING:
+			break;
 			}
 		}
 	}

@@ -52,49 +52,49 @@ void TelnetOption::RecvOption(unsigned int type)
 	// WILL/WONT/DO/DONT are messages we've *received* from our peer.
 	switch ( type )
 		{
-			case TELNET_OPT_WILL:
-			if ( SaidDont() || peer->SaidWont() || peer->IsActive() )
-				InconsistentOption(type);
+		case TELNET_OPT_WILL:
+		if ( SaidDont() || peer->SaidWont() || peer->IsActive() )
+			InconsistentOption(type);
 
-			peer->SetWill();
+		peer->SetWill();
 
-			if ( SaidDo() )
-				peer->SetActive(true);
-			break;
+		if ( SaidDo() )
+			peer->SetActive(true);
+		break;
 
-			case TELNET_OPT_WONT:
-			if ( peer->SaidWill() && ! SaidDont() )
-				InconsistentOption(type);
+		case TELNET_OPT_WONT:
+		if ( peer->SaidWill() && ! SaidDont() )
+			InconsistentOption(type);
 
-			peer->SetWont();
+		peer->SetWont();
 
-			if ( SaidDont() )
-				peer->SetActive(false);
-			break;
+		if ( SaidDont() )
+			peer->SetActive(false);
+		break;
 
-			case TELNET_OPT_DO:
-			if ( SaidWont() || peer->SaidDont() || IsActive() )
-				InconsistentOption(type);
+		case TELNET_OPT_DO:
+		if ( SaidWont() || peer->SaidDont() || IsActive() )
+			InconsistentOption(type);
 
-			peer->SetDo();
+		peer->SetDo();
 
-			if ( SaidWill() )
-				SetActive(true);
-			break;
+		if ( SaidWill() )
+			SetActive(true);
+		break;
 
-			case TELNET_OPT_DONT:
-			if ( peer->SaidDo() && ! SaidWont() )
-				InconsistentOption(type);
+		case TELNET_OPT_DONT:
+		if ( peer->SaidDo() && ! SaidWont() )
+			InconsistentOption(type);
 
-			peer->SetDont();
+		peer->SetDont();
 
-			if ( SaidWont() )
-				SetActive(false);
-			break;
+		if ( SaidWont() )
+			SetActive(false);
+		break;
 
-			default:
-			reporter->AnalyzerError(endp, "bad option type in TelnetOption::RecvOption");
-			return;
+		default:
+		reporter->AnalyzerError(endp, "bad option type in TelnetOption::RecvOption");
+		return;
 		}
 	}
 
@@ -207,55 +207,54 @@ void TelnetAuthenticateOption::RecvSubOption(u_char* data, int len)
 
 	switch ( data[0] )
 		{
-			case HERE_IS_AUTHENTICATION:
+		case HERE_IS_AUTHENTICATION:
+			{
+			TelnetAuthenticateOption* peer = (TelnetAuthenticateOption*)endp->FindPeerOption(code);
+
+			if ( ! peer )
 				{
-				TelnetAuthenticateOption* peer =
-					(TelnetAuthenticateOption*)endp->FindPeerOption(code);
-
-				if ( ! peer )
-					{
-					reporter->AnalyzerError(
-						endp, "option peer missing in TelnetAuthenticateOption::RecvSubOption");
-					return;
-					}
-
-				if ( ! peer->DidRequestAuthentication() )
-					InconsistentOption(0);
-				}
-			break;
-
-			case SEND_ME_AUTHENTICATION:
-			++authentication_requested;
-			break;
-
-			case AUTHENTICATION_STATUS:
-			if ( len <= 1 )
-				{
-				BadOption();
+				reporter->AnalyzerError(
+					endp, "option peer missing in TelnetAuthenticateOption::RecvSubOption");
 				return;
 				}
 
-			if ( data[1] == AUTH_REJECT )
-				endp->AuthenticationRejected();
-			else if ( data[1] == AUTH_ACCEPT )
-				endp->AuthenticationAccepted();
-			else
-				{
-				// Don't complain, there may be replies we don't
-				// know about.
-				}
-			break;
+			if ( ! peer->DidRequestAuthentication() )
+				InconsistentOption(0);
+			}
+		break;
 
-			case AUTHENTICATION_NAME:
-				{
-				char* auth_name = new char[len];
-				util::safe_strncpy(auth_name, (char*)data + 1, len);
-				endp->SetAuthName(auth_name);
-				}
-			break;
+		case SEND_ME_AUTHENTICATION:
+		++authentication_requested;
+		break;
 
-			default:
+		case AUTHENTICATION_STATUS:
+		if ( len <= 1 )
+			{
 			BadOption();
+			return;
+			}
+
+		if ( data[1] == AUTH_REJECT )
+			endp->AuthenticationRejected();
+		else if ( data[1] == AUTH_ACCEPT )
+			endp->AuthenticationAccepted();
+		else
+			{
+			// Don't complain, there may be replies we don't
+			// know about.
+			}
+		break;
+
+		case AUTHENTICATION_NAME:
+			{
+			char* auth_name = new char[len];
+			util::safe_strncpy(auth_name, (char*)data + 1, len);
+			endp->SetAuthName(auth_name);
+			}
+		break;
+
+		default:
+		BadOption();
 		}
 	}
 
@@ -402,25 +401,25 @@ TelnetOption* NVT_Analyzer::FindOption(unsigned int code)
 		{ // Maybe we haven't created this option yet.
 		switch ( code )
 			{
-				case TELNET_OPTION_BINARY:
-				opt = new detail::TelnetBinaryOption(this);
-				break;
+			case TELNET_OPTION_BINARY:
+			opt = new detail::TelnetBinaryOption(this);
+			break;
 
-				case TELNET_OPTION_TERMINAL:
-				opt = new detail::TelnetTerminalOption(this);
-				break;
+			case TELNET_OPTION_TERMINAL:
+			opt = new detail::TelnetTerminalOption(this);
+			break;
 
-				case TELNET_OPTION_ENCRYPT:
-				opt = new detail::TelnetEncryptOption(this);
-				break;
+			case TELNET_OPTION_ENCRYPT:
+			opt = new detail::TelnetEncryptOption(this);
+			break;
 
-				case TELNET_OPTION_AUTHENTICATE:
-				opt = new detail::TelnetAuthenticateOption(this);
-				break;
+			case TELNET_OPTION_AUTHENTICATE:
+			opt = new detail::TelnetAuthenticateOption(this);
+			break;
 
-				case TELNET_OPTION_ENVIRON:
-				opt = new detail::TelnetEnvironmentOption(this);
-				break;
+			case TELNET_OPTION_ENVIRON:
+			opt = new detail::TelnetEnvironmentOption(this);
+			break;
 			}
 		}
 
@@ -508,64 +507,64 @@ void NVT_Analyzer::DeliverChunk(int& len, const u_char*& data)
 
 		switch ( c )
 			{
-				case '\r':
+			case '\r':
+			if ( CRLFAsEOL() & CR_as_EOL )
+				EMIT_LINE
+			else
+				buf[offset++] = c;
+			break;
+
+			case '\n':
+			if ( last_char == '\r' )
+				{
 				if ( CRLFAsEOL() & CR_as_EOL )
-					EMIT_LINE
-				else
-					buf[offset++] = c;
-				break;
-
-				case '\n':
-				if ( last_char == '\r' )
-					{
-					if ( CRLFAsEOL() & CR_as_EOL )
-						// we already emited, skip
-						;
-					else
-						{
-						--offset; // remove '\r'
-						EMIT_LINE
-						}
-					}
-
-				else if ( CRLFAsEOL() & LF_as_EOL )
-					EMIT_LINE
-
-				else
-					{
-					if ( Conn()->FlagEvent(SINGULAR_LF) )
-						Conn()->Weird("line_terminated_with_single_LF");
-					buf[offset++] = c;
-					}
-				break;
-
-				case '\0':
-				if ( last_char == '\r' )
-					// Allow a NUL just after a \r - Solaris
-					// Telnet servers generate these, and they
-					// appear harmless.
+					// we already emited, skip
 					;
-
-				else if ( flag_NULs )
-					CheckNUL();
-
 				else
-					buf[offset++] = c;
-				break;
+					{
+					--offset; // remove '\r'
+					EMIT_LINE
+					}
+				}
 
-				case TELNET_IAC:
-				pending_IAC = true;
-				IAC_pos = offset;
-				is_suboption = false;
-				buf[offset++] = c;
-				--len;
-				++data;
-				ScanOption(len, data);
-				return;
+			else if ( CRLFAsEOL() & LF_as_EOL )
+				EMIT_LINE
 
-				default:
+			else
+				{
+				if ( Conn()->FlagEvent(SINGULAR_LF) )
+					Conn()->Weird("line_terminated_with_single_LF");
 				buf[offset++] = c;
-				break;
+				}
+			break;
+
+			case '\0':
+			if ( last_char == '\r' )
+				// Allow a NUL just after a \r - Solaris
+				// Telnet servers generate these, and they
+				// appear harmless.
+				;
+
+			else if ( flag_NULs )
+				CheckNUL();
+
+			else
+				buf[offset++] = c;
+			break;
+
+			case TELNET_IAC:
+			pending_IAC = true;
+			IAC_pos = offset;
+			is_suboption = false;
+			buf[offset++] = c;
+			--len;
+			++data;
+			ScanOption(len, data);
+			return;
+
+			default:
+			buf[offset++] = c;
+			break;
 			}
 
 		if ( ! (CRLFAsEOL() & CR_as_EOL) && last_char == '\r' && c != '\n' && c != '\0' )

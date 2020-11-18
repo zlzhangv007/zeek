@@ -44,7 +44,7 @@ BreakInheritanceList: BeforeColon
 ColumnLimit: 100
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 FixNamespaceComments: false
-IndentCaseLabels: true
+IndentCaseLabels: false
 IndentCaseBlocks: true
 IndentExternBlock: NoIndent
 IndentPPDirectives: None

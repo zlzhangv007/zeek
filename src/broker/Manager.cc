@@ -250,14 +250,14 @@ void Manager::InitializeBrokerStoreForwarding()
 
 			switch ( backend )
 				{
-					case broker::backend::sqlite:
-					suffix = ".sqlite";
-					break;
-					case broker::backend::rocksdb:
-					suffix = ".rocksdb";
-					break;
-					default:
-					break;
+				case broker::backend::sqlite:
+				suffix = ".sqlite";
+				break;
+				case broker::backend::rocksdb:
+				suffix = ".rocksdb";
+				break;
+				default:
+				break;
 				}
 
 			auto path = zeek_table_db_directory + "/" + storename + suffix;
@@ -864,48 +864,48 @@ void Manager::DispatchMessage(const broker::topic& topic, broker::data msg)
 	{
 	switch ( broker::zeek::Message::type(msg) )
 		{
-			case broker::zeek::Message::Type::Invalid:
-			reporter->Warning("received invalid broker message: %s", broker::to_string(msg).data());
-			break;
+		case broker::zeek::Message::Type::Invalid:
+		reporter->Warning("received invalid broker message: %s", broker::to_string(msg).data());
+		break;
 
-			case broker::zeek::Message::Type::Event:
-			ProcessEvent(topic, std::move(msg));
-			break;
+		case broker::zeek::Message::Type::Event:
+		ProcessEvent(topic, std::move(msg));
+		break;
 
-			case broker::zeek::Message::Type::LogCreate:
-			ProcessLogCreate(std::move(msg));
-			break;
+		case broker::zeek::Message::Type::LogCreate:
+		ProcessLogCreate(std::move(msg));
+		break;
 
-			case broker::zeek::Message::Type::LogWrite:
-			ProcessLogWrite(std::move(msg));
-			break;
+		case broker::zeek::Message::Type::LogWrite:
+		ProcessLogWrite(std::move(msg));
+		break;
 
-			case broker::zeek::Message::Type::IdentifierUpdate:
-			ProcessIdentifierUpdate(std::move(msg));
-			break;
+		case broker::zeek::Message::Type::IdentifierUpdate:
+		ProcessIdentifierUpdate(std::move(msg));
+		break;
 
-			case broker::zeek::Message::Type::Batch:
+		case broker::zeek::Message::Type::Batch:
+			{
+			broker::zeek::Batch batch(std::move(msg));
+
+			if ( ! batch.valid() )
 				{
-				broker::zeek::Batch batch(std::move(msg));
-
-				if ( ! batch.valid() )
-					{
-					reporter->Warning("received invalid broker Batch: %s",
-					                  broker::to_string(batch).data());
-					return;
-					}
-
-				for ( auto& i : batch.batch() )
-					DispatchMessage(topic, std::move(i));
-
-				break;
+				reporter->Warning("received invalid broker Batch: %s",
+				                  broker::to_string(batch).data());
+				return;
 				}
 
-			default:
-			// We ignore unknown types so that we could add more in the
-			// future if we had too.
-			reporter->Warning("received unknown broker message: %s", broker::to_string(msg).data());
+			for ( auto& i : batch.batch() )
+				DispatchMessage(topic, std::move(i));
+
 			break;
+			}
+
+		default:
+		// We ignore unknown types so that we could add more in the
+		// future if we had too.
+		reporter->Warning("received unknown broker message: %s", broker::to_string(msg).data());
+		break;
 		}
 	}
 
@@ -1420,30 +1420,30 @@ void Manager::ProcessStatus(broker::status stat)
 	EventHandlerPtr event;
 	switch ( stat.code() )
 		{
-			case broker::sc::unspecified:
-			event = ::Broker::status;
-			break;
+		case broker::sc::unspecified:
+		event = ::Broker::status;
+		break;
 
-			case broker::sc::peer_added:
-			++peer_count;
-			assert(ctx);
-			log_mgr->SendAllWritersTo(*ctx);
-			event = ::Broker::peer_added;
-			break;
+		case broker::sc::peer_added:
+		++peer_count;
+		assert(ctx);
+		log_mgr->SendAllWritersTo(*ctx);
+		event = ::Broker::peer_added;
+		break;
 
-			case broker::sc::peer_removed:
-			--peer_count;
-			event = ::Broker::peer_removed;
-			break;
+		case broker::sc::peer_removed:
+		--peer_count;
+		event = ::Broker::peer_removed;
+		break;
 
-			case broker::sc::peer_lost:
-			--peer_count;
-			event = ::Broker::peer_lost;
-			break;
+		case broker::sc::peer_lost:
+		--peer_count;
+		event = ::Broker::peer_lost;
+		break;
 
-			default:
-			reporter->Warning("Unhandled Broker status: %s", to_string(stat).data());
-			break;
+		default:
+		reporter->Warning("Unhandled Broker status: %s", to_string(stat).data());
+		break;
 		}
 
 	if ( ! event )
@@ -1584,14 +1584,14 @@ detail::StoreHandleVal* Manager::MakeMaster(const string& name, broker::backend 
 
 		switch ( type )
 			{
-				case broker::backend::sqlite:
-				suffix = ".sqlite";
-				break;
-				case broker::backend::rocksdb:
-				suffix = ".rocksdb";
-				break;
-				default:
-				break;
+			case broker::backend::sqlite:
+			suffix = ".sqlite";
+			break;
+			case broker::backend::rocksdb:
+			suffix = ".rocksdb";
+			break;
+			default:
+			break;
 			}
 
 		it->second = name + suffix;

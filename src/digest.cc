@@ -18,30 +18,30 @@ EVP_MD_CTX* hash_init(HashAlgorithm alg)
 
 	switch ( alg )
 		{
-			case Hash_MD5:
+		case Hash_MD5:
 #ifdef EVP_MD_CTX_FLAG_NON_FIPS_ALLOW
-			/* Allow this to work even if FIPS disables it */
-			EVP_MD_CTX_set_flags(c, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
+		/* Allow this to work even if FIPS disables it */
+		EVP_MD_CTX_set_flags(c, EVP_MD_CTX_FLAG_NON_FIPS_ALLOW);
 #endif
-			md = EVP_md5();
-			break;
-			case Hash_SHA1:
-			md = EVP_sha1();
-			break;
-			case Hash_SHA224:
-			md = EVP_sha224();
-			break;
-			case Hash_SHA256:
-			md = EVP_sha256();
-			break;
-			case Hash_SHA384:
-			md = EVP_sha384();
-			break;
-			case Hash_SHA512:
-			md = EVP_sha512();
-			break;
-			default:
-			reporter->InternalError("Unknown hash algorithm passed to hash_init");
+		md = EVP_md5();
+		break;
+		case Hash_SHA1:
+		md = EVP_sha1();
+		break;
+		case Hash_SHA224:
+		md = EVP_sha224();
+		break;
+		case Hash_SHA256:
+		md = EVP_sha256();
+		break;
+		case Hash_SHA384:
+		md = EVP_sha384();
+		break;
+		case Hash_SHA512:
+		md = EVP_sha512();
+		break;
+		default:
+		reporter->InternalError("Unknown hash algorithm passed to hash_init");
 		}
 
 	if ( ! EVP_DigestInit_ex(c, md, NULL) )

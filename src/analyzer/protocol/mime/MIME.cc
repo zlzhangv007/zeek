@@ -199,19 +199,19 @@ int MIME_skip_comments(int len, const char* data)
 		{
 		switch ( data[i] )
 			{
-				case '(':
-				++par;
-				break;
+			case '(':
+			++par;
+			break;
 
-				case ')':
-				--par;
-				if ( par == 0 )
-					return i + 1;
-				break;
+			case ')':
+			--par;
+			if ( par == 0 )
+				return i + 1;
+			break;
 
-				case '\\':
-				++i;
-				break;
+			case '\\':
+			++i;
+			break;
 			}
 		}
 
@@ -372,14 +372,14 @@ int MIME_get_quoted_string(int len, const char* data, data_chunk_t* str)
 		{
 		switch ( data[i] )
 			{
-				case '"':
-				str->data = data + 1;
-				str->length = i - 1;
-				return offset + i + 1;
+			case '"':
+			str->data = data + 1;
+			str->length = i - 1;
+			return offset + i + 1;
 
-				case '\\':
-				++i;
-				break;
+			case '\\':
+			++i;
+			break;
 			}
 		}
 
@@ -682,18 +682,18 @@ void MIME_Entity::NewDataLine(int len, const char* data, bool trailing_CRLF)
 		{
 		switch ( CheckBoundaryDelimiter(len, data) )
 			{
-				case MULTIPART_BOUNDARY:
-				if ( current_child_entity != nullptr )
-					EndChildEntity();
-				if ( ! end_of_data )
-					BeginChildEntity();
-				return;
+			case MULTIPART_BOUNDARY:
+			if ( current_child_entity != nullptr )
+				EndChildEntity();
+			if ( ! end_of_data )
+				BeginChildEntity();
+			return;
 
-				case MULTIPART_CLOSING_BOUNDARY:
-				if ( current_child_entity != nullptr )
-					EndChildEntity();
-				EndOfData();
-				return;
+			case MULTIPART_CLOSING_BOUNDARY:
+			if ( current_child_entity != nullptr )
+				EndChildEntity();
+			EndOfData();
+			return;
 			}
 		}
 
@@ -785,13 +785,13 @@ void MIME_Entity::ParseMIMEHeader(MIME_Header* h)
 
 	switch ( current_field_type )
 		{
-			case MIME_CONTENT_TYPE:
-			ParseContentTypeField(h);
-			break;
+		case MIME_CONTENT_TYPE:
+		ParseContentTypeField(h);
+		break;
 
-			case MIME_CONTENT_TRANSFER_ENCODING:
-			ParseContentEncodingField(h);
-			break;
+		case MIME_CONTENT_TRANSFER_ENCODING:
+		ParseContentEncodingField(h);
+		break;
 		}
 	}
 
@@ -950,14 +950,14 @@ void MIME_Entity::ParseContentType(data_chunk_t type, data_chunk_t sub_type)
 
 	switch ( content_type )
 		{
-			case CONTENT_TYPE_MULTIPART:
-			case CONTENT_TYPE_MESSAGE:
-			need_to_parse_parameters = 1;
-			break;
+		case CONTENT_TYPE_MULTIPART:
+		case CONTENT_TYPE_MESSAGE:
+		need_to_parse_parameters = 1;
+		break;
 
-			default:
-			need_to_parse_parameters = 0;
-			break;
+		default:
+		need_to_parse_parameters = 0;
+		break;
 		}
 	}
 
@@ -1018,20 +1018,20 @@ void MIME_Entity::DecodeDataLine(int len, const char* data, bool trailing_CRLF)
 
 	switch ( content_encoding )
 		{
-			case CONTENT_ENCODING_QUOTED_PRINTABLE:
-			DecodeQuotedPrintable(len, data);
-			break;
+		case CONTENT_ENCODING_QUOTED_PRINTABLE:
+		DecodeQuotedPrintable(len, data);
+		break;
 
-			case CONTENT_ENCODING_BASE64:
-			DecodeBase64(len, data);
-			break;
+		case CONTENT_ENCODING_BASE64:
+		DecodeBase64(len, data);
+		break;
 
-			case CONTENT_ENCODING_7BIT:
-			case CONTENT_ENCODING_8BIT:
-			case CONTENT_ENCODING_BINARY:
-			case CONTENT_ENCODING_OTHER:
-			DecodeBinary(len, data, trailing_CRLF);
-			break;
+		case CONTENT_ENCODING_7BIT:
+		case CONTENT_ENCODING_8BIT:
+		case CONTENT_ENCODING_BINARY:
+		case CONTENT_ENCODING_OTHER:
+		DecodeBinary(len, data, trailing_CRLF);
+		break;
 		}
 	FlushData();
 	}
@@ -1536,17 +1536,17 @@ void MIME_Mail::SubmitEvent(int event_type, const char* detail)
 
 	switch ( event_type )
 		{
-			case MIME_EVENT_ILLEGAL_FORMAT:
-			category = "illegal format";
-			break;
+		case MIME_EVENT_ILLEGAL_FORMAT:
+		category = "illegal format";
+		break;
 
-			case MIME_EVENT_ILLEGAL_ENCODING:
-			category = "illegal encoding";
-			break;
+		case MIME_EVENT_ILLEGAL_ENCODING:
+		category = "illegal encoding";
+		break;
 
-			default:
-			reporter->AnalyzerError(GetAnalyzer(), "unrecognized MIME_Mail event");
-			return;
+		default:
+		reporter->AnalyzerError(GetAnalyzer(), "unrecognized MIME_Mail event");
+		return;
 		}
 
 	if ( mime_event )

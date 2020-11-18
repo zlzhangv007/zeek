@@ -82,26 +82,26 @@ static RecordVal* build_syn_packet_val(bool is_orig, const IP_Hdr* ip, const str
 
 		switch ( opt )
 			{
-				case TCPOPT_SACK_PERMITTED:
-				SACK = 1;
-				break;
+			case TCPOPT_SACK_PERMITTED:
+			SACK = 1;
+			break;
 
-				case TCPOPT_MAXSEG:
-				if ( opt_len < 4 )
-					break; // bad length
+			case TCPOPT_MAXSEG:
+			if ( opt_len < 4 )
+				break; // bad length
 
-				MSS = (options[2] << 8) | options[3];
-				break;
+			MSS = (options[2] << 8) | options[3];
+			break;
 
-				case 3: // TCPOPT_WSCALE
-				if ( opt_len < 3 )
-					break; // bad length
+			case 3: // TCPOPT_WSCALE
+			if ( opt_len < 3 )
+				break; // bad length
 
-				winscale = options[2];
-				break;
+			winscale = options[2];
+			break;
 
-				default: // just skip over
-				break;
+			default: // just skip over
+			break;
 			}
 
 		options += opt_len;
@@ -728,28 +728,28 @@ void TCP_Analyzer::UpdateStateMachine(double t, TCP_Endpoint* endpoint, TCP_Endp
 	switch ( endpoint->state )
 		{
 
-			case TCP_ENDPOINT_INACTIVE:
-			UpdateInactiveState(t, endpoint, peer, base_seq, ack_seq, len, is_orig, flags, do_close,
-			                    gen_event);
-			break;
+		case TCP_ENDPOINT_INACTIVE:
+		UpdateInactiveState(t, endpoint, peer, base_seq, ack_seq, len, is_orig, flags, do_close,
+		                    gen_event);
+		break;
 
-			case TCP_ENDPOINT_SYN_SENT:
-			case TCP_ENDPOINT_SYN_ACK_SENT:
-			UpdateSYN_SentState(endpoint, peer, len, is_orig, flags, do_close, gen_event);
-			break;
+		case TCP_ENDPOINT_SYN_SENT:
+		case TCP_ENDPOINT_SYN_ACK_SENT:
+		UpdateSYN_SentState(endpoint, peer, len, is_orig, flags, do_close, gen_event);
+		break;
 
-			case TCP_ENDPOINT_ESTABLISHED:
-			case TCP_ENDPOINT_PARTIAL:
-			UpdateEstablishedState(endpoint, peer, flags, do_close, gen_event);
-			break;
+		case TCP_ENDPOINT_ESTABLISHED:
+		case TCP_ENDPOINT_PARTIAL:
+		UpdateEstablishedState(endpoint, peer, flags, do_close, gen_event);
+		break;
 
-			case TCP_ENDPOINT_CLOSED:
-			UpdateClosedState(t, endpoint, delta_last, flags, do_close);
-			break;
+		case TCP_ENDPOINT_CLOSED:
+		UpdateClosedState(t, endpoint, delta_last, flags, do_close);
+		break;
 
-			case TCP_ENDPOINT_RESET:
-			UpdateResetState(len, flags);
-			break;
+		case TCP_ENDPOINT_RESET:
+		UpdateResetState(len, flags);
+		break;
 		}
 	}
 
@@ -858,75 +858,75 @@ static void init_endpoint(TCP_Endpoint* endpoint, TCP_Flags flags, uint32_t firs
 	{
 	switch ( endpoint->state )
 		{
-			case TCP_ENDPOINT_INACTIVE:
-			if ( flags.SYN() )
-				{
-				endpoint->InitAckSeq(first_seg_seq);
-				endpoint->InitStartSeq(first_seg_seq);
-				}
-			else
-				{
-				// This is a partial connection - set up the initial sequence
-				// numbers as though we saw a SYN, to keep the relative byte
-				// numbering consistent.
-				endpoint->InitAckSeq(first_seg_seq - 1);
-				endpoint->InitStartSeq(first_seg_seq - 1);
-				// But ensure first packet is not marked duplicate
-				last_seq = first_seg_seq;
-				}
+		case TCP_ENDPOINT_INACTIVE:
+		if ( flags.SYN() )
+			{
+			endpoint->InitAckSeq(first_seg_seq);
+			endpoint->InitStartSeq(first_seg_seq);
+			}
+		else
+			{
+			// This is a partial connection - set up the initial sequence
+			// numbers as though we saw a SYN, to keep the relative byte
+			// numbering consistent.
+			endpoint->InitAckSeq(first_seg_seq - 1);
+			endpoint->InitStartSeq(first_seg_seq - 1);
+			// But ensure first packet is not marked duplicate
+			last_seq = first_seg_seq;
+			}
 
+		endpoint->InitLastSeq(last_seq);
+		endpoint->start_time = t;
+		break;
+
+		case TCP_ENDPOINT_SYN_SENT:
+		case TCP_ENDPOINT_SYN_ACK_SENT:
+		if ( flags.SYN() && first_seg_seq != endpoint->StartSeq() )
+			{
+			endpoint->Conn()->Weird("SYN_seq_jump");
+			endpoint->InitStartSeq(first_seg_seq);
+			endpoint->InitAckSeq(first_seg_seq);
 			endpoint->InitLastSeq(last_seq);
-			endpoint->start_time = t;
-			break;
+			}
+		break;
 
-			case TCP_ENDPOINT_SYN_SENT:
-			case TCP_ENDPOINT_SYN_ACK_SENT:
-			if ( flags.SYN() && first_seg_seq != endpoint->StartSeq() )
-				{
+		case TCP_ENDPOINT_ESTABLISHED:
+		case TCP_ENDPOINT_PARTIAL:
+		if ( flags.SYN() )
+			{
+			if ( endpoint->Size() > 0 )
+				endpoint->Conn()->Weird("SYN_inside_connection");
+
+			if ( first_seg_seq != endpoint->StartSeq() )
 				endpoint->Conn()->Weird("SYN_seq_jump");
+
+			// Make a guess that somehow the connection didn't get established,
+			// and this SYN will be the one that actually sets it up.
+			endpoint->InitStartSeq(first_seg_seq);
+			endpoint->InitAckSeq(first_seg_seq);
+			endpoint->InitLastSeq(last_seq);
+			}
+		break;
+
+		case TCP_ENDPOINT_RESET:
+		if ( flags.SYN() )
+			{
+			if ( endpoint->prev_state == TCP_ENDPOINT_INACTIVE )
+				{
+				// Seq. numbers were initialized by a RST packet from this
+				// endpoint, but now that a SYN is seen from it, that could mean
+				// the earlier RST was spoofed/injected, so re-initialize.  This
+				// mostly just helps prevent misrepresentations of payload sizes
+				// that are based on bad initial sequence values.
 				endpoint->InitStartSeq(first_seg_seq);
 				endpoint->InitAckSeq(first_seg_seq);
 				endpoint->InitLastSeq(last_seq);
 				}
-			break;
+			}
+		break;
 
-			case TCP_ENDPOINT_ESTABLISHED:
-			case TCP_ENDPOINT_PARTIAL:
-			if ( flags.SYN() )
-				{
-				if ( endpoint->Size() > 0 )
-					endpoint->Conn()->Weird("SYN_inside_connection");
-
-				if ( first_seg_seq != endpoint->StartSeq() )
-					endpoint->Conn()->Weird("SYN_seq_jump");
-
-				// Make a guess that somehow the connection didn't get established,
-				// and this SYN will be the one that actually sets it up.
-				endpoint->InitStartSeq(first_seg_seq);
-				endpoint->InitAckSeq(first_seg_seq);
-				endpoint->InitLastSeq(last_seq);
-				}
-			break;
-
-			case TCP_ENDPOINT_RESET:
-			if ( flags.SYN() )
-				{
-				if ( endpoint->prev_state == TCP_ENDPOINT_INACTIVE )
-					{
-					// Seq. numbers were initialized by a RST packet from this
-					// endpoint, but now that a SYN is seen from it, that could mean
-					// the earlier RST was spoofed/injected, so re-initialize.  This
-					// mostly just helps prevent misrepresentations of payload sizes
-					// that are based on bad initial sequence values.
-					endpoint->InitStartSeq(first_seg_seq);
-					endpoint->InitAckSeq(first_seg_seq);
-					endpoint->InitLastSeq(last_seq);
-					}
-				}
-			break;
-
-			default:
-			break;
+		default:
+		break;
 		}
 	}
 
@@ -1324,83 +1324,83 @@ int TCP_Analyzer::ParseTCPOptions(const struct tcphdr* tcp, bool is_orig)
 
 			switch ( kind )
 				{
-					case 2:
-					// MSS
-					if ( length == 4 )
-						{
-						auto mss = ntohs(*reinterpret_cast<const uint16_t*>(o + 2));
-						option_record->Assign(3, val_mgr->Count(mss));
-						}
-					else
-						{
-						add_option_data(option_record, o, length);
-						Weird("tcp_option_mss_invalid_len", util::fmt("%d", length));
-						}
-					break;
-
-					case 3:
-					// window scale
-					if ( length == 3 )
-						{
-						auto scale = o[2];
-						option_record->Assign(4, val_mgr->Count(scale));
-						}
-					else
-						{
-						add_option_data(option_record, o, length);
-						Weird("tcp_option_window_scale_invalid_len", util::fmt("%d", length));
-						}
-					break;
-
-					case 4:
-					// sack permitted (implicit boolean)
-					if ( length != 2 )
-						{
-						add_option_data(option_record, o, length);
-						Weird("tcp_option_sack_invalid_len", util::fmt("%d", length));
-						}
-					break;
-
-					case 5:
-					// SACK blocks (1-4 pairs of 32-bit begin+end pointers)
-					if ( length == 10 || length == 18 || length == 26 || length == 34 )
-						{
-						auto p = reinterpret_cast<const uint32_t*>(o + 2);
-						auto num_pointers = (length - 2) / 4;
-						auto vt = id::index_vec;
-						auto sack = make_intrusive<VectorVal>(std::move(vt));
-
-						for ( auto i = 0; i < num_pointers; ++i )
-							sack->Assign(sack->Size(), val_mgr->Count(ntohl(p[i])));
-
-						option_record->Assign(5, sack);
-						}
-					else
-						{
-						add_option_data(option_record, o, length);
-						Weird("tcp_option_sack_blocks_invalid_len", util::fmt("%d", length));
-						}
-					break;
-
-					case 8:
-					// timestamps
-					if ( length == 10 )
-						{
-						auto send = ntohl(*reinterpret_cast<const uint32_t*>(o + 2));
-						auto echo = ntohl(*reinterpret_cast<const uint32_t*>(o + 6));
-						option_record->Assign(6, val_mgr->Count(send));
-						option_record->Assign(7, val_mgr->Count(echo));
-						}
-					else
-						{
-						add_option_data(option_record, o, length);
-						Weird("tcp_option_timestamps_invalid_len", util::fmt("%d", length));
-						}
-					break;
-
-					default:
+				case 2:
+				// MSS
+				if ( length == 4 )
+					{
+					auto mss = ntohs(*reinterpret_cast<const uint16_t*>(o + 2));
+					option_record->Assign(3, val_mgr->Count(mss));
+					}
+				else
+					{
 					add_option_data(option_record, o, length);
-					break;
+					Weird("tcp_option_mss_invalid_len", util::fmt("%d", length));
+					}
+				break;
+
+				case 3:
+				// window scale
+				if ( length == 3 )
+					{
+					auto scale = o[2];
+					option_record->Assign(4, val_mgr->Count(scale));
+					}
+				else
+					{
+					add_option_data(option_record, o, length);
+					Weird("tcp_option_window_scale_invalid_len", util::fmt("%d", length));
+					}
+				break;
+
+				case 4:
+				// sack permitted (implicit boolean)
+				if ( length != 2 )
+					{
+					add_option_data(option_record, o, length);
+					Weird("tcp_option_sack_invalid_len", util::fmt("%d", length));
+					}
+				break;
+
+				case 5:
+				// SACK blocks (1-4 pairs of 32-bit begin+end pointers)
+				if ( length == 10 || length == 18 || length == 26 || length == 34 )
+					{
+					auto p = reinterpret_cast<const uint32_t*>(o + 2);
+					auto num_pointers = (length - 2) / 4;
+					auto vt = id::index_vec;
+					auto sack = make_intrusive<VectorVal>(std::move(vt));
+
+					for ( auto i = 0; i < num_pointers; ++i )
+						sack->Assign(sack->Size(), val_mgr->Count(ntohl(p[i])));
+
+					option_record->Assign(5, sack);
+					}
+				else
+					{
+					add_option_data(option_record, o, length);
+					Weird("tcp_option_sack_blocks_invalid_len", util::fmt("%d", length));
+					}
+				break;
+
+				case 8:
+				// timestamps
+				if ( length == 10 )
+					{
+					auto send = ntohl(*reinterpret_cast<const uint32_t*>(o + 2));
+					auto echo = ntohl(*reinterpret_cast<const uint32_t*>(o + 6));
+					option_record->Assign(6, val_mgr->Count(send));
+					option_record->Assign(7, val_mgr->Count(echo));
+					}
+				else
+					{
+					add_option_data(option_record, o, length);
+					Weird("tcp_option_timestamps_invalid_len", util::fmt("%d", length));
+					}
+				break;
+
+				default:
+				add_option_data(option_record, o, length);
+				break;
 				}
 			}
 
@@ -1541,24 +1541,24 @@ FilePtr TCP_Analyzer::GetContentsFile(unsigned int direction) const
 	{
 	switch ( direction )
 		{
-			case CONTENTS_NONE:
-			return nullptr;
+		case CONTENTS_NONE:
+		return nullptr;
 
-			case CONTENTS_ORIG:
+		case CONTENTS_ORIG:
+		return orig->GetContentsFile();
+
+		case CONTENTS_RESP:
+		return resp->GetContentsFile();
+
+		case CONTENTS_BOTH:
+		if ( orig->GetContentsFile() != resp->GetContentsFile() )
+			// This is an "error".
+			return nullptr;
+		else
 			return orig->GetContentsFile();
 
-			case CONTENTS_RESP:
-			return resp->GetContentsFile();
-
-			case CONTENTS_BOTH:
-			if ( orig->GetContentsFile() != resp->GetContentsFile() )
-				// This is an "error".
-				return nullptr;
-			else
-				return orig->GetContentsFile();
-
-			default:
-			break;
+		default:
+		break;
 		}
 
 	reporter->Error("bad direction %u in TCP_Analyzer::GetContentsFile", direction);

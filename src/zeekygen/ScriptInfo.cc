@@ -281,24 +281,23 @@ void ScriptInfo::DoInitPostScript()
 			{
 			switch ( id->GetType()->AsFuncType()->Flavor() )
 				{
-					case FUNC_FLAVOR_HOOK:
-					DBG_LOG(DBG_ZEEKYGEN, "Filter id '%s' in '%s' as a hook", id->Name(),
-					        name.c_str());
-					hooks.push_back(info);
-					break;
-					case FUNC_FLAVOR_EVENT:
-					DBG_LOG(DBG_ZEEKYGEN, "Filter id '%s' in '%s' as a event", id->Name(),
-					        name.c_str());
-					events.push_back(info);
-					break;
-					case FUNC_FLAVOR_FUNCTION:
-					DBG_LOG(DBG_ZEEKYGEN, "Filter id '%s' in '%s' as a function", id->Name(),
-					        name.c_str());
-					functions.push_back(info);
-					break;
-					default:
-					reporter->InternalError("Invalid function flavor");
-					break;
+				case FUNC_FLAVOR_HOOK:
+				DBG_LOG(DBG_ZEEKYGEN, "Filter id '%s' in '%s' as a hook", id->Name(), name.c_str());
+				hooks.push_back(info);
+				break;
+				case FUNC_FLAVOR_EVENT:
+				DBG_LOG(DBG_ZEEKYGEN, "Filter id '%s' in '%s' as a event", id->Name(),
+				        name.c_str());
+				events.push_back(info);
+				break;
+				case FUNC_FLAVOR_FUNCTION:
+				DBG_LOG(DBG_ZEEKYGEN, "Filter id '%s' in '%s' as a function", id->Name(),
+				        name.c_str());
+				functions.push_back(info);
+				break;
+				default:
+				reporter->InternalError("Invalid function flavor");
+				break;
 				}
 
 			continue;

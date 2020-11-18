@@ -61,22 +61,22 @@ public:
 		{
 		switch ( type )
 			{
-				case IPPROTO_IPV6:
-				((ip6_hdr*)data)->ip6_nxt = next_type;
-				break;
-				case IPPROTO_HOPOPTS:
-				case IPPROTO_DSTOPTS:
-				case IPPROTO_ROUTING:
-				case IPPROTO_FRAGMENT:
-				case IPPROTO_AH:
+			case IPPROTO_IPV6:
+			((ip6_hdr*)data)->ip6_nxt = next_type;
+			break;
+			case IPPROTO_HOPOPTS:
+			case IPPROTO_DSTOPTS:
+			case IPPROTO_ROUTING:
+			case IPPROTO_FRAGMENT:
+			case IPPROTO_AH:
 #ifdef ENABLE_MOBILE_IPV6
-				case IPPROTO_MOBILITY:
+			case IPPROTO_MOBILITY:
 #endif
-				((ip6_ext*)data)->ip6e_nxt = next_type;
-				break;
-				case IPPROTO_ESP:
-				default:
-				break;
+			((ip6_ext*)data)->ip6e_nxt = next_type;
+			break;
+			case IPPROTO_ESP:
+			default:
+			break;
 			}
 		}
 
@@ -90,20 +90,20 @@ public:
 		{
 		switch ( type )
 			{
-				case IPPROTO_IPV6:
-				return ((ip6_hdr*)data)->ip6_nxt;
-				case IPPROTO_HOPOPTS:
-				case IPPROTO_DSTOPTS:
-				case IPPROTO_ROUTING:
-				case IPPROTO_FRAGMENT:
-				case IPPROTO_AH:
+			case IPPROTO_IPV6:
+			return ((ip6_hdr*)data)->ip6_nxt;
+			case IPPROTO_HOPOPTS:
+			case IPPROTO_DSTOPTS:
+			case IPPROTO_ROUTING:
+			case IPPROTO_FRAGMENT:
+			case IPPROTO_AH:
 #ifdef ENABLE_MOBILE_IPV6
-				case IPPROTO_MOBILITY:
+			case IPPROTO_MOBILITY:
 #endif
-				return ((ip6_ext*)data)->ip6e_nxt;
-				case IPPROTO_ESP:
-				default:
-				return IPPROTO_NONE;
+			return ((ip6_ext*)data)->ip6e_nxt;
+			case IPPROTO_ESP:
+			default:
+			return IPPROTO_NONE;
 			}
 		}
 
@@ -114,23 +114,23 @@ public:
 		{
 		switch ( type )
 			{
-				case IPPROTO_IPV6:
-				return 40;
-				case IPPROTO_HOPOPTS:
-				case IPPROTO_DSTOPTS:
-				case IPPROTO_ROUTING:
+			case IPPROTO_IPV6:
+			return 40;
+			case IPPROTO_HOPOPTS:
+			case IPPROTO_DSTOPTS:
+			case IPPROTO_ROUTING:
 #ifdef ENABLE_MOBILE_IPV6
-				case IPPROTO_MOBILITY:
+			case IPPROTO_MOBILITY:
 #endif
-				return 8 + 8 * ((ip6_ext*)data)->ip6e_len;
-				case IPPROTO_FRAGMENT:
-				return 8;
-				case IPPROTO_AH:
-				return 8 + 4 * ((ip6_ext*)data)->ip6e_len;
-				case IPPROTO_ESP:
-				return 8; // encrypted payload begins after 8 bytes
-				default:
-				return 0;
+			return 8 + 8 * ((ip6_ext*)data)->ip6e_len;
+			case IPPROTO_FRAGMENT:
+			return 8;
+			case IPPROTO_AH:
+			return 8 + 4 * ((ip6_ext*)data)->ip6e_len;
+			case IPPROTO_ESP:
+			return 8; // encrypted payload begins after 8 bytes
+			default:
+			return 0;
 			}
 		}
 

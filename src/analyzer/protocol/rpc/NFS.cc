@@ -29,89 +29,89 @@ bool NFS_Interp::RPC_BuildCall(RPC_CallInfo* c, const u_char*& buf, int& n)
 
 	switch ( proc )
 		{
-			case BifEnum::NFS3::PROC_NULL:
-			break;
+		case BifEnum::NFS3::PROC_NULL:
+		break;
 
-			case BifEnum::NFS3::PROC_GETATTR:
-			callarg = nfs3_fh(buf, n);
-			break;
+		case BifEnum::NFS3::PROC_GETATTR:
+		callarg = nfs3_fh(buf, n);
+		break;
 
-			case BifEnum::NFS3::PROC_SETATTR:
-			callarg = nfs3_sattrargs(buf, n);
-			break;
+		case BifEnum::NFS3::PROC_SETATTR:
+		callarg = nfs3_sattrargs(buf, n);
+		break;
 
-			case BifEnum::NFS3::PROC_LOOKUP:
-			callarg = nfs3_diropargs(buf, n);
-			break;
+		case BifEnum::NFS3::PROC_LOOKUP:
+		callarg = nfs3_diropargs(buf, n);
+		break;
 
-			case BifEnum::NFS3::PROC_READ:
-			callarg = nfs3_readargs(buf, n);
-			break;
+		case BifEnum::NFS3::PROC_READ:
+		callarg = nfs3_readargs(buf, n);
+		break;
 
-			case BifEnum::NFS3::PROC_READLINK:
-			callarg = nfs3_fh(buf, n);
-			break;
+		case BifEnum::NFS3::PROC_READLINK:
+		callarg = nfs3_fh(buf, n);
+		break;
 
-			case BifEnum::NFS3::PROC_SYMLINK:
-			callarg = nfs3_symlinkargs(buf, n);
-			break;
+		case BifEnum::NFS3::PROC_SYMLINK:
+		callarg = nfs3_symlinkargs(buf, n);
+		break;
 
-			case BifEnum::NFS3::PROC_LINK:
-			callarg = nfs3_linkargs(buf, n);
-			break;
+		case BifEnum::NFS3::PROC_LINK:
+		callarg = nfs3_linkargs(buf, n);
+		break;
 
-			case BifEnum::NFS3::PROC_WRITE:
-			callarg = nfs3_writeargs(buf, n);
-			break;
+		case BifEnum::NFS3::PROC_WRITE:
+		callarg = nfs3_writeargs(buf, n);
+		break;
 
-			case BifEnum::NFS3::PROC_CREATE:
-			callarg = nfs3_diropargs(buf, n);
-			// TODO: implement create attributes. For now we just skip
-			// over them.
+		case BifEnum::NFS3::PROC_CREATE:
+		callarg = nfs3_diropargs(buf, n);
+		// TODO: implement create attributes. For now we just skip
+		// over them.
+		n = 0;
+		break;
+
+		case BifEnum::NFS3::PROC_MKDIR:
+		callarg = nfs3_diropargs(buf, n);
+		// TODO: implement mkdir attributes. For now we just skip
+		// over them.
+		n = 0;
+		break;
+
+		case BifEnum::NFS3::PROC_REMOVE:
+		callarg = nfs3_diropargs(buf, n);
+		break;
+
+		case BifEnum::NFS3::PROC_RMDIR:
+		callarg = nfs3_diropargs(buf, n);
+		break;
+
+		case BifEnum::NFS3::PROC_RENAME:
+		callarg = nfs3_renameopargs(buf, n);
+		break;
+
+		case BifEnum::NFS3::PROC_READDIR:
+		callarg = nfs3_readdirargs(false, buf, n);
+		break;
+
+		case BifEnum::NFS3::PROC_READDIRPLUS:
+		callarg = nfs3_readdirargs(true, buf, n);
+		break;
+
+		default:
+		if ( proc < BifEnum::NFS3::PROC_END_OF_PROCS )
+			{
+			// We know the procedure but haven't implemented it.
+			// Otherwise DeliverRPC would complain about
+			// excess_RPC.
 			n = 0;
-			break;
+			}
+		else
+			Weird("unknown_NFS_request", util::fmt("%u", proc));
 
-			case BifEnum::NFS3::PROC_MKDIR:
-			callarg = nfs3_diropargs(buf, n);
-			// TODO: implement mkdir attributes. For now we just skip
-			// over them.
-			n = 0;
-			break;
-
-			case BifEnum::NFS3::PROC_REMOVE:
-			callarg = nfs3_diropargs(buf, n);
-			break;
-
-			case BifEnum::NFS3::PROC_RMDIR:
-			callarg = nfs3_diropargs(buf, n);
-			break;
-
-			case BifEnum::NFS3::PROC_RENAME:
-			callarg = nfs3_renameopargs(buf, n);
-			break;
-
-			case BifEnum::NFS3::PROC_READDIR:
-			callarg = nfs3_readdirargs(false, buf, n);
-			break;
-
-			case BifEnum::NFS3::PROC_READDIRPLUS:
-			callarg = nfs3_readdirargs(true, buf, n);
-			break;
-
-			default:
-			if ( proc < BifEnum::NFS3::PROC_END_OF_PROCS )
-				{
-				// We know the procedure but haven't implemented it.
-				// Otherwise DeliverRPC would complain about
-				// excess_RPC.
-				n = 0;
-				}
-			else
-				Weird("unknown_NFS_request", util::fmt("%u", proc));
-
-			// Return 1 so that replies to unprocessed calls will still
-			// be processed, and the return status extracted.
-			return true;
+		// Return 1 so that replies to unprocessed calls will still
+		// be processed, and the return status extracted.
+		return true;
 		}
 
 	if ( ! buf )
@@ -157,99 +157,99 @@ bool NFS_Interp::RPC_BuildReply(RPC_CallInfo* c, BifEnum::rpc_status rpc_status,
 
 	switch ( c->Proc() )
 		{
-			case BifEnum::NFS3::PROC_NULL:
-			event = nfs_proc_null;
-			break;
+		case BifEnum::NFS3::PROC_NULL:
+		event = nfs_proc_null;
+		break;
 
-			case BifEnum::NFS3::PROC_GETATTR:
-			reply = nfs3_fattr(buf, n);
-			event = nfs_proc_getattr;
-			break;
+		case BifEnum::NFS3::PROC_GETATTR:
+		reply = nfs3_fattr(buf, n);
+		event = nfs_proc_getattr;
+		break;
 
-			case BifEnum::NFS3::PROC_SETATTR:
-			reply = nfs3_sattr_reply(buf, n, nfs_status);
-			event = nfs_proc_sattr;
-			break;
+		case BifEnum::NFS3::PROC_SETATTR:
+		reply = nfs3_sattr_reply(buf, n, nfs_status);
+		event = nfs_proc_sattr;
+		break;
 
-			case BifEnum::NFS3::PROC_LOOKUP:
-			reply = nfs3_lookup_reply(buf, n, nfs_status);
-			event = nfs_proc_lookup;
-			break;
+		case BifEnum::NFS3::PROC_LOOKUP:
+		reply = nfs3_lookup_reply(buf, n, nfs_status);
+		event = nfs_proc_lookup;
+		break;
 
-			case BifEnum::NFS3::PROC_READ:
-			bro_uint_t offset;
-			offset = c->RequestVal()->AsRecordVal()->GetField(1)->AsCount();
-			reply = nfs3_read_reply(buf, n, nfs_status, offset);
-			event = nfs_proc_read;
-			break;
+		case BifEnum::NFS3::PROC_READ:
+		bro_uint_t offset;
+		offset = c->RequestVal()->AsRecordVal()->GetField(1)->AsCount();
+		reply = nfs3_read_reply(buf, n, nfs_status, offset);
+		event = nfs_proc_read;
+		break;
 
-			case BifEnum::NFS3::PROC_READLINK:
-			reply = nfs3_readlink_reply(buf, n, nfs_status);
-			event = nfs_proc_readlink;
-			break;
+		case BifEnum::NFS3::PROC_READLINK:
+		reply = nfs3_readlink_reply(buf, n, nfs_status);
+		event = nfs_proc_readlink;
+		break;
 
-			case BifEnum::NFS3::PROC_SYMLINK:
-			reply = nfs3_newobj_reply(buf, n, nfs_status);
-			event = nfs_proc_symlink;
-			break;
+		case BifEnum::NFS3::PROC_SYMLINK:
+		reply = nfs3_newobj_reply(buf, n, nfs_status);
+		event = nfs_proc_symlink;
+		break;
 
-			case BifEnum::NFS3::PROC_LINK:
-			reply = nfs3_link_reply(buf, n, nfs_status);
-			event = nfs_proc_link;
-			break;
+		case BifEnum::NFS3::PROC_LINK:
+		reply = nfs3_link_reply(buf, n, nfs_status);
+		event = nfs_proc_link;
+		break;
 
-			case BifEnum::NFS3::PROC_WRITE:
-			reply = nfs3_write_reply(buf, n, nfs_status);
-			event = nfs_proc_write;
-			break;
+		case BifEnum::NFS3::PROC_WRITE:
+		reply = nfs3_write_reply(buf, n, nfs_status);
+		event = nfs_proc_write;
+		break;
 
-			case BifEnum::NFS3::PROC_CREATE:
-			reply = nfs3_newobj_reply(buf, n, nfs_status);
-			event = nfs_proc_create;
-			break;
+		case BifEnum::NFS3::PROC_CREATE:
+		reply = nfs3_newobj_reply(buf, n, nfs_status);
+		event = nfs_proc_create;
+		break;
 
-			case BifEnum::NFS3::PROC_MKDIR:
-			reply = nfs3_newobj_reply(buf, n, nfs_status);
-			event = nfs_proc_mkdir;
-			break;
+		case BifEnum::NFS3::PROC_MKDIR:
+		reply = nfs3_newobj_reply(buf, n, nfs_status);
+		event = nfs_proc_mkdir;
+		break;
 
-			case BifEnum::NFS3::PROC_REMOVE:
-			reply = nfs3_delobj_reply(buf, n);
-			event = nfs_proc_remove;
-			break;
+		case BifEnum::NFS3::PROC_REMOVE:
+		reply = nfs3_delobj_reply(buf, n);
+		event = nfs_proc_remove;
+		break;
 
-			case BifEnum::NFS3::PROC_RMDIR:
-			reply = nfs3_delobj_reply(buf, n);
-			event = nfs_proc_rmdir;
-			break;
+		case BifEnum::NFS3::PROC_RMDIR:
+		reply = nfs3_delobj_reply(buf, n);
+		event = nfs_proc_rmdir;
+		break;
 
-			case BifEnum::NFS3::PROC_RENAME:
-			reply = nfs3_renameobj_reply(buf, n);
-			event = nfs_proc_rename;
-			break;
+		case BifEnum::NFS3::PROC_RENAME:
+		reply = nfs3_renameobj_reply(buf, n);
+		event = nfs_proc_rename;
+		break;
 
-			case BifEnum::NFS3::PROC_READDIR:
-			reply = nfs3_readdir_reply(false, buf, n, nfs_status);
-			event = nfs_proc_readdir;
-			break;
+		case BifEnum::NFS3::PROC_READDIR:
+		reply = nfs3_readdir_reply(false, buf, n, nfs_status);
+		event = nfs_proc_readdir;
+		break;
 
-			case BifEnum::NFS3::PROC_READDIRPLUS:
-			reply = nfs3_readdir_reply(true, buf, n, nfs_status);
-			event = nfs_proc_readdir;
-			break;
+		case BifEnum::NFS3::PROC_READDIRPLUS:
+		reply = nfs3_readdir_reply(true, buf, n, nfs_status);
+		event = nfs_proc_readdir;
+		break;
 
-			default:
-			if ( c->Proc() < BifEnum::NFS3::PROC_END_OF_PROCS )
-				{
-				// We know the procedure but haven't implemented it.
-				// Otherwise DeliverRPC would complain about
-				// excess_RPC.
-				n = 0;
-				reply = BifType::Enum::NFS3::proc_t->GetEnumVal(c->Proc());
-				event = nfs_proc_not_implemented;
-				}
-			else
-				return false;
+		default:
+		if ( c->Proc() < BifEnum::NFS3::PROC_END_OF_PROCS )
+			{
+			// We know the procedure but haven't implemented it.
+			// Otherwise DeliverRPC would complain about
+			// excess_RPC.
+			n = 0;
+			reply = BifType::Enum::NFS3::proc_t->GetEnumVal(c->Proc());
+			event = nfs_proc_not_implemented;
+			}
+		else
+			return false;
 		}
 
 	if ( rpc_success && ! buf )

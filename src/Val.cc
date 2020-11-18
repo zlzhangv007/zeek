@@ -136,41 +136,41 @@ ValPtr Val::DoClone(CloneState* state)
 	{
 	switch ( type->InternalType() )
 		{
-			case TYPE_INTERNAL_INT:
-			case TYPE_INTERNAL_UNSIGNED:
-			case TYPE_INTERNAL_DOUBLE:
-			// Immutable.
+		case TYPE_INTERNAL_INT:
+		case TYPE_INTERNAL_UNSIGNED:
+		case TYPE_INTERNAL_DOUBLE:
+		// Immutable.
+		return {NewRef {}, this};
+
+		case TYPE_INTERNAL_OTHER:
+		// Derived classes are responsible for this. Exception:
+		// Functions and files. There aren't any derived classes.
+		if ( type->Tag() == TYPE_FUNC )
+			return make_intrusive<Val>(AsFunc()->DoClone());
+
+		if ( type->Tag() == TYPE_FILE )
+			{
+			// I think we can just ref the file here - it is unclear what else
+			// to do.  In the case of cached files, I think this is equivalent
+			// to what happened before - serialization + unserialization just
+			// have you the same pointer that you already had.  In the case of
+			// non-cached files, the behavior now is different; in the past,
+			// serialize + unserialize gave you a new file object because the
+			// old one was not in the list anymore. This object was
+			// automatically opened. This does not happen anymore - instead you
+			// get the non-cached pointer back which is brought back into the
+			// cache when written too.
+			return {NewRef {}, this};
+			}
+
+		if ( type->Tag() == TYPE_TYPE )
+			// These are immutable, essentially.
 			return {NewRef {}, this};
 
-			case TYPE_INTERNAL_OTHER:
-			// Derived classes are responsible for this. Exception:
-			// Functions and files. There aren't any derived classes.
-			if ( type->Tag() == TYPE_FUNC )
-				return make_intrusive<Val>(AsFunc()->DoClone());
+		// Fall-through.
 
-			if ( type->Tag() == TYPE_FILE )
-				{
-				// I think we can just ref the file here - it is unclear what else
-				// to do.  In the case of cached files, I think this is equivalent
-				// to what happened before - serialization + unserialization just
-				// have you the same pointer that you already had.  In the case of
-				// non-cached files, the behavior now is different; in the past,
-				// serialize + unserialize gave you a new file object because the
-				// old one was not in the list anymore. This object was
-				// automatically opened. This does not happen anymore - instead you
-				// get the non-cached pointer back which is brought back into the
-				// cache when written too.
-				return {NewRef {}, this};
-				}
-
-			if ( type->Tag() == TYPE_TYPE )
-				// These are immutable, essentially.
-				return {NewRef {}, this};
-
-			// Fall-through.
-
-			default:
-			reporter->InternalError("cloning illegal base type");
+		default:
+		reporter->InternalError("cloning illegal base type");
 		}
 
 	reporter->InternalError("cannot be reached");
@@ -187,15 +187,15 @@ bool Val::IsZero() const
 	{
 	switch ( type->InternalType() )
 		{
-			case TYPE_INTERNAL_INT:
-			return val.int_val == 0;
-			case TYPE_INTERNAL_UNSIGNED:
-			return val.uint_val == 0;
-			case TYPE_INTERNAL_DOUBLE:
-			return val.double_val == 0.0;
+		case TYPE_INTERNAL_INT:
+		return val.int_val == 0;
+		case TYPE_INTERNAL_UNSIGNED:
+		return val.uint_val == 0;
+		case TYPE_INTERNAL_DOUBLE:
+		return val.double_val == 0.0;
 
-			default:
-			return false;
+		default:
+		return false;
 		}
 	}
 
@@ -203,15 +203,15 @@ bool Val::IsOne() const
 	{
 	switch ( type->InternalType() )
 		{
-			case TYPE_INTERNAL_INT:
-			return val.int_val == 1;
-			case TYPE_INTERNAL_UNSIGNED:
-			return val.uint_val == 1;
-			case TYPE_INTERNAL_DOUBLE:
-			return val.double_val == 1.0;
+		case TYPE_INTERNAL_INT:
+		return val.int_val == 1;
+		case TYPE_INTERNAL_UNSIGNED:
+		return val.uint_val == 1;
+		case TYPE_INTERNAL_DOUBLE:
+		return val.double_val == 1.0;
 
-			default:
-			return false;
+		default:
+		return false;
 		}
 	}
 
@@ -294,30 +294,30 @@ ValPtr Val::SizeVal() const
 	{
 	switch ( type->InternalType() )
 		{
-			case TYPE_INTERNAL_INT:
-			// Return abs value. However abs() only works on ints and llabs
-			// doesn't work on Mac OS X 10.5. So we do it by hand
-			if ( val.int_val < 0 )
-				return val_mgr->Count(-val.int_val);
-			else
-				return val_mgr->Count(val.int_val);
+		case TYPE_INTERNAL_INT:
+		// Return abs value. However abs() only works on ints and llabs
+		// doesn't work on Mac OS X 10.5. So we do it by hand
+		if ( val.int_val < 0 )
+			return val_mgr->Count(-val.int_val);
+		else
+			return val_mgr->Count(val.int_val);
 
-			case TYPE_INTERNAL_UNSIGNED:
-			return val_mgr->Count(val.uint_val);
+		case TYPE_INTERNAL_UNSIGNED:
+		return val_mgr->Count(val.uint_val);
 
-			case TYPE_INTERNAL_DOUBLE:
-			return make_intrusive<DoubleVal>(fabs(val.double_val));
+		case TYPE_INTERNAL_DOUBLE:
+		return make_intrusive<DoubleVal>(fabs(val.double_val));
 
-			case TYPE_INTERNAL_OTHER:
-			if ( type->Tag() == TYPE_FUNC )
-				return val_mgr->Count(val.func_val->GetType()->ParamList()->GetTypes().size());
+		case TYPE_INTERNAL_OTHER:
+		if ( type->Tag() == TYPE_FUNC )
+			return val_mgr->Count(val.func_val->GetType()->ParamList()->GetTypes().size());
 
-			if ( type->Tag() == TYPE_FILE )
-				return make_intrusive<DoubleVal>(val.file_val->Size());
-			break;
+		if ( type->Tag() == TYPE_FILE )
+			return make_intrusive<DoubleVal>(val.file_val->Size());
+		break;
 
-			default:
-			break;
+		default:
+		break;
 		}
 
 	return val_mgr->Count(0);
@@ -366,48 +366,48 @@ void Val::ValDescribe(ODesc* d) const
 
 	switch ( type->InternalType() )
 		{
-			case TYPE_INTERNAL_INT:
-			d->Add(val.int_val);
-			break;
-			case TYPE_INTERNAL_UNSIGNED:
-			d->Add(val.uint_val);
-			break;
-			case TYPE_INTERNAL_DOUBLE:
-			d->Add(val.double_val);
-			break;
-			case TYPE_INTERNAL_STRING:
-			d->AddBytes(val.string_val);
-			break;
-			case TYPE_INTERNAL_ADDR:
-			d->Add(val.addr_val->AsString().c_str());
-			break;
+		case TYPE_INTERNAL_INT:
+		d->Add(val.int_val);
+		break;
+		case TYPE_INTERNAL_UNSIGNED:
+		d->Add(val.uint_val);
+		break;
+		case TYPE_INTERNAL_DOUBLE:
+		d->Add(val.double_val);
+		break;
+		case TYPE_INTERNAL_STRING:
+		d->AddBytes(val.string_val);
+		break;
+		case TYPE_INTERNAL_ADDR:
+		d->Add(val.addr_val->AsString().c_str());
+		break;
 
-			case TYPE_INTERNAL_SUBNET:
-			d->Add(val.subnet_val->AsString().c_str());
-			break;
+		case TYPE_INTERNAL_SUBNET:
+		d->Add(val.subnet_val->AsString().c_str());
+		break;
 
-			case TYPE_INTERNAL_ERROR:
-			d->AddCS("error");
-			break;
-			case TYPE_INTERNAL_OTHER:
-			if ( type->Tag() == TYPE_FUNC )
-				AsFunc()->Describe(d);
-			else if ( type->Tag() == TYPE_FILE )
-				AsFile()->Describe(d);
-			else if ( type->Tag() == TYPE_TYPE )
-				d->Add(type->AsTypeType()->GetType()->GetName());
-			else
-				d->Add("<no value description>");
-			break;
+		case TYPE_INTERNAL_ERROR:
+		d->AddCS("error");
+		break;
+		case TYPE_INTERNAL_OTHER:
+		if ( type->Tag() == TYPE_FUNC )
+			AsFunc()->Describe(d);
+		else if ( type->Tag() == TYPE_FILE )
+			AsFile()->Describe(d);
+		else if ( type->Tag() == TYPE_TYPE )
+			d->Add(type->AsTypeType()->GetType()->GetName());
+		else
+			d->Add("<no value description>");
+		break;
 
-			case TYPE_INTERNAL_VOID:
-			d->Add("<void value description>");
-			break;
+		case TYPE_INTERNAL_VOID:
+		d->Add("<void value description>");
+		break;
 
-			default:
-			reporter->InternalWarning("Val description unavailable");
-			d->Add("<value description unavailable>");
-			break;
+		default:
+		reporter->InternalWarning("Val description unavailable");
+		d->Add("<value description unavailable>");
+		break;
 		}
 	}
 
@@ -415,14 +415,14 @@ void Val::ValDescribeReST(ODesc* d) const
 	{
 	switch ( type->InternalType() )
 		{
-			case TYPE_INTERNAL_OTHER:
-			Describe(d);
-			break;
+		case TYPE_INTERNAL_OTHER:
+		Describe(d);
+		break;
 
-			default:
-			d->Add("``");
-			ValDescribe(d);
-			d->Add("``");
+		default:
+		d->Add("``");
+		ValDescribe(d);
+		d->Add("``");
 		}
 	}
 
@@ -522,184 +522,184 @@ static void BuildJSON(threading::formatter::JSON::NullDoubleWriter& writer, Val*
 
 	switch ( val->GetType()->Tag() )
 		{
-			case TYPE_BOOL:
-			writer.Bool(val->AsBool());
-			break;
+		case TYPE_BOOL:
+		writer.Bool(val->AsBool());
+		break;
 
-			case TYPE_INT:
-			writer.Int64(val->AsInt());
-			break;
+		case TYPE_INT:
+		writer.Int64(val->AsInt());
+		break;
 
-			case TYPE_COUNT:
-			writer.Uint64(val->AsCount());
-			break;
+		case TYPE_COUNT:
+		writer.Uint64(val->AsCount());
+		break;
 
-			case TYPE_TIME:
-			writer.Double(val->AsTime());
-			break;
+		case TYPE_TIME:
+		writer.Double(val->AsTime());
+		break;
 
-			case TYPE_DOUBLE:
-			writer.Double(val->AsDouble());
-			break;
+		case TYPE_DOUBLE:
+		writer.Double(val->AsDouble());
+		break;
 
-			case TYPE_PORT:
-				{
-				auto* pval = val->AsPortVal();
+		case TYPE_PORT:
+			{
+			auto* pval = val->AsPortVal();
+			writer.StartObject();
+			writer.Key("port");
+			writer.Int64(pval->Port());
+			writer.Key("proto");
+			writer.String(pval->Protocol());
+			writer.EndObject();
+			break;
+			}
+
+		case TYPE_PATTERN:
+		case TYPE_INTERVAL:
+		case TYPE_ADDR:
+		case TYPE_SUBNET:
+			{
+			ODesc d;
+			d.SetStyle(RAW_STYLE);
+			val->Describe(&d);
+			writer.String(reinterpret_cast<const char*>(d.Bytes()), d.Len());
+			break;
+			}
+
+		case TYPE_FILE:
+		case TYPE_FUNC:
+		case TYPE_ENUM:
+		case TYPE_STRING:
+			{
+			ODesc d;
+			d.SetStyle(RAW_STYLE);
+			val->Describe(&d);
+			writer.String(util::json_escape_utf8(
+				std::string(reinterpret_cast<const char*>(d.Bytes()), d.Len())));
+			break;
+			}
+
+		case TYPE_TABLE:
+			{
+			auto* table = val->AsTable();
+			auto* tval = val->AsTableVal();
+
+			if ( tval->GetType()->IsSet() )
+				writer.StartArray();
+			else
 				writer.StartObject();
-				writer.Key("port");
-				writer.Int64(pval->Port());
-				writer.Key("proto");
-				writer.String(pval->Protocol());
-				writer.EndObject();
-				break;
-				}
 
-			case TYPE_PATTERN:
-			case TYPE_INTERVAL:
-			case TYPE_ADDR:
-			case TYPE_SUBNET:
+			detail::HashKey* k;
+			TableEntryVal* entry;
+			auto c = table->InitForIteration();
+			while ( (entry = table->NextEntry(k, c)) )
 				{
-				ODesc d;
-				d.SetStyle(RAW_STYLE);
-				val->Describe(&d);
-				writer.String(reinterpret_cast<const char*>(d.Bytes()), d.Len());
-				break;
-				}
-
-			case TYPE_FILE:
-			case TYPE_FUNC:
-			case TYPE_ENUM:
-			case TYPE_STRING:
-				{
-				ODesc d;
-				d.SetStyle(RAW_STYLE);
-				val->Describe(&d);
-				writer.String(util::json_escape_utf8(
-					std::string(reinterpret_cast<const char*>(d.Bytes()), d.Len())));
-				break;
-				}
-
-			case TYPE_TABLE:
-				{
-				auto* table = val->AsTable();
-				auto* tval = val->AsTableVal();
+				auto lv = tval->RecreateIndex(*k);
+				delete k;
+				Val* entry_key = lv->Length() == 1 ? lv->Idx(0).get() : lv.get();
 
 				if ( tval->GetType()->IsSet() )
-					writer.StartArray();
+					BuildJSON(writer, entry_key, only_loggable, re);
 				else
-					writer.StartObject();
-
-				detail::HashKey* k;
-				TableEntryVal* entry;
-				auto c = table->InitForIteration();
-				while ( (entry = table->NextEntry(k, c)) )
 					{
-					auto lv = tval->RecreateIndex(*k);
-					delete k;
-					Val* entry_key = lv->Length() == 1 ? lv->Idx(0).get() : lv.get();
+					rapidjson::StringBuffer buffer;
+					threading::formatter::JSON::NullDoubleWriter key_writer(buffer);
+					BuildJSON(key_writer, entry_key, only_loggable, re);
+					string key_str = buffer.GetString();
 
-					if ( tval->GetType()->IsSet() )
-						BuildJSON(writer, entry_key, only_loggable, re);
+					if ( key_str.length() >= 2 && key_str[0] == '"' &&
+					     key_str[key_str.length() - 1] == '"' )
+						// Strip quotes.
+						key_str = key_str.substr(1, key_str.length() - 2);
+
+					BuildJSON(writer, entry->GetVal().get(), only_loggable, re, key_str);
+					}
+				}
+
+			if ( tval->GetType()->IsSet() )
+				writer.EndArray();
+			else
+				writer.EndObject();
+
+			break;
+			}
+
+		case TYPE_RECORD:
+			{
+			writer.StartObject();
+
+			auto* rval = val->AsRecordVal();
+			auto rt = rval->GetType()->AsRecordType();
+
+			for ( auto i = 0; i < rt->NumFields(); ++i )
+				{
+				auto value = rval->GetFieldOrDefault(i);
+
+				if ( value && (! only_loggable || rt->FieldHasAttr(i, detail::ATTR_LOG)) )
+					{
+					string key_str;
+					auto field_name = rt->FieldName(i);
+
+					if ( re && re->MatchAnywhere(field_name) != 0 )
+						{
+						auto blank = make_intrusive<StringVal>("");
+						auto fn_val = make_intrusive<StringVal>(field_name);
+						const auto& bs = *blank->AsString();
+						auto key_val = fn_val->Replace(re, bs, false);
+						key_str = key_val->ToStdString();
+						}
 					else
-						{
-						rapidjson::StringBuffer buffer;
-						threading::formatter::JSON::NullDoubleWriter key_writer(buffer);
-						BuildJSON(key_writer, entry_key, only_loggable, re);
-						string key_str = buffer.GetString();
+						key_str = field_name;
 
-						if ( key_str.length() >= 2 && key_str[0] == '"' &&
-						     key_str[key_str.length() - 1] == '"' )
-							// Strip quotes.
-							key_str = key_str.substr(1, key_str.length() - 2);
-
-						BuildJSON(writer, entry->GetVal().get(), only_loggable, re, key_str);
-						}
+					BuildJSON(writer, value.get(), only_loggable, re, key_str);
 					}
-
-				if ( tval->GetType()->IsSet() )
-					writer.EndArray();
-				else
-					writer.EndObject();
-
-				break;
 				}
 
-			case TYPE_RECORD:
-				{
-				writer.StartObject();
-
-				auto* rval = val->AsRecordVal();
-				auto rt = rval->GetType()->AsRecordType();
-
-				for ( auto i = 0; i < rt->NumFields(); ++i )
-					{
-					auto value = rval->GetFieldOrDefault(i);
-
-					if ( value && (! only_loggable || rt->FieldHasAttr(i, detail::ATTR_LOG)) )
-						{
-						string key_str;
-						auto field_name = rt->FieldName(i);
-
-						if ( re && re->MatchAnywhere(field_name) != 0 )
-							{
-							auto blank = make_intrusive<StringVal>("");
-							auto fn_val = make_intrusive<StringVal>(field_name);
-							const auto& bs = *blank->AsString();
-							auto key_val = fn_val->Replace(re, bs, false);
-							key_str = key_val->ToStdString();
-							}
-						else
-							key_str = field_name;
-
-						BuildJSON(writer, value.get(), only_loggable, re, key_str);
-						}
-					}
-
-				writer.EndObject();
-				break;
-				}
-
-			case TYPE_LIST:
-				{
-				writer.StartArray();
-
-				auto* lval = val->AsListVal();
-				size_t size = lval->Length();
-				for ( size_t i = 0; i < size; i++ )
-					BuildJSON(writer, lval->Idx(i).get(), only_loggable, re);
-
-				writer.EndArray();
-				break;
-				}
-
-			case TYPE_VECTOR:
-				{
-				writer.StartArray();
-
-				auto* vval = val->AsVectorVal();
-				size_t size = vval->SizeVal()->AsCount();
-				for ( size_t i = 0; i < size; i++ )
-					BuildJSON(writer, vval->At(i).get(), only_loggable, re);
-
-				writer.EndArray();
-				break;
-				}
-
-			case TYPE_OPAQUE:
-				{
-				writer.StartObject();
-
-				writer.Key("opaque_type");
-				auto* oval = val->AsOpaqueVal();
-				writer.String(OpaqueMgr::mgr()->TypeID(oval));
-
-				writer.EndObject();
-				break;
-				}
-
-			default:
-			writer.Null();
+			writer.EndObject();
 			break;
+			}
+
+		case TYPE_LIST:
+			{
+			writer.StartArray();
+
+			auto* lval = val->AsListVal();
+			size_t size = lval->Length();
+			for ( size_t i = 0; i < size; i++ )
+				BuildJSON(writer, lval->Idx(i).get(), only_loggable, re);
+
+			writer.EndArray();
+			break;
+			}
+
+		case TYPE_VECTOR:
+			{
+			writer.StartArray();
+
+			auto* vval = val->AsVectorVal();
+			size_t size = vval->SizeVal()->AsCount();
+			for ( size_t i = 0; i < size; i++ )
+				BuildJSON(writer, vval->At(i).get(), only_loggable, re);
+
+			writer.EndArray();
+			break;
+			}
+
+		case TYPE_OPAQUE:
+			{
+			writer.StartObject();
+
+			writer.Key("opaque_type");
+			auto* oval = val->AsOpaqueVal();
+			writer.String(OpaqueMgr::mgr()->TypeID(oval));
+
+			writer.EndObject();
+			break;
+			}
+
+		default:
+		writer.Null();
+		break;
 		}
 	}
 
@@ -801,20 +801,20 @@ uint32_t PortVal::Mask(uint32_t port_num, TransportProto port_type)
 
 	switch ( port_type )
 		{
-			case TRANSPORT_TCP:
-			port_num |= TCP_PORT_MASK;
-			break;
+		case TRANSPORT_TCP:
+		port_num |= TCP_PORT_MASK;
+		break;
 
-			case TRANSPORT_UDP:
-			port_num |= UDP_PORT_MASK;
-			break;
+		case TRANSPORT_UDP:
+		port_num |= UDP_PORT_MASK;
+		break;
 
-			case TRANSPORT_ICMP:
-			port_num |= ICMP_PORT_MASK;
-			break;
+		case TRANSPORT_ICMP:
+		port_num |= ICMP_PORT_MASK;
+		break;
 
-			default:
-			break; // "unknown/other"
+		default:
+		break; // "unknown/other"
 		}
 
 	return port_num;
@@ -1364,37 +1364,37 @@ static void find_nested_record_types(const TypePtr& t, std::set<RecordType*>* fo
 
 	switch ( t->Tag() )
 		{
-			case TYPE_RECORD:
-				{
-				auto rt = t->AsRecordType();
-				found->emplace(rt);
+		case TYPE_RECORD:
+			{
+			auto rt = t->AsRecordType();
+			found->emplace(rt);
 
-				for ( auto i = 0; i < rt->NumFields(); ++i )
-					find_nested_record_types(rt->FieldDecl(i)->type, found);
-				}
-			return;
-			case TYPE_TABLE:
-			find_nested_record_types(t->AsTableType()->GetIndices(), found);
-			find_nested_record_types(t->AsTableType()->Yield(), found);
-			return;
-			case TYPE_LIST:
-				{
-				for ( const auto& type : t->AsTypeList()->GetTypes() )
-					find_nested_record_types(type, found);
-				}
-			return;
-			case TYPE_FUNC:
-			find_nested_record_types(t->AsFuncType()->Params(), found);
-			find_nested_record_types(t->AsFuncType()->Yield(), found);
-			return;
-			case TYPE_VECTOR:
-			find_nested_record_types(t->AsVectorType()->Yield(), found);
-			return;
-			case TYPE_TYPE:
-			find_nested_record_types(t->AsTypeType()->GetType(), found);
-			return;
-			default:
-			return;
+			for ( auto i = 0; i < rt->NumFields(); ++i )
+				find_nested_record_types(rt->FieldDecl(i)->type, found);
+			}
+		return;
+		case TYPE_TABLE:
+		find_nested_record_types(t->AsTableType()->GetIndices(), found);
+		find_nested_record_types(t->AsTableType()->Yield(), found);
+		return;
+		case TYPE_LIST:
+			{
+			for ( const auto& type : t->AsTypeList()->GetTypes() )
+				find_nested_record_types(type, found);
+			}
+		return;
+		case TYPE_FUNC:
+		find_nested_record_types(t->AsFuncType()->Params(), found);
+		find_nested_record_types(t->AsFuncType()->Yield(), found);
+		return;
+		case TYPE_VECTOR:
+		find_nested_record_types(t->AsVectorType()->Yield(), found);
+		return;
+		case TYPE_TYPE:
+		find_nested_record_types(t->AsTypeType()->GetType(), found);
+		return;
+		default:
+		return;
 		}
 	}
 
@@ -2113,21 +2113,21 @@ void TableVal::CallChangeFunc(const ValPtr& index, const ValPtr& old_value, OnCh
 
 		switch ( tpe )
 			{
-				case ELEMENT_NEW:
-				vl.emplace_back(BifType::Enum::TableChange->GetEnumVal(
-					BifEnum::TableChange::TABLE_ELEMENT_NEW));
-				break;
-				case ELEMENT_CHANGED:
-				vl.emplace_back(BifType::Enum::TableChange->GetEnumVal(
-					BifEnum::TableChange::TABLE_ELEMENT_CHANGED));
-				break;
-				case ELEMENT_REMOVED:
-				vl.emplace_back(BifType::Enum::TableChange->GetEnumVal(
-					BifEnum::TableChange::TABLE_ELEMENT_REMOVED));
-				break;
-				case ELEMENT_EXPIRED:
-				vl.emplace_back(BifType::Enum::TableChange->GetEnumVal(
-					BifEnum::TableChange::TABLE_ELEMENT_EXPIRED));
+			case ELEMENT_NEW:
+			vl.emplace_back(
+				BifType::Enum::TableChange->GetEnumVal(BifEnum::TableChange::TABLE_ELEMENT_NEW));
+			break;
+			case ELEMENT_CHANGED:
+			vl.emplace_back(BifType::Enum::TableChange->GetEnumVal(
+				BifEnum::TableChange::TABLE_ELEMENT_CHANGED));
+			break;
+			case ELEMENT_REMOVED:
+			vl.emplace_back(BifType::Enum::TableChange->GetEnumVal(
+				BifEnum::TableChange::TABLE_ELEMENT_REMOVED));
+			break;
+			case ELEMENT_EXPIRED:
+			vl.emplace_back(BifType::Enum::TableChange->GetEnumVal(
+				BifEnum::TableChange::TABLE_ELEMENT_EXPIRED));
 			}
 
 		if ( index->GetType()->Tag() == TYPE_LIST )
@@ -2191,73 +2191,73 @@ void TableVal::SendToStore(const Val* index, const TableEntryVal* new_entry_val,
 
 		switch ( tpe )
 			{
-				case ELEMENT_NEW:
-				case ELEMENT_CHANGED:
-					{
+			case ELEMENT_NEW:
+			case ELEMENT_CHANGED:
+				{
 #ifndef __clang__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
-					broker::optional<broker::timespan> expiry;
+				broker::optional<broker::timespan> expiry;
 #ifndef __clang__
 #pragma GCC diagnostic pop
 #endif
 
-					auto expire_time = GetExpireTime();
-					if ( expire_time == 0 )
-						// Entry is set to immediately expire. Let's not forward it.
-						break;
-
-					if ( expire_time > 0 )
-						{
-						if ( attrs->Find(detail::ATTR_EXPIRE_CREATE) )
-							{
-							// for create expiry, we have to substract the already elapsed time from
-							// the expiry.
-							auto e = expire_time -
-									 (run_state::network_time - new_entry_val->ExpireAccessTime());
-							if ( e <= 0 )
-								// element already expired? Let's not insert it.
-								break;
-
-							expiry = Broker::detail::convert_expiry(e);
-							}
-						else
-							expiry = Broker::detail::convert_expiry(expire_time);
-						}
-
-					if ( table_type->IsSet() )
-						handle->store.put(std::move(*broker_index), broker::data(), expiry);
-					else
-						{
-						if ( ! new_entry_val )
-							{
-							emit_builtin_error(
-								"did not receive new value for Broker datastore send operation");
-							return;
-							}
-
-						auto new_value = new_entry_val->GetVal().get();
-						auto broker_val = Broker::detail::val_to_data(new_value);
-						if ( ! broker_val )
-							{
-							emit_builtin_error("invalid Broker data conversation for table value");
-							return;
-							}
-
-						handle->store.put(std::move(*broker_index), std::move(*broker_val), expiry);
-						}
+				auto expire_time = GetExpireTime();
+				if ( expire_time == 0 )
+					// Entry is set to immediately expire. Let's not forward it.
 					break;
+
+				if ( expire_time > 0 )
+					{
+					if ( attrs->Find(detail::ATTR_EXPIRE_CREATE) )
+						{
+						// for create expiry, we have to substract the already elapsed time from
+						// the expiry.
+						auto e = expire_time -
+								 (run_state::network_time - new_entry_val->ExpireAccessTime());
+						if ( e <= 0 )
+							// element already expired? Let's not insert it.
+							break;
+
+						expiry = Broker::detail::convert_expiry(e);
+						}
+					else
+						expiry = Broker::detail::convert_expiry(expire_time);
 					}
 
-				case ELEMENT_REMOVED:
-				handle->store.erase(std::move(*broker_index));
-				break;
+				if ( table_type->IsSet() )
+					handle->store.put(std::move(*broker_index), broker::data(), expiry);
+				else
+					{
+					if ( ! new_entry_val )
+						{
+						emit_builtin_error(
+							"did not receive new value for Broker datastore send operation");
+						return;
+						}
 
-				case ELEMENT_EXPIRED:
-				// we do nothing here. The Broker store does its own expiration - so the element
-				// should expire at about the same time.
+					auto new_value = new_entry_val->GetVal().get();
+					auto broker_val = Broker::detail::val_to_data(new_value);
+					if ( ! broker_val )
+						{
+						emit_builtin_error("invalid Broker data conversation for table value");
+						return;
+						}
+
+					handle->store.put(std::move(*broker_index), std::move(*broker_val), expiry);
+					}
 				break;
+				}
+
+			case ELEMENT_REMOVED:
+			handle->store.erase(std::move(*broker_index));
+			break;
+
+			case ELEMENT_EXPIRED:
+			// we do nothing here. The Broker store does its own expiration - so the element
+			// should expire at about the same time.
+			break;
 			}
 		}
 	catch ( InterpreterException& e )
@@ -3437,63 +3437,63 @@ ValPtr check_and_promote(ValPtr v, const Type* t, bool is_init,
 
 	switch ( it )
 		{
-			case TYPE_INTERNAL_INT:
-			if ( (vit == TYPE_INTERNAL_UNSIGNED || vit == TYPE_INTERNAL_DOUBLE) &&
-			     Val::WouldOverflow(vt, t, v.get()) )
-				{
-				t->Error("overflow promoting from unsigned/double to signed arithmetic value",
-				         v.get(), false, expr_location);
-				return nullptr;
-				}
-			else if ( t_tag == TYPE_INT )
-				promoted_v = val_mgr->Int(v->CoerceToInt());
-			else // enum
-				{
-				reporter->InternalError("bad internal type in check_and_promote()");
-				return nullptr;
-				}
+		case TYPE_INTERNAL_INT:
+		if ( (vit == TYPE_INTERNAL_UNSIGNED || vit == TYPE_INTERNAL_DOUBLE) &&
+		     Val::WouldOverflow(vt, t, v.get()) )
+			{
+			t->Error("overflow promoting from unsigned/double to signed arithmetic value", v.get(),
+			         false, expr_location);
+			return nullptr;
+			}
+		else if ( t_tag == TYPE_INT )
+			promoted_v = val_mgr->Int(v->CoerceToInt());
+		else // enum
+			{
+			reporter->InternalError("bad internal type in check_and_promote()");
+			return nullptr;
+			}
 
+		break;
+
+		case TYPE_INTERNAL_UNSIGNED:
+		if ( (vit == TYPE_INTERNAL_DOUBLE || vit == TYPE_INTERNAL_INT) &&
+		     Val::WouldOverflow(vt, t, v.get()) )
+			{
+			t->Error("overflow promoting from signed/double to unsigned arithmetic value", v.get(),
+			         false, expr_location);
+			return nullptr;
+			}
+		else if ( t_tag == TYPE_COUNT )
+			promoted_v = val_mgr->Count(v->CoerceToUnsigned());
+		else // port
+			{
+			reporter->InternalError("bad internal type in check_and_promote()");
+			return nullptr;
+			}
+
+		break;
+
+		case TYPE_INTERNAL_DOUBLE:
+		switch ( t_tag )
+			{
+			case TYPE_DOUBLE:
+			promoted_v = make_intrusive<DoubleVal>(v->CoerceToDouble());
 			break;
-
-			case TYPE_INTERNAL_UNSIGNED:
-			if ( (vit == TYPE_INTERNAL_DOUBLE || vit == TYPE_INTERNAL_INT) &&
-			     Val::WouldOverflow(vt, t, v.get()) )
-				{
-				t->Error("overflow promoting from signed/double to unsigned arithmetic value",
-				         v.get(), false, expr_location);
-				return nullptr;
-				}
-			else if ( t_tag == TYPE_COUNT )
-				promoted_v = val_mgr->Count(v->CoerceToUnsigned());
-			else // port
-				{
-				reporter->InternalError("bad internal type in check_and_promote()");
-				return nullptr;
-				}
-
+			case TYPE_INTERVAL:
+			promoted_v = make_intrusive<IntervalVal>(v->CoerceToDouble());
 			break;
-
-			case TYPE_INTERNAL_DOUBLE:
-			switch ( t_tag )
-				{
-					case TYPE_DOUBLE:
-					promoted_v = make_intrusive<DoubleVal>(v->CoerceToDouble());
-					break;
-					case TYPE_INTERVAL:
-					promoted_v = make_intrusive<IntervalVal>(v->CoerceToDouble());
-					break;
-					case TYPE_TIME:
-					promoted_v = make_intrusive<TimeVal>(v->CoerceToDouble());
-					break;
-					default:
-					reporter->InternalError("bad internal type in check_and_promote()");
-					return nullptr;
-				}
+			case TYPE_TIME:
+			promoted_v = make_intrusive<TimeVal>(v->CoerceToDouble());
 			break;
-
 			default:
 			reporter->InternalError("bad internal type in check_and_promote()");
 			return nullptr;
+			}
+		break;
+
+		default:
+		reporter->InternalError("bad internal type in check_and_promote()");
+		return nullptr;
 		}
 
 	return promoted_v;
@@ -3519,22 +3519,22 @@ bool same_atomic_val(const Val* v1, const Val* v2)
 
 	switch ( v1->GetType()->InternalType() )
 		{
-			case TYPE_INTERNAL_INT:
-			return v1->InternalInt() == v2->InternalInt();
-			case TYPE_INTERNAL_UNSIGNED:
-			return v1->InternalUnsigned() == v2->InternalUnsigned();
-			case TYPE_INTERNAL_DOUBLE:
-			return v1->InternalDouble() == v2->InternalDouble();
-			case TYPE_INTERNAL_STRING:
-			return Bstr_eq(v1->AsString(), v2->AsString());
-			case TYPE_INTERNAL_ADDR:
-			return v1->AsAddr() == v2->AsAddr();
-			case TYPE_INTERNAL_SUBNET:
-			return v1->AsSubNet() == v2->AsSubNet();
+		case TYPE_INTERNAL_INT:
+		return v1->InternalInt() == v2->InternalInt();
+		case TYPE_INTERNAL_UNSIGNED:
+		return v1->InternalUnsigned() == v2->InternalUnsigned();
+		case TYPE_INTERNAL_DOUBLE:
+		return v1->InternalDouble() == v2->InternalDouble();
+		case TYPE_INTERNAL_STRING:
+		return Bstr_eq(v1->AsString(), v2->AsString());
+		case TYPE_INTERNAL_ADDR:
+		return v1->AsAddr() == v2->AsAddr();
+		case TYPE_INTERNAL_SUBNET:
+		return v1->AsSubNet() == v2->AsSubNet();
 
-			default:
-			reporter->InternalWarning("same_atomic_val called for non-atomic value");
-			return false;
+		default:
+		reporter->InternalWarning("same_atomic_val called for non-atomic value");
+		return false;
 		}
 
 	return false;

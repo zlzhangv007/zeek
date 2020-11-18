@@ -220,24 +220,24 @@ static void make_var(const IDPtr& id, TypePtr t, InitClass c, ExprPtr init,
 		{
 		switch ( init->Tag() )
 			{
-				case EXPR_TABLE_CONSTRUCTOR:
-					{
-					auto* ctor = static_cast<TableConstructorExpr*>(init.get());
-					if ( ctor->GetAttrs() )
-						id->AddAttrs(ctor->GetAttrs());
-					}
-				break;
+			case EXPR_TABLE_CONSTRUCTOR:
+				{
+				auto* ctor = static_cast<TableConstructorExpr*>(init.get());
+				if ( ctor->GetAttrs() )
+					id->AddAttrs(ctor->GetAttrs());
+				}
+			break;
 
-				case EXPR_SET_CONSTRUCTOR:
-					{
-					auto* ctor = static_cast<SetConstructorExpr*>(init.get());
-					if ( ctor->GetAttrs() )
-						id->AddAttrs(ctor->GetAttrs());
-					}
-				break;
+			case EXPR_SET_CONSTRUCTOR:
+				{
+				auto* ctor = static_cast<SetConstructorExpr*>(init.get());
+				if ( ctor->GetAttrs() )
+					id->AddAttrs(ctor->GetAttrs());
+				}
+			break;
 
-				default:
-				break;
+			default:
+			break;
 			}
 		}
 
@@ -574,21 +574,21 @@ void begin_func(IDPtr id, const char* module_name, FunctionFlavor flavor, bool i
 		switch ( id_flavor )
 			{
 
-				case FUNC_FLAVOR_EVENT:
-				case FUNC_FLAVOR_HOOK:
-				if ( is_redef )
-					// Clear out value so it will be replaced.
-					id->SetVal(nullptr);
-				break;
+			case FUNC_FLAVOR_EVENT:
+			case FUNC_FLAVOR_HOOK:
+			if ( is_redef )
+				// Clear out value so it will be replaced.
+				id->SetVal(nullptr);
+			break;
 
-				case FUNC_FLAVOR_FUNCTION:
-				if ( ! id->IsRedefinable() )
-					id->Error("already defined", t.get());
-				break;
+			case FUNC_FLAVOR_FUNCTION:
+			if ( ! id->IsRedefinable() )
+				id->Error("already defined", t.get());
+			break;
 
-				default:
-				reporter->InternalError("invalid function flavor");
-				break;
+			default:
+			reporter->InternalError("invalid function flavor");
+			break;
 			}
 		}
 	else
