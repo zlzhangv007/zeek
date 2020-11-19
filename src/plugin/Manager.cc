@@ -8,6 +8,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <regex>
 
 #include "Manager.h"
 
@@ -140,184 +141,202 @@ void Manager::SearchDynamicPlugins(const std::string& dir)
 	closedir(d);
 	}
 
-bool Manager::ActivateDynamicPluginInternal(const std::string& name, bool ok_if_not_found)
+Plugin* Manager::FindPlugin(const std::string& name)
 	{
-	dynamic_plugin_map::iterator m = dynamic_plugins.find(util::strtolower(name));
-
-	if ( m == dynamic_plugins.end() )
+	auto all_plugins = Manager::ActivePluginsInternal();
+	for ( auto i = all_plugins->begin(); i != all_plugins->end(); i++ )
 		{
-		if ( ok_if_not_found )
-			return true;
-
-		// Check if it's a static built-in plugin; they are always
-		// active, so just ignore. Not the most efficient way, but
-		// this should be rare to begin with.
-		plugin_list* all_plugins = Manager::ActivePluginsInternal();
-
-		for ( Manager::plugin_list::const_iterator i = all_plugins->begin(); i != all_plugins->end(); i++ )
-			{
-			if ( (*i)->Name() == name )
-				return true;
-			}
-
-		reporter->Error("plugin %s is not available", name.c_str());
-		return false;
+		if ( (*i)->Name() == name )
+			return *i;
 		}
+	return nullptr;
+	}
 
-	if ( m->second.empty() )
+bool Manager::ActivatePluginInternal(const std::string& name, bool ok_if_not_found)
+	{
+	auto p = FindPlugin(name);
+	bool is_dynamic = false;
+	std::string dir;
+
+	if ( p && p->Loaded() )
 		{
-		// That's our marker that we have already activated this
-		// plugin. Silently ignore the new request.
+printf("plugin is already loaded? %s\n", name.c_str());
+		// If the plugin is already marked as loaded, let's just bail.
 		return true;
 		}
 
-	std::string dir = m->second + "/";
+	if ( ! p )
+		{
+		if ( ! ok_if_not_found )
+			{
+			reporter->Error("plugin %s is not available", name.c_str());
+			return false;
+			}
+
+		// Falling through to here should mean this is a dynamic plugin that is being loaded now.
+		}
+
+	dynamic_plugin_map::iterator m = dynamic_plugins.find(util::strtolower(name));
+	if ( m != dynamic_plugins.end() )
+		{
+		// This means we found a dynamic plugin!
+		dir = m->second + "/";
+		is_dynamic = true;
+		}
+	else if ( p && ! p->DynamicPlugin() )
+		{
+		// Static plugins store their scripts with the main installation
+		// and need to be looked up in the ZEEKPATH
+		dir = "plugins/" + std::regex_replace(p->Name(), std::regex("^(.*)::(.*)$"), "$1_$2/");
+		}
+	else
+		{
+printf("requested plugin wasn't found: %s\n", name.c_str());
+		DBG_LOG(DBG_PLUGINS, "A requested plugin wasn't found %s", name.c_str());
+		return false;
+		}	
 
 	DBG_LOG(DBG_PLUGINS, "Activating plugin %s", name.c_str());
 
 	// Add the "scripts" and "bif" directories to ZEEKPATH.
-	std::string scripts = dir + "scripts";
-
-	if ( util::is_dir(scripts) )
+	// Just add the full directory in the case of internal plugins.
+	std::string scripts;
+	if ( util::is_dir(dir + "scripts") )
 		{
 		DBG_LOG(DBG_PLUGINS, "  Adding %s to ZEEKPATH", scripts.c_str());
-		util::detail::add_to_zeek_path(scripts);
+		util::detail::add_to_zeek_path(dir+"scripts");
+		scripts = dir + "scripts";
+		}
+	else
+		{
+		scripts = dir;
 		}
 
 	string init;
 
 	// First load {scripts}/__preload__.zeek automatically.
-	for (const string& ext : util::detail::script_extensions)
+	init = util::find_script_file(scripts + "__preload__", util::zeek_path());
+	if ( init != "" )
 		{
-		init = dir + "scripts/__preload__" + ext;
-
-		if ( util::is_file(init) )
-			{
-			DBG_LOG(DBG_PLUGINS, "  Loading %s", init.c_str());
-			util::detail::warn_if_legacy_script(init);
-			scripts_to_load.push_back(init);
-			break;
-			}
+		DBG_LOG(DBG_PLUGINS, "  Loading %s", init.c_str());
+		util::detail::warn_if_legacy_script(init);
+		scripts_to_load.push_back(init);
 		}
 
-	// Load {bif,scripts}/__load__.zeek automatically.
-	for (const string& ext : util::detail::script_extensions)
+	// Load bif/__load__.zeek automatically.
+	// This only needs to look in the "plugin dir" because for internal plugins,
+	// their auto-generated zeek scripts will automatically be loaded.
+	init = util::find_script_file(dir + "lib/bif/__load__", util::zeek_path());
+	if ( init != "" ) 
 		{
-		init = dir + "lib/bif/__load__" + ext;
-
-		if ( util::is_file(init) )
-			{
-			DBG_LOG(DBG_PLUGINS, "  Loading %s", init.c_str());
-			util::detail::warn_if_legacy_script(init);
-			scripts_to_load.push_back(init);
-			break;
-			}
+		DBG_LOG(DBG_PLUGINS, "  Loading %s", init.c_str());
+		util::detail::warn_if_legacy_script(init);
+		scripts_to_load.push_back(init);
 		}
 
-	for (const string& ext : util::detail::script_extensions)
+	// Load __load__.zeek scripts automatically.
+	init = util::find_script_file(scripts + "__load__", util::zeek_path());
+	if ( init != "" )
 		{
-		init = dir + "scripts/__load__" + ext;
-
-		if ( util::is_file(init) )
-			{
-			DBG_LOG(DBG_PLUGINS, "  Loading %s", init.c_str());
-			util::detail::warn_if_legacy_script(init);
-			scripts_to_load.push_back(init);
-			break;
-			}
+		DBG_LOG(DBG_PLUGINS, "  Loading %s", init.c_str());
+		util::detail::warn_if_legacy_script(init);
+		scripts_to_load.push_back(init);
 		}
 
 	// Load shared libraries.
-
-	string dypattern = dir + "/lib/*." + HOST_ARCHITECTURE + DYNAMIC_PLUGIN_SUFFIX;
-
-	DBG_LOG(DBG_PLUGINS, "  Searching for shared libraries %s", dypattern.c_str());
-
-	glob_t gl;
-
-	if ( glob(dypattern.c_str(), 0, 0, &gl) == 0 )
+	if ( is_dynamic )
 		{
-		for ( size_t i = 0; i < gl.gl_pathc; i++ )
+		string dypattern = dir + "/lib/*." + HOST_ARCHITECTURE + DYNAMIC_PLUGIN_SUFFIX;
+
+		DBG_LOG(DBG_PLUGINS, "  Searching for shared libraries %s", dypattern.c_str());
+
+		glob_t gl;
+
+		if ( glob(dypattern.c_str(), 0, 0, &gl) == 0 )
 			{
-			const char* path = gl.gl_pathv[i];
-
-			current_plugin = nullptr;
-			current_dir = dir.c_str();
-			current_sopath = path;
-			void* hdl = dlopen(path, RTLD_LAZY | RTLD_GLOBAL);
-
-			if ( ! hdl )
+			for ( size_t i = 0; i < gl.gl_pathc; i++ )
 				{
-				const char* err = dlerror();
-				reporter->FatalError("cannot load plugin library %s: %s", path, err ? err : "<unknown error>");
+				const char* path = gl.gl_pathv[i];
+	
+				current_plugin = nullptr;
+				current_dir = dir.c_str();
+				current_sopath = path;
+				void* hdl = dlopen(path, RTLD_LAZY | RTLD_GLOBAL);
+	
+				if ( ! hdl )
+					{
+					const char* err = dlerror();
+					reporter->FatalError("cannot load plugin library %s: %s", path, err ? err : "<unknown error>");
+					}
+	
+				if ( ! current_plugin )
+					reporter->FatalError("load plugin library %s did not instantiate a plugin", path);
+	
+				current_plugin->SetDynamic(true);
+				current_plugin->DoConfigure();
+				DBG_LOG(DBG_PLUGINS, "  InitializeComponents");
+				current_plugin->InitializeComponents();
+	
+				plugins_by_path.insert(std::make_pair(util::detail::normalize_path(dir), current_plugin));
+	
+				// We execute the pre-script initialization here; this in
+				// fact could be *during* script initialization if we got
+				// triggered via @load-plugin.
+				current_plugin->InitPreScript();
+	
+				// Make sure the name the plugin reports is consistent with
+				// what we expect from its magic file.
+				if ( util::strtolower(current_plugin->Name()) != util::strtolower(name) )
+					reporter->FatalError("inconsistent plugin name: %s vs %s",
+							     current_plugin->Name().c_str(), name.c_str());
+	
+				current_dir = nullptr;
+				current_sopath = nullptr;
+				current_plugin = nullptr;
+	
+				DBG_LOG(DBG_PLUGINS, "  Loaded %s", path);
 				}
-
-			if ( ! current_plugin )
-				reporter->FatalError("load plugin library %s did not instantiate a plugin", path);
-
-			current_plugin->SetDynamic(true);
-			current_plugin->DoConfigure();
-			DBG_LOG(DBG_PLUGINS, "  InitialzingComponents");
-			current_plugin->InitializeComponents();
-
-			plugins_by_path.insert(std::make_pair(util::detail::normalize_path(dir), current_plugin));
-
-			// We execute the pre-script initialization here; this in
-			// fact could be *during* script initialization if we got
-			// triggered via @load-plugin.
-			current_plugin->InitPreScript();
-
-			// Make sure the name the plugin reports is consistent with
-			// what we expect from its magic file.
-			if ( util::strtolower(current_plugin->Name()) != util::strtolower(name) )
-				reporter->FatalError("inconsistent plugin name: %s vs %s",
-						     current_plugin->Name().c_str(), name.c_str());
-
-			current_dir = nullptr;
-			current_sopath = nullptr;
-			current_plugin = nullptr;
-
-			DBG_LOG(DBG_PLUGINS, "  Loaded %s", path);
+	
+			globfree(&gl);
 			}
-
-		globfree(&gl);
-		}
-
-	else
-		{
-		DBG_LOG(DBG_PLUGINS, "  No shared library found");
+	
+		else
+			{
+			DBG_LOG(DBG_PLUGINS, "  No shared library found");
+			}
 		}
 
 	// Mark this plugin as activated by clearing the path.
-	m->second.clear();
+	//m->second.clear();
+	p->loaded = true;
 
 	return true;
 	}
 
-bool Manager::ActivateDynamicPlugin(const std::string& name)
+bool Manager::ActivatePlugin(const std::string& name)
 	{
-	if ( ! ActivateDynamicPluginInternal(name) )
+	if ( ! ActivatePluginInternal(name) )
 		return false;
 
 	UpdateInputFiles();
 	return true;
 	}
 
-bool Manager::ActivateDynamicPlugins(bool all)
+bool Manager::ActivatePlugins(bool all)
 	{
 	// Activate plugins that our environment tells us to.
 	vector<string> p;
 	util::tokenize_string(util::zeek_plugin_activate(), ",", &p);
 
 	for ( size_t n = 0; n < p.size(); ++n )
-		ActivateDynamicPluginInternal(p[n], true);
+		ActivatePluginInternal(p[n], true);
 
 	if ( all )
 		{
-		for ( dynamic_plugin_map::const_iterator i = dynamic_plugins.begin();
-		      i != dynamic_plugins.end(); i++ )
+		auto active_plugins = ActivePlugins();
+		for ( auto i = active_plugins.begin(); i != active_plugins.end(); i++ )
 			{
-			if ( ! ActivateDynamicPluginInternal(i->first) )
+			if ( ! ActivatePluginInternal((*i)->Name()) )
 				return false;
 			}
 		}

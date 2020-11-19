@@ -463,6 +463,11 @@ public:
 	bool DynamicPlugin() const;
 
 	/**
+	 * Returns true if this plugin is already loaded.
+	 */
+	bool Loaded() const;
+
+	/**
 	 * For dynamic plugins, returns the base directory from which it was
 	 * loaded. For static plugins, returns an empty string.
 	 **/
@@ -883,11 +888,21 @@ private:
 	 */
 	void SetDynamic(bool is_dynamic);
 
+	/**
+	 * Marks the plugin as loaded.
+	 *
+	 * This is called by the manager.
+	 *
+	 * @param is_loaded True if the plugin has already been loaded.
+	 */
+	void SetLoaded(bool is_loaded);
+
 	Configuration config;
 
 	std::string base_dir;	// The plugin's base directory.
 	std::string sopath;	// For dynamic plugins, the full path to the shared library.
 	bool dynamic;	// True if a dynamic plugin.
+	bool loaded; // True if plugin is loaded.
 
 	component_list components;	// Components the plugin provides.
 	bif_item_list bif_items;	// BiF items the plugin provides.

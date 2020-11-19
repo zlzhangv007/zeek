@@ -157,6 +157,33 @@ add_subdirectory(probabilistic)
 
 add_subdirectory(fuzzers)
 
+if ( EXISTS "plugins" )
+  file (GLOB PLUGIN_DIRS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/plugins/*/CMakeLists.txt")
+  message (STATUS "Searching for plugins to build in...")
+  # The plugins need the src/ directories for includes.
+  #include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src)
+  foreach (plugin_cmake ${PLUGIN_DIRS})
+    get_filename_component (plugin_dir ${plugin_cmake} DIRECTORY)
+    get_filename_component (plugin_name ${plugin_dir} NAME)
+
+
+    include_directories(AFTER ${CMAKE_CURRENT_BINARY_DIR}/plugins/${plugin_name})
+    if ( EXISTS "${plugin_dir}/cmake" )
+      set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${plugin_dir}/cmake" )
+    endif ()
+
+    message (STATUS "  Building in plugin: ${plugin_name}")
+    add_subdirectory (${plugin_dir})
+
+    # Check to see if there are scripts so we can install them.
+    #get_filename_component (SCRIPT_DIR "scripts" ABSOLUTE BASE_DIR ${plugin_dir})
+    set(scripts_dir "${plugin_dir}/scripts")
+    if ( EXISTS ${scripts_dir} )
+      message (STATUS "    Going to install scripts -- ${_plugin_name_canon}")
+    endif ()
+  endforeach ()
+endif ()
+
 ########################################################################
 ## bro target
 

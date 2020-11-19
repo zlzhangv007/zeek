@@ -239,6 +239,7 @@ void HookArgument::Describe(ODesc* d) const
 Plugin::Plugin()
 	{
 	dynamic = false;
+	loaded = false;
 	Manager::RegisterPlugin(this);
 	}
 
@@ -272,6 +273,11 @@ bool Plugin::DynamicPlugin() const
 	return dynamic;
 	}
 
+bool Plugin::Loaded() const
+	{
+	return loaded;
+	}
+
 const std::string& Plugin::PluginDirectory() const
 	{
 	return base_dir;
@@ -291,6 +297,11 @@ void Plugin::SetPluginLocation(const std::string& arg_dir, const std::string& ar
 void Plugin::SetDynamic(bool is_dynamic)
 	{
 	dynamic = is_dynamic;
+	}
+
+void Plugin::SetLoaded(bool is_loaded)
+	{
+	loaded = is_loaded;
 	}
 
 void Plugin::InitPreScript()

@@ -603,14 +603,14 @@ SetupResult setup(int argc, char** argv, Options* zopts)
 	for ( set<string>::const_iterator i = requested_plugins.begin();
 	      i != requested_plugins.end(); i++ )
 		{
-		if ( ! plugin_mgr->ActivateDynamicPlugin(*i) )
+		if ( ! plugin_mgr->ActivatePlugin(*i) )
 			missing_plugin = true;
 		}
 
 	if ( missing_plugin )
 		reporter->FatalError("Failed to activate requested dynamic plugin(s).");
 
-	plugin_mgr->ActivateDynamicPlugins(! options.bare_mode);
+	plugin_mgr->ActivatePlugins(! options.bare_mode);
 
 	init_event_handlers();
 

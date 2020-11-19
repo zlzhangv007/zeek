@@ -62,6 +62,8 @@ public:
 	 */
 	virtual ~Manager();
 
+	Plugin* FindPlugin(const std::string& name);
+
 	/**
 	 * Searches a set of directories for plugins. If a specified directory
 	 * does not contain a plugin itself, the method searches for plugins
@@ -86,7 +88,7 @@ public:
 	 * @return True if the plugin has been loaded successfully.
 	 *
 	 */
-	bool ActivateDynamicPlugin(const std::string& name);
+	bool ActivatePlugin(const std::string& name);
 
 	/**
 	 * Activates plugins that SearchDynamicPlugins() has previously discovered.
@@ -101,7 +103,7 @@ public:
 	 * fails to load, the method stops there without loading any further ones
 	 * and returns false.
 	 */
-	bool ActivateDynamicPlugins(bool all);
+	bool ActivatePlugins(bool all);
 
 	/**
 	 * First-stage initializion of the manager. This is called early on
@@ -414,7 +416,7 @@ public:
 	static void RegisterBifFile(const char* plugin, bif_init_func c);
 
 private:
-	bool ActivateDynamicPluginInternal(const std::string& name, bool ok_if_not_found = false);
+	bool ActivatePluginInternal(const std::string& name, bool ok_if_not_found = false);
 	void UpdateInputFiles();
 	void MetaHookPre(HookType hook, const HookArgumentList& args) const;
 	void MetaHookPost(HookType hook, const HookArgumentList& args, HookArgument result) const;
