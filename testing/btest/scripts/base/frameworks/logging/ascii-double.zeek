@@ -3,10 +3,14 @@
 # @TEST-EXEC: zeek -b %INPUT test-json.zeek
 # @TEST-EXEC: mv test.log json.log
 # @TEST-EXEC: zeek -b %INPUT
-# @TEST-EXEC: btest-diff test.log
-# @TEST-EXEC: btest-diff json.log
+# @TEST-EXEC: TEST_DIFF_CANONIFIER= btest-diff test.log
+# @TEST-EXEC: TEST_DIFF_CANONIFIER= btest-diff json.log
 # 
 # Make sure  we do not write out scientific notation for doubles.
+#
+# Unhooks the default canonifier, which pulls in timestamp
+# normalization, which conflicts with various double-numeric
+# representations in the output of the test.
 
 module Test;
 
